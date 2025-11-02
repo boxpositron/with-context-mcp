@@ -36,7 +36,7 @@ export async function detectProjectFolder(cwd?: string): Promise<string | null> 
 
     // No git repository found
     return null;
-  } catch (error) {
+  } catch {
     // If any error occurs (git not installed, not a repo, etc.), return null
     return null;
   }
@@ -51,14 +51,10 @@ export async function detectProjectFolder(cwd?: string): Promise<string | null> 
 async function getGitRemoteName(workingDir: string): Promise<string | null> {
   try {
     // Try to get the remote URL
-    const { stdout } = await execFileAsync(
-      'git',
-      ['config', '--get', 'remote.origin.url'],
-      {
-        cwd: workingDir,
-        timeout: 5000, // 5 second timeout
-      }
-    );
+    const { stdout } = await execFileAsync('git', ['config', '--get', 'remote.origin.url'], {
+      cwd: workingDir,
+      timeout: 5000, // 5 second timeout
+    });
 
     const remoteUrl = stdout.trim();
     if (!remoteUrl) {
@@ -137,14 +133,10 @@ async function getGitConfigName(workingDir: string): Promise<string | null> {
  */
 async function getGitRootName(workingDir: string): Promise<string | null> {
   try {
-    const { stdout } = await execFileAsync(
-      'git',
-      ['rev-parse', '--show-toplevel'],
-      {
-        cwd: workingDir,
-        timeout: 5000,
-      }
-    );
+    const { stdout } = await execFileAsync('git', ['rev-parse', '--show-toplevel'], {
+      cwd: workingDir,
+      timeout: 5000,
+    });
 
     const gitRoot = stdout.trim();
     if (!gitRoot) {
@@ -152,7 +144,7 @@ async function getGitRootName(workingDir: string): Promise<string | null> {
     }
 
     const folderName = path.basename(gitRoot);
-    
+
     if (folderName && isValidFolderName(folderName)) {
       return folderName;
     }
@@ -175,7 +167,7 @@ async function findGitDirectory(startDir: string): Promise<string | null> {
 
   while (currentDir !== root) {
     const gitPath = path.join(currentDir, '.git');
-    
+
     try {
       const stats = await fs.stat(gitPath);
       if (stats.isDirectory()) {
@@ -251,14 +243,10 @@ export async function isGitRepository(cwd?: string): Promise<boolean> {
   const workingDir = cwd || process.cwd();
 
   try {
-    await execFileAsync(
-      'git',
-      ['rev-parse', '--git-dir'],
-      {
-        cwd: workingDir,
-        timeout: 5000,
-      }
-    );
+    await execFileAsync('git', ['rev-parse', '--git-dir'], {
+      cwd: workingDir,
+      timeout: 5000,
+    });
     return true;
   } catch {
     return false;
@@ -275,14 +263,10 @@ export async function getGitBranch(cwd?: string): Promise<string | null> {
   const workingDir = cwd || process.cwd();
 
   try {
-    const { stdout } = await execFileAsync(
-      'git',
-      ['rev-parse', '--abbrev-ref', 'HEAD'],
-      {
-        cwd: workingDir,
-        timeout: 5000,
-      }
-    );
+    const { stdout } = await execFileAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      cwd: workingDir,
+      timeout: 5000,
+    });
 
     const branch = stdout.trim();
     return branch || null;

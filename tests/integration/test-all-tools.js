@@ -25,13 +25,13 @@ server.stdout.on('data', (data) => {
   responseBuffer += data.toString();
   const lines = responseBuffer.split('\n');
   responseBuffer = lines.pop() || '';
-  
-  lines.forEach(line => {
+
+  lines.forEach((line) => {
     if (line.trim()) {
       try {
         const response = JSON.parse(line);
         console.log('✓ Response:', JSON.stringify(response, null, 2));
-      } catch (e) {
+      } catch {
         console.log('  ', line);
       }
     }
@@ -78,7 +78,8 @@ async function runTests() {
       name: 'write_note',
       arguments: {
         path: 'README.md',
-        content: '# Test Project\n\nThis is a test project.\n\n## Features\n- Feature 1\n- Feature 2',
+        content:
+          '# Test Project\n\nThis is a test project.\n\n## Features\n- Feature 1\n- Feature 2',
         mode: 'overwrite',
       },
     },
@@ -183,7 +184,7 @@ async function runTests() {
   console.log('\n✅ All tests complete!');
   console.log('\nCheck your Obsidian vault at:');
   console.log('  Development Sessions/test-project/');
-  
+
   server.kill();
   process.exit(0);
 }
@@ -193,7 +194,7 @@ function sendRequest(request) {
 }
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 setTimeout(runTests, 500);

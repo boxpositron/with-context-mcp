@@ -25,13 +25,13 @@ server.stdout.on('data', (data) => {
   responseBuffer += data.toString();
   const lines = responseBuffer.split('\n');
   responseBuffer = lines.pop() || '';
-  
-  lines.forEach(line => {
+
+  lines.forEach((line) => {
     if (line.trim()) {
       try {
         const response = JSON.parse(line);
         console.log('✓ Response:', JSON.stringify(response, null, 2));
-      } catch (e) {
+      } catch {
         console.log('  ', line);
       }
     }
@@ -211,7 +211,7 @@ async function runTests() {
   console.log('  Development Sessions/template-demo/docs/api/users-endpoint.md');
   console.log('  Development Sessions/template-demo/docs/architecture.md');
   console.log('  Development Sessions/template-demo/updates/weekly-update.md');
-  
+
   server.kill();
   process.exit(0);
 }
@@ -221,7 +221,7 @@ function sendRequest(request) {
 }
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 setTimeout(runTests, 500);

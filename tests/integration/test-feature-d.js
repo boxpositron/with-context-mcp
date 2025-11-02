@@ -25,13 +25,13 @@ server.stdout.on('data', (data) => {
   responseBuffer += data.toString();
   const lines = responseBuffer.split('\n');
   responseBuffer = lines.pop() || '';
-  
-  lines.forEach(line => {
+
+  lines.forEach((line) => {
     if (line.trim()) {
       try {
         const response = JSON.parse(line);
         console.log('✓ Response:', JSON.stringify(response, null, 2));
-      } catch (e) {
+      } catch {
         console.log('  ', line);
       }
     }
@@ -80,20 +80,23 @@ async function runTests() {
         notes: [
           {
             path: 'README.md',
-            content: '# Feature D Test\n\nThis project demonstrates search, batch, and metadata features.\n\n## Overview\nWe can search through notes and get metadata.',
-            mode: 'overwrite'
+            content:
+              '# Feature D Test\n\nThis project demonstrates search, batch, and metadata features.\n\n## Overview\nWe can search through notes and get metadata.',
+            mode: 'overwrite',
           },
           {
             path: 'docs/api.md',
-            content: '---\ntags: [api, documentation]\nauthor: Test User\n---\n\n# API Documentation\n\n## Authentication\nUse Bearer tokens for authentication.\n\n## Endpoints\n\n### GET /users\nRetrieve all users.',
-            mode: 'create'
+            content:
+              '---\ntags: [api, documentation]\nauthor: Test User\n---\n\n# API Documentation\n\n## Authentication\nUse Bearer tokens for authentication.\n\n## Endpoints\n\n### GET /users\nRetrieve all users.',
+            mode: 'create',
           },
           {
             path: 'docs/setup.md',
-            content: '# Setup Guide\n\n## Installation\n\nRun the following commands:\n\n```bash\nnpm install\nnpm start\n```\n\n## Configuration\n\nEdit the config file.',
-            mode: 'create'
-          }
-        ]
+            content:
+              '# Setup Guide\n\n## Installation\n\nRun the following commands:\n\n```bash\nnpm install\nnpm start\n```\n\n## Configuration\n\nEdit the config file.',
+            mode: 'create',
+          },
+        ],
       },
     },
   });
@@ -118,9 +121,9 @@ async function runTests() {
     method: 'tools/call',
     params: {
       name: 'search_notes',
-      arguments: { 
+      arguments: {
         query: 'authentication',
-        case_sensitive: false 
+        case_sensitive: false,
       },
     },
   });
@@ -133,9 +136,9 @@ async function runTests() {
     method: 'tools/call',
     params: {
       name: 'search_notes',
-      arguments: { 
+      arguments: {
         query: 'npm',
-        limit: 5
+        limit: 5,
       },
     },
   });
@@ -162,7 +165,8 @@ async function runTests() {
       name: 'write_note',
       arguments: {
         path: 'README.md',
-        content: '\n\n## Features\n- Search functionality\n- Batch operations\n- Metadata extraction',
+        content:
+          '\n\n## Features\n- Search functionality\n- Batch operations\n- Metadata extraction',
         mode: 'append',
       },
     },
@@ -196,7 +200,7 @@ async function runTests() {
   console.log('\n✅ Feature D tests complete!');
   console.log('\nCheck your Obsidian vault at:');
   console.log('  Development Sessions/feature-d-test/');
-  
+
   server.kill();
   process.exit(0);
 }
@@ -206,7 +210,7 @@ function sendRequest(request) {
 }
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 setTimeout(runTests, 500);

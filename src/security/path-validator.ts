@@ -10,11 +10,7 @@ import path from 'path';
  * @returns Sanitized vault-relative path (e.g., "Development Sessions/test-project/note.md")
  * @throws Error if path is invalid or attempts directory traversal
  */
-export function sanitizePath(
-  inputPath: string,
-  projectFolder: string,
-  basePath: string
-): string {
+export function sanitizePath(inputPath: string, projectFolder: string, basePath: string): string {
   if (!inputPath || typeof inputPath !== 'string') {
     throw new Error('Path must be a non-empty string');
   }
@@ -52,18 +48,14 @@ export function sanitizePath(
   // After normalization, check for directory traversal attempts
   // If the path starts with .. after normalization, it's trying to escape
   if (cleanPath.startsWith('..')) {
-    throw new Error(
-      'Path traversal detected. Path cannot navigate outside the project folder.'
-    );
+    throw new Error('Path traversal detected. Path cannot navigate outside the project folder.');
   }
 
   // Also check for ../ or ..\ anywhere in the normalized path
   // (normalization should have handled this, but double-check)
   const pathParts = cleanPath.split(path.sep);
   if (pathParts.includes('..')) {
-    throw new Error(
-      'Path traversal detected. Path cannot contain ".." segments.'
-    );
+    throw new Error('Path traversal detected. Path cannot contain ".." segments.');
   }
 
   // Convert to forward slashes for consistency
@@ -76,19 +68,17 @@ export function sanitizePath(
 
   // Final validation: ensure no dangerous patterns in the user input
   const dangerousPatterns = [
-    /\.\./,           // Directory traversal
-    /^\/+/,           // Leading slashes (should be relative)
-    /~\//,            // Home directory expansion
-    /\$\{/,           // Variable expansion
-    /%00/,            // Null byte (URL encoded)
-    /%2e%2e/i,        // .. (URL encoded)
+    /\.\./, // Directory traversal
+    /^\/+/, // Leading slashes (should be relative)
+    /~\//, // Home directory expansion
+    /\$\{/, // Variable expansion
+    /%00/, // Null byte (URL encoded)
+    /%2e%2e/i, // .. (URL encoded)
   ];
 
   for (const pattern of dangerousPatterns) {
     if (pattern.test(cleanPath)) {
-      throw new Error(
-        `Path contains potentially dangerous pattern: ${pattern}`
-      );
+      throw new Error(`Path contains potentially dangerous pattern: ${pattern}`);
     }
   }
 
@@ -102,9 +92,7 @@ export function sanitizePath(
   // We use path.normalize to check for any remaining traversal attempts
   const normalizedCheck = path.normalize(vaultRelativePath);
   if (normalizedCheck.startsWith('..')) {
-    throw new Error(
-      'Path escapes project boundaries after construction'
-    );
+    throw new Error('Path escapes project boundaries after construction');
   }
 
   return vaultRelativePath;
@@ -127,16 +115,16 @@ export function isPathSafe(inputPath: string): boolean {
 
     // Check for various unsafe patterns
     const unsafePatterns = [
-      /\0/,             // Null bytes
-      /\.\./,           // Directory traversal
-      /^[\/\\]/,        // Absolute paths
-      /~[\/\\]/,        // Home directory
-      /\$\{/,           // Variable expansion
-      /%00/,            // Null byte (URL encoded)
-      /%2e%2e/i,        // .. (URL encoded)
+      /\0/, // Null bytes
+      /\.\./, // Directory traversal
+      /^[/\\]/, // Absolute paths
+      /~[/\\]/, // Home directory
+      /\$\{/, // Variable expansion
+      /%00/, // Null byte (URL encoded)
+      /%2e%2e/i, // .. (URL encoded)
     ];
 
-    return !unsafePatterns.some(pattern => pattern.test(cleanPath));
+    return !unsafePatterns.some((pattern) => pattern.test(cleanPath));
   } catch {
     return false;
   }
@@ -151,10 +139,10 @@ export function isPathSafe(inputPath: string): boolean {
  */
 export function getRelativePath(fullPath: string, projectRoot: string): string {
   const relativePath = path.relative(projectRoot, fullPath);
-  
+
   if (relativePath.startsWith('..')) {
     throw new Error('Path is outside project root');
   }
-  
+
   return relativePath.split(path.sep).join('/');
 }

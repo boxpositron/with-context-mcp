@@ -25,17 +25,17 @@ let responseBuffer = '';
 
 server.stdout.on('data', (data) => {
   responseBuffer += data.toString();
-  
+
   // Try to parse JSON-RPC responses
   const lines = responseBuffer.split('\n');
   responseBuffer = lines.pop() || ''; // Keep incomplete line in buffer
-  
-  lines.forEach(line => {
+
+  lines.forEach((line) => {
     if (line.trim()) {
       try {
         const response = JSON.parse(line);
         console.log('Response:', JSON.stringify(response, null, 2));
-      } catch (e) {
+      } catch {
         console.log('Raw output:', line);
       }
     }
@@ -99,7 +99,9 @@ async function runTests() {
       name: 'write_note',
       arguments: {
         path: 'test-note.md',
-        content: '# Test Note\n\nThis is a test from the MCP server.\n\nTimestamp: ' + new Date().toISOString(),
+        content:
+          '# Test Note\n\nThis is a test from the MCP server.\n\nTimestamp: ' +
+          new Date().toISOString(),
         mode: 'overwrite',
       },
     },
@@ -109,7 +111,7 @@ async function runTests() {
 
   console.log('\n\nTests complete! Check your Obsidian vault at:');
   console.log('  Development Sessions/test-project/test-note.md');
-  
+
   server.kill();
   process.exit(0);
 }
@@ -120,7 +122,7 @@ function sendRequest(request) {
 }
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Start tests after a brief delay
