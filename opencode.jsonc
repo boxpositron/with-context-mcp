@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "with-context": {
+      "type": "local",
+      "command": [
+        "bash",
+        "/Users/davidibia/Projects/MCP/with-context-mcp/start-mcp.sh"
+      ],
+      "enabled": true,
+      "timeout": 10000
+    }
+  }
+}
