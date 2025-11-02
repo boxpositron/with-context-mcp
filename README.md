@@ -269,6 +269,98 @@ Or manually edit `mcp.json`:
 
 </details>
 
+<details>
+<summary><strong>OpenCode</strong></summary>
+
+**Config file location:**
+
+- **All platforms:** `opencode.jsonc` in your project root
+
+OpenCode is an AI coding agent built for the terminal that supports MCP servers through its configuration file. Add the with-context MCP server to your `opencode.jsonc`:
+
+```jsonc
+{
+  "mcp": {
+    "with-context": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "with-context-mcp"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VAULT": "MyVault",
+        "PROJECT_BASE_PATH": "Projects",
+      },
+      "enabled": true,
+    },
+  },
+}
+```
+
+**Configuration values:**
+
+- `type`: Must be `"local"` for locally-executed MCP servers
+- `command`: Use `"npx"` to run without installation
+- `args`: Include `"-y"` flag to auto-confirm package execution
+- `env`: Environment variables for the MCP server:
+  - `OBSIDIAN_API_KEY`: Your API key from Obsidian Settings → Local REST API
+  - `OBSIDIAN_API_URL`: REST API endpoint (default: `https://127.0.0.1:27124`)
+  - `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
+  - `PROJECT_BASE_PATH`: Base folder in vault for projects (default: `"Projects"`)
+- `enabled`: Set to `true` to activate the server
+
+**Usage Tips:**
+
+1. **Mention the server in prompts** to ensure OpenCode uses it:
+
+   ```
+   Use the with-context MCP server to create a CHANGELOG.md for this project
+   ```
+
+2. **Add rules to AGENTS.md** to make OpenCode automatically use the server for documentation tasks. Create or edit `AGENTS.md` in your project root:
+
+   ```markdown
+   ## Documentation Guidelines
+
+   - Use the with-context MCP server for all project documentation
+   - Create changelogs in CHANGELOG.md using append mode
+   - Store API docs in docs/api/ folder
+   - Always set project context before writing notes
+   ```
+
+3. **Verify server is loaded** by checking OpenCode's startup messages. You should see:
+
+   ```
+   ✓ Loaded MCP server: with-context
+   ```
+
+4. **First-time setup** in a new project:
+   ```
+   Set project context to "my-project-name" and create a README.md
+   ```
+
+**Example Commands:**
+
+```bash
+# Start OpenCode in your project directory
+opencode
+
+# Example prompts to try:
+# "Set the project context to my-web-app"
+# "Create a CHANGELOG.md and add today's updates"
+# "List all notes in the docs folder"
+# "Search for API documentation"
+```
+
+**Troubleshooting:**
+
+- If the server doesn't load, verify your `opencode.jsonc` is valid JSON/JSONC
+- Check that all environment variables are properly quoted strings
+- Ensure Obsidian and the REST API plugin are running
+- Restart OpenCode after modifying `opencode.jsonc`
+
+</details>
+
 ## Usage
 
 ### Setting Project Context
