@@ -31,50 +31,18 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 4. Install and Enable
 5. Go to plugin settings and copy your API key
 
-### 2. Install MCP Server
-
-```bash
-npm install
-npm run build
-```
-
-### 3. Configure Environment
-
-Create a `.env` file in the project root:
-
-```env
-# Obsidian REST API Configuration
-OBSIDIAN_API_KEY=your_api_key_here
-OBSIDIAN_API_URL=https://127.0.0.1:27124
-OBSIDIAN_VAULT=MyVault
-
-# Project Configuration
-PROJECT_BASE_PATH=Projects
-
-# Optional: Set specific project folder
-# PROJECT_FOLDER=my-web-app
-
-# Server Configuration
-LOG_LEVEL=info
-NODE_ENV=development
-```
-
-**Getting your values:**
-
-- `OBSIDIAN_API_KEY`: From Obsidian Settings → Local REST API
-- `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
-- `PROJECT_BASE_PATH`: Folder in vault where projects live (default: "Projects")
-
-### 4. Add to MCP Client
+### 2. Add to MCP Client
 
 Add to your MCP client configuration (e.g., Claude Desktop):
+
+**Using npx (recommended - no installation needed):**
 
 ```json
 {
   "mcpServers": {
     "with-context": {
-      "command": "node",
-      "args": ["/path/to/with-context-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "with-context-mcp"],
       "env": {
         "OBSIDIAN_API_KEY": "your_api_key_here",
         "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
@@ -85,6 +53,34 @@ Add to your MCP client configuration (e.g., Claude Desktop):
   }
 }
 ```
+
+**Using local installation:**
+
+```bash
+npm install -g with-context-mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "with-context": {
+      "command": "with-context-mcp",
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VAULT": "MyVault",
+        "PROJECT_BASE_PATH": "Projects"
+      }
+    }
+  }
+}
+```
+
+**Configuration values:**
+
+- `OBSIDIAN_API_KEY`: From Obsidian Settings → Local REST API
+- `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
+- `PROJECT_BASE_PATH`: Folder in vault where projects live (default: "Projects")
 
 ## Usage
 
