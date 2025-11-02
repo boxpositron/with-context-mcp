@@ -3,10 +3,7 @@
   "mcp": {
     "with-context": {
       "type": "local",
-      "command": [
-        "bash",
-        "$(pwd)/start-mcp.sh"
-      ],
+      "command": ["with-context-mcp"],
       "enabled": true,
       "timeout": 10000
     }
