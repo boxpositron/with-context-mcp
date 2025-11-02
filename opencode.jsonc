@@ -5,7 +5,7 @@
       "type": "local",
       "command": [
         "bash",
-        "/Users/davidibia/Projects/MCP/with-context-mcp/start-mcp.sh"
+        "$(pwd)/start-mcp.sh"
       ],
       "enabled": true,
       "timeout": 10000
