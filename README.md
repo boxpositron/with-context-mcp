@@ -19,7 +19,7 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 
 1. **A supported note-taking app:**
    - **Obsidian** with the **Local REST API** plugin installed (primary backend)
-2. **Node.js** 18+ 
+2. **Node.js** 18+
 
 ## Setup
 
@@ -60,6 +60,7 @@ NODE_ENV=development
 ```
 
 **Getting your values:**
+
 - `OBSIDIAN_API_KEY`: From Obsidian Settings → Local REST API
 - `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
 - `PROJECT_BASE_PATH`: Folder in vault where projects live (default: "Projects")
@@ -92,8 +93,8 @@ Add to your MCP client configuration (e.g., Claude Desktop):
 ```javascript
 // Set the project folder for this session
 set_project_context({
-  project_folder: "my-web-app"
-})
+  project_folder: 'my-web-app',
+});
 
 // All subsequent operations will use: vault://Projects/my-web-app/
 ```
@@ -103,25 +104,25 @@ set_project_context({
 ```javascript
 // Write a changelog
 write_note({
-  path: "CHANGELOG.md",
-  content: "## 2024-01-15\n- Added user auth\n- Fixed bug #123",
-  mode: "append"
-})
+  path: 'CHANGELOG.md',
+  content: '## 2024-01-15\n- Added user auth\n- Fixed bug #123',
+  mode: 'append',
+});
 
 // Create API documentation
 write_note({
-  path: "docs/api/users.md",
-  content: "# Users API\n\n## Endpoints...",
-  mode: "create"
-})
+  path: 'docs/api/users.md',
+  content: '# Users API\n\n## Endpoints...',
+  mode: 'create',
+});
 
 // Override project folder for this operation
 write_note({
-  path: "README.md",
-  content: "# Project Docs",
-  mode: "overwrite",
-  project_folder: "other-project"
-})
+  path: 'README.md',
+  content: '# Project Docs',
+  mode: 'overwrite',
+  project_folder: 'other-project',
+});
 ```
 
 ## Available Tools
@@ -163,6 +164,23 @@ MyVault/
 - **Project Scoping**: Operations are restricted to the configured project folder
 - **HTTPS**: Uses secure connection to Obsidian (self-signed cert in dev)
 
+## OpenCode Plugin
+
+This project includes an **OpenCode plugin** that enhances the MCP experience with:
+
+- Welcome messages showing available templates
+- Success notifications for note operations
+- Error feedback for troubleshooting
+- Real-time confirmation of project context changes
+
+The plugin is **optional but recommended** for the best experience.
+
+### Enable the Plugin
+
+The plugin is located in `.opencode/plugin/` and is already configured in `opencode.jsonc`. Simply ensure OpenCode is installed and start a session in this project directory.
+
+See [Plugin README](.opencode/plugin/README.md) for detailed documentation.
+
 ## Development
 
 ```bash
@@ -179,19 +197,23 @@ npm run dev
 ## Troubleshooting
 
 ### "Failed to load configuration"
+
 - Check that all required environment variables are set
 - Verify your `.env` file exists and is in the project root
 
 ### "Connection refused"
+
 - Ensure Obsidian is running
 - Verify the Local REST API plugin is enabled
 - Check that `OBSIDIAN_API_URL` matches the plugin's configured port
 
 ### "Authentication failed"
+
 - Double-check your `OBSIDIAN_API_KEY` from plugin settings
 - Ensure there are no extra spaces in the API key
 
 ### "Path traversal detected"
+
 - Don't use `../` or absolute paths
 - All paths must be relative to the project folder
 

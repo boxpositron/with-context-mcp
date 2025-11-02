@@ -7,5 +7,10 @@
       "enabled": true,
       "timeout": 10000
     }
+  },
+  "plugins": {
+    "with-context": {
+      "enabled": true
+    }
   }
 }
