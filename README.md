@@ -285,11 +285,11 @@ OpenCode is an AI coding agent built for the terminal that supports MCP servers 
       "type": "local",
       "command": "npx",
       "args": ["-y", "with-context-mcp"],
-      "env": {
-        "OBSIDIAN_API_KEY": "your_api_key_here",
-        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
-        "OBSIDIAN_VAULT": "MyVault",
-        "PROJECT_BASE_PATH": "Projects",
+      "environment": {
+        "OBSIDIAN_API_KEY": "{env:OBSIDIAN_API_KEY}",
+        "OBSIDIAN_API_URL": "{env:OBSIDIAN_API_URL}",
+        "OBSIDIAN_VAULT": "{env:OBSIDIAN_VAULT}",
+        "PROJECT_BASE_PATH": "{env:PROJECT_BASE_PATH}",
       },
       "enabled": true,
     },
@@ -302,12 +302,14 @@ OpenCode is an AI coding agent built for the terminal that supports MCP servers 
 - `type`: Must be `"local"` for locally-executed MCP servers
 - `command`: Use `"npx"` to run without installation
 - `args`: Include `"-y"` flag to auto-confirm package execution
-- `env`: Environment variables for the MCP server:
+- `environment`: Environment variables for the MCP server (use `{env:VAR_NAME}` syntax to reference environment variables):
   - `OBSIDIAN_API_KEY`: Your API key from Obsidian Settings → Local REST API
   - `OBSIDIAN_API_URL`: REST API endpoint (default: `https://127.0.0.1:27124`)
   - `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
   - `PROJECT_BASE_PATH`: Base folder in vault for projects (default: `"Projects"`)
 - `enabled`: Set to `true` to activate the server
+
+Make sure to set these environment variables in your shell before starting OpenCode, or create a `.env` file in your project root.
 
 **Usage Tips:**
 
