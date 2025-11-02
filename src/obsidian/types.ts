@@ -23,9 +23,11 @@ export interface ObsidianClientConfig {
 }
 
 export interface VaultFile {
+  name: string;
   path: string;
-  basename: string;
-  extension: string;
+  type: 'file' | 'folder';
+  extension?: string;
+  basename?: string;
   stat?: {
     ctime: number;
     mtime: number;
@@ -35,6 +37,7 @@ export interface VaultFile {
 
 export interface ListNotesResponse {
   files: VaultFile[];
+  total?: number;
 }
 
 /**
