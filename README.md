@@ -82,6 +82,193 @@ npm install -g with-context-mcp
 - `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
 - `PROJECT_BASE_PATH`: Folder in vault where projects live (default: "Projects")
 
+### Configuration for Other AI Coding Agents
+
+<details>
+<summary><strong>Claude Desktop</strong></summary>
+
+**Config file location:**
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **Linux:** `~/.config/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "with-context": {
+      "command": "npx",
+      "args": ["-y", "with-context-mcp"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VAULT": "MyVault",
+        "PROJECT_BASE_PATH": "Projects"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop after editing the config file.
+
+</details>
+
+<details>
+<summary><strong>Cline (VS Code Extension)</strong></summary>
+
+1. Open Cline panel in VS Code
+2. Click "MCP Servers" icon in top navigation
+3. Select "Configure" tab
+4. Click "Configure MCP Servers" to open settings file
+
+Add this configuration:
+
+```json
+{
+  "mcpServers": {
+    "with-context": {
+      "command": "npx",
+      "args": ["-y", "with-context-mcp"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VAULT": "MyVault",
+        "PROJECT_BASE_PATH": "Projects"
+      },
+      "alwaysAllow": []
+    }
+  }
+}
+```
+
+Restart VS Code after saving the configuration.
+
+</details>
+
+<details>
+<summary><strong>Cursor</strong></summary>
+
+Create or edit one of these files:
+
+- **Project-specific:** `.cursor/mcp.json` (in project root)
+- **Global:** `~/.cursor/mcp.json` (in home directory)
+
+```json
+{
+  "mcpServers": {
+    "with-context": {
+      "command": "npx",
+      "args": ["-y", "with-context-mcp"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VAULT": "MyVault",
+        "PROJECT_BASE_PATH": "Projects"
+      }
+    }
+  }
+}
+```
+
+Restart Cursor after saving the configuration.
+
+</details>
+
+<details>
+<summary><strong>Windsurf</strong></summary>
+
+1. Open Settings (`Cmd/Ctrl + ,`)
+2. Navigate to Cascade → Advanced Settings
+3. Enable MCP
+4. Go to Plugins → Manage Plugins → View raw config
+5. Add the following configuration:
+
+```json
+{
+  "mcpServers": {
+    "with-context": {
+      "command": "npx",
+      "args": ["-y", "with-context-mcp"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VAULT": "MyVault",
+        "PROJECT_BASE_PATH": "Projects"
+      }
+    }
+  }
+}
+```
+
+Save and refresh Windsurf.
+
+</details>
+
+<details>
+<summary><strong>Continue.dev</strong></summary>
+
+**Note:** MCP servers work only in agent mode.
+
+Create `.continue/mcpServers/with-context.yaml` in your project root:
+
+```yaml
+name: WithContext MCP Server
+version: 1.0.0
+schema: v1
+mcpServers:
+  - name: with-context
+    command: npx
+    args:
+      - -y
+      - with-context-mcp
+    env:
+      OBSIDIAN_API_KEY: your_api_key_here
+      OBSIDIAN_API_URL: https://127.0.0.1:27124
+      OBSIDIAN_VAULT: MyVault
+      PROJECT_BASE_PATH: Projects
+```
+
+Use `@` mentions to trigger MCP resources in the UI.
+
+</details>
+
+<details>
+<summary><strong>GitHub Copilot (VS Code 1.102+)</strong></summary>
+
+1. Open Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. Select `MCP: Add Server…`
+3. Choose "Local server command"
+4. Enter command: `npx`
+5. Enter args: `-y with-context-mcp`
+6. Choose scope (Global or Workspace)
+7. Add environment variables when prompted:
+   - `OBSIDIAN_API_KEY=your_api_key_here`
+   - `OBSIDIAN_API_URL=https://127.0.0.1:27124`
+   - `OBSIDIAN_VAULT=MyVault`
+   - `PROJECT_BASE_PATH=Projects`
+
+Or manually edit `mcp.json`:
+
+```json
+{
+  "servers": {
+    "with-context": {
+      "command": "npx",
+      "args": ["-y", "with-context-mcp"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VAULT": "MyVault",
+        "PROJECT_BASE_PATH": "Projects"
+      }
+    }
+  }
+}
+```
+
+</details>
+
 ## Usage
 
 ### Setting Project Context
