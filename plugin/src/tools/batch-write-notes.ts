@@ -34,7 +34,11 @@ export const batchWriteNotesTool: ToolDefinition = tool({
     try {
       // Call the MCP function directly
       const result = await mcpBatchWriteNotes({
-        notes: args.notes as any, // TypeScript strict mode - modes have defaults
+        notes: args.notes.map((note) => ({
+          path: note.path,
+          content: note.content,
+          mode: (note.mode || 'overwrite') as 'create' | 'overwrite' | 'append',
+        })),
         project_folder: args.project_folder,
       });
 

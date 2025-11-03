@@ -294,7 +294,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         async execute(args, _ctx) {
           try {
             const result = await mcpBatchWriteNotes({
-              notes: args.notes as any,
+              notes: args.notes.map((note) => ({
+                path: note.path,
+                content: note.content,
+                mode: (note.mode || 'overwrite') as 'create' | 'overwrite' | 'append',
+              })),
               project_folder: args.project_folder,
             });
             return result;
