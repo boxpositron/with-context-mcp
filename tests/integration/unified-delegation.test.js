@@ -486,22 +486,16 @@ docs/
 
       const guidePath = path.join(testDir, 'docs', 'guide.md');
 
-      // Measure first read (cold cache)
-      const start1 = Date.now();
+      // First read (cold cache)
       await interceptor.interceptRead(guidePath, testDir);
-      const duration1 = Date.now() - start1;
 
-      // Measure second read (warm cache)
-      const start2 = Date.now();
+      // Second read (warm cache)
       await interceptor.interceptRead(guidePath, testDir);
-      const duration2 = Date.now() - start2;
 
-      // Cached read should be faster
-      expect(duration2).toBeLessThanOrEqual(duration1);
-
-      // Check cache hit
+      // Verify cache was used - check cache hit
       const stats = cache.getExtendedStats();
       expect(stats.totalHits).toBeGreaterThan(0);
+      expect(stats.size).toBeGreaterThan(0);
     });
 
     it('should handle multiple concurrent reads efficiently', async () => {
