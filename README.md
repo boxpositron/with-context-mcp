@@ -565,20 +565,67 @@ MyVault/
 
 ## OpenCode Plugin
 
-This project includes an **OpenCode plugin** that enhances the MCP experience with:
+This project includes an **OpenCode plugin** that provides all 11 MCP tools directly in your OpenCode sessions without requiring the MCP server. The plugin is lighter weight and provides a better developer experience.
 
-- Welcome messages showing available templates
-- Success notifications for note operations
-- Error feedback for troubleshooting
-- Real-time confirmation of project context changes
+**Features:**
 
-The plugin is **optional but recommended** for the best experience.
+- All 11 tools available (write, read, search, list, delete, batch, templates, metadata)
+- Automatic project context detection
+- Recursive vault scanning
+- Template system with 5 built-in templates
+- No MCP server configuration needed
 
-### Enable the Plugin
+### Installation
 
-The plugin is located in `.opencode/plugin/` and is already configured in `opencode.jsonc`. Simply ensure OpenCode is installed and start a session in this project directory.
+1. **Clone this repository:**
 
-See [Plugin README](.opencode/plugin/README.md) for detailed documentation.
+```bash
+git clone https://github.com/davidibia/with-context-mcp.git
+cd with-context-mcp
+```
+
+2. **Install and build:**
+
+```bash
+# Install and build the MCP server (provides core functionality)
+npm install
+npm run build
+
+# Build the plugin
+cd plugin
+npm install
+npm run build
+cd ..
+```
+
+3. **Copy plugin to OpenCode:**
+
+```bash
+# Create OpenCode plugin directory if it doesn't exist
+mkdir -p ~/.config/opencode/plugin
+
+# Copy the built plugin (or symlink for development)
+cp plugin/dist/index.js ~/.config/opencode/plugin/with-context.js
+
+# Or symlink for development:
+# ln -s "$(pwd)/plugin/dist/index.js" ~/.config/opencode/plugin/with-context.js
+```
+
+4. **Configure environment variables:**
+
+Set these in your shell or create a `.env` file:
+
+```bash
+export OBSIDIAN_VAULT_PATH="$HOME/Documents/Vault"
+export OBSIDIAN_API_URL="https://127.0.0.1:27124"
+export OBSIDIAN_API_KEY="your-api-key-here"
+export OBSIDIAN_VAULT="YourVaultName"
+export PROJECT_BASE_PATH="Projects"
+```
+
+5. **Restart OpenCode** to load the plugin.
+
+See [plugin/README.md](./plugin/README.md) for detailed plugin documentation and usage examples.
 
 ## Development
 

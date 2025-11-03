@@ -1,6 +1,6 @@
-# @opencode/plugin-with-context
+# OpenCode Plugin for with-context-mcp
 
-OpenCode plugin for with-context-mcp - project-scoped note management in your coding sessions.
+Project-scoped note management in your OpenCode sessions with Obsidian integration.
 
 > **Version 0.2.0** - 11 tools available
 
@@ -20,51 +20,59 @@ OpenCode plugin for with-context-mcp - project-scoped note management in your co
 
 ## Installation
 
-### Development Setup (npm link)
+### Quick Setup (Copy Plugin)
 
-1. Build the main with-context-mcp package:
+1. Clone or download this repository:
 
 ```bash
-cd /path/to/with-context-mcp
-npm install
-npm run build
-npm link
+git clone https://github.com/davidibia/with-context-mcp.git
+cd with-context-mcp
 ```
 
-2. Build and link the plugin:
+2. Install and build the MCP server:
 
 ```bash
-cd opencode-plugin-with-context
 npm install
-npm link with-context-mcp
 npm run build
 ```
 
-3. Link to OpenCode:
+3. Install and build the plugin:
 
 ```bash
-# Link to project-level plugin directory
-mkdir -p .opencode/plugin
-cd .opencode/plugin
-ln -s /path/to/with-context-mcp/opencode-plugin-with-context/dist/index.js with-context.js
+cd plugin
+npm install
+npm run build
+cd ..
+```
 
-# Or link to global plugin directory
+4. Copy the plugin to your OpenCode config directory:
+
+```bash
+# Create OpenCode plugin directory if it doesn't exist
 mkdir -p ~/.config/opencode/plugin
-cd ~/.config/opencode/plugin
-ln -s /path/to/with-context-mcp/opencode-plugin-with-context/dist/index.js with-context.js
+
+# Copy the built plugin
+cp plugin/dist/index.js ~/.config/opencode/plugin/with-context.js
+
+# Or symlink it for development
+ln -s "$(pwd)/plugin/dist/index.js" ~/.config/opencode/plugin/with-context.js
 ```
 
-### Production Setup (via npm)
+5. Restart OpenCode to load the plugin.
+
+### Alternative: Project-Level Installation
+
+Instead of global installation, you can install per-project:
 
 ```bash
-npm install -g @opencode/plugin-with-context
+# In your project directory
+mkdir -p .opencode/plugin
+cp /path/to/with-context-mcp/plugin/dist/index.js .opencode/plugin/with-context.js
 ```
-
-Then add to your OpenCode plugin directory as shown above.
 
 ## Configuration
 
-Set environment variables in your shell or `.env`:
+Set environment variables in your shell or `.env` file:
 
 ```bash
 # Required: Path to your Obsidian vault
@@ -72,12 +80,20 @@ export OBSIDIAN_VAULT_PATH="$HOME/Documents/Vault"
 
 # Required: Obsidian Local REST API settings
 export OBSIDIAN_API_URL="https://127.0.0.1:27124"
-export OBSIDIAN_API_KEY="your-api-key"
+export OBSIDIAN_API_KEY="your-api-key-here"
 export OBSIDIAN_VAULT="YourVaultName"
 
 # Optional: Base path for projects within vault
 export PROJECT_BASE_PATH="Projects"
 ```
+
+### Getting Obsidian API Credentials
+
+1. Install the "Local REST API" plugin in Obsidian
+2. Enable the plugin in Settings > Community Plugins
+3. Go to Settings > Local REST API
+4. Copy your API key
+5. Note the API URL (usually https://127.0.0.1:27124)
 
 ## Available Tools
 
@@ -150,12 +166,26 @@ npm run build
 npm run lint
 ```
 
-## Roadmap
+## Troubleshooting
 
-- [x] Batch 1-3: Plugin structure, basic tools, testing (v0.1.0)
-- [x] Batch 4: Advanced tools, recursive scanning, full test coverage (v0.2.0)
-- [ ] Batch 5: Event hooks, polish, npm publish
-- [ ] Future: Additional integrations beyond Obsidian
+**Plugin not loading?**
+
+- Check that the file exists at `~/.config/opencode/plugin/with-context.js`
+- Restart OpenCode after copying the plugin
+- Check OpenCode console for error messages
+
+**"Cannot connect to Obsidian API" error?**
+
+- Ensure Obsidian is running
+- Verify Local REST API plugin is enabled in Obsidian
+- Check that `OBSIDIAN_API_URL` and `OBSIDIAN_API_KEY` are set correctly
+- Test the API with: `curl -H "Authorization: Bearer YOUR_KEY" https://127.0.0.1:27124/vault/`
+
+**Notes not found?**
+
+- Verify `OBSIDIAN_VAULT_PATH` points to your vault directory
+- Check `OBSIDIAN_VAULT` matches your vault name exactly
+- Use `list_notes()` to see what files are available
 
 ## License
 
