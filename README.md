@@ -776,7 +776,7 @@ npm install  # Required for plugin to work
 mkdir -p ~/.config/opencode/plugin
 
 # Copy the single-file plugin
-cp with-context.ts ~/.config/opencode/plugin/
+cp plugin/with-context.ts ~/.config/opencode/plugin/
 ```
 
 3. **Configure environment variables:**

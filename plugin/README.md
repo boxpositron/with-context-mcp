@@ -55,7 +55,7 @@ npm install
 mkdir -p ~/.config/opencode/plugin
 
 # Copy the single-file plugin
-cp with-context.ts ~/.config/opencode/plugin/
+cp plugin/with-context.ts ~/.config/opencode/plugin/
 ```
 
 **Note:** The plugin requires the `with-context-mcp` package to be installed in this directory, as it imports the MCP tool handlers.
@@ -67,7 +67,7 @@ Install the plugin per-project instead of globally:
 ```bash
 # In your project directory
 mkdir -p .opencode/plugin
-cp /path/to/with-context-mcp/with-context.ts .opencode/plugin/
+cp /path/to/with-context-mcp/plugin/with-context.ts .opencode/plugin/
 ```
 
 ### Requirements
@@ -104,7 +104,7 @@ If you were using the previous multi-file plugin (v0.2.0), simply replace the ol
 rm ~/.config/opencode/plugin/with-context.js
 
 # Install new single-file plugin
-cp with-context.ts ~/.config/opencode/plugin/
+cp plugin/with-context.ts ~/.config/opencode/plugin/
 
 # Restart OpenCode
 ```
