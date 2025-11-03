@@ -3,7 +3,10 @@ description: Ingest local documentation files to Obsidian vault
 agent: general
 ---
 
-Use the with-context MCP server's `ingest_notes` tool to scan the current project for documentation files that match .withcontextignore patterns and copy them to the Obsidian vault.
+Use the `ingest_notes` tool to scan the current project for documentation files that match .withcontextignore patterns and copy them to the Obsidian vault.
+
+**Tool Priority:**
+First try to use the WithContext plugin's `ingest_notes` tool. If not available, fallback to the with-context MCP server's `ingest_notes` tool.
 
 **Step 1: Preview what will be ingested**
 Call ingest_notes with dry_run: true to see which files will be moved.

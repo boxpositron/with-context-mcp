@@ -3,7 +3,10 @@ description: Bidirectionally sync documentation files between local project and 
 agent: general
 ---
 
-Use the with-context MCP server's `sync_notes` tool to bidirectionally synchronize documentation files. Files matching .withcontextignore patterns will be moved between locations (deleted from source after successful copy).
+Use the `sync_notes` tool to bidirectionally synchronize documentation files. Files matching .withcontextignore patterns will be moved between locations (deleted from source after successful copy).
+
+**Tool Priority:**
+First try to use the WithContext plugin's `sync_notes` tool. If not available, fallback to the with-context MCP server's `sync_notes` tool.
 
 **Step 1: Preview what will be synced**
 Call sync_notes with dry_run: true to see which files will be moved in each direction.

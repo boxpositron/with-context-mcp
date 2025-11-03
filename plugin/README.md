@@ -2,9 +2,11 @@
 
 Project-scoped note management in your OpenCode sessions with Obsidian integration.
 
-> **Version 0.2.0** - 11 tools available
+> **Version 2.0.1** - 14 tools available + 3 custom commands (now as tools!)
 
 ## Features
+
+### Core Tools (11 Available)
 
 - **Write & Manage** - Create, update, and append notes with validation
 - **Read Notes** - Access note content with full metadata
@@ -18,61 +20,100 @@ Project-scoped note management in your OpenCode sessions with Obsidian integrati
 - **Obsidian Integration** - Seamless vault sync via Local REST API
 - **Recursive Scanning** - Full vault traversal including subdirectories
 
+### Document Delegation Tools (3 Additional)
+
+- **Sync Notes** - Bidirectionally sync docs between local and vault
+- **Ingest Notes** - Copy local documentation to vault (one-way)
+- **Teleport Notes** - Download documentation from vault to local (one-way)
+
+These tools provide document delegation using `.withcontextignore` patterns for automated workflow management.
+
+## Plugin vs MCP Server
+
+**The plugin is now the preferred method for using with-context in OpenCode:**
+
+- **Plugin (Recommended)** - Direct integration, no separate server process, better performance
+- **MCP Server (Fallback)** - Use when plugin is not available or for other MCP-compatible clients
+
+OpenCode will automatically prefer the plugin when both are configured. The MCP server remains available for other MCP clients like Claude Desktop.
+
 ## Installation
 
-### Quick Setup (No Build Required)
+### Quick Setup (Recommended)
 
-The plugin is pre-built and committed to the repository. Just copy the file:
-
-1. Clone or download this repository:
+The plugin is provided as a single TypeScript file - just copy it to your OpenCode config directory:
 
 ```bash
-git clone https://github.com/davidibia/with-context-mcp.git
+# Clone the repository
+git clone https://github.com/boxpositron/with-context-mcp.git
 cd with-context-mcp
-```
 
-2. Copy the plugin to your OpenCode config directory:
+# Install the MCP server dependencies (required for plugin to work)
+npm install
 
-```bash
 # Create OpenCode plugin directory if it doesn't exist
 mkdir -p ~/.config/opencode/plugin
 
-# Copy the pre-built plugin
-cp plugin/dist/index.js ~/.config/opencode/plugin/with-context.js
+# Copy the single-file plugin
+cp with-context.ts ~/.config/opencode/plugin/
 ```
 
-3. Restart OpenCode to load the plugin.
+**Note:** The plugin requires the `with-context-mcp` package to be installed in this directory, as it imports the MCP tool handlers.
 
 ### Alternative: Project-Level Installation
 
-Instead of global installation, you can install per-project:
+Install the plugin per-project instead of globally:
 
 ```bash
 # In your project directory
 mkdir -p .opencode/plugin
-cp /path/to/with-context-mcp/plugin/dist/index.js .opencode/plugin/with-context.js
+cp /path/to/with-context-mcp/with-context.ts .opencode/plugin/
 ```
 
-### Development Setup (For Contributors)
+### Requirements
 
-If you want to modify the plugin:
+- Node.js 18+
+- OpenCode with plugin support
+- `with-context-mcp` npm package installed
+- Obsidian with Local REST API plugin (for vault integration)
+
+### Verification
+
+After installation, restart OpenCode and verify the plugin loaded:
+
+```typescript
+// In OpenCode, run:
+with_context_status();
+
+// Should return:
+// {
+//   "status": "active",
+//   "config": {...},
+//   "version": "2.0.1",
+//   "tools": 14,
+//   "custom_commands": 3
+// }
+```
+
+### Migration from v0.2.0
+
+If you were using the previous multi-file plugin (v0.2.0), simply replace the old file:
 
 ```bash
-# Install dependencies for MCP server (provides core functionality)
-npm install
-npm run build
+# Remove old plugin
+rm ~/.config/opencode/plugin/with-context.js
 
-# Install and build plugin
-cd plugin
-npm install
-npm run build
-cd ..
+# Install new single-file plugin
+cp with-context.ts ~/.config/opencode/plugin/
 
-# Symlink for development
-ln -s "$(pwd)/plugin/dist/index.js" ~/.config/opencode/plugin/with-context.js
+# Restart OpenCode
 ```
 
+The single-file approach is simpler and doesn't require building - OpenCode handles TypeScript natively.
+
 ## Configuration
+
+### Environment Variables
 
 Set environment variables in your shell or `.env` file:
 
@@ -97,6 +138,114 @@ export PROJECT_BASE_PATH="Projects"
 4. Copy your API key
 5. Note the API URL (usually https://127.0.0.1:27124)
 
+### OpenCode Custom Commands (Optional)
+
+For enhanced workflow automation, you can set up custom OpenCode commands for document delegation. These commands allow you to quickly sync, ingest, or teleport documentation between your local project and Obsidian vault.
+
+#### Setup Instructions
+
+1. **Copy command files to your project:**
+
+```bash
+# In your project root
+mkdir -p .opencode/command
+
+# Copy the command files
+cp /path/to/with-context-mcp/.opencode/command/*.md .opencode/command/
+```
+
+Or create them manually:
+
+2. **Create `.opencode/command/sync-notes.md`:**
+
+```markdown
+---
+description: Bidirectionally sync documentation files between local project and Obsidian vault
+agent: general
+---
+
+Use the `sync_notes` tool to bidirectionally synchronize documentation files.
+
+**Tool Priority:** First try plugin's sync_notes, then fallback to MCP server's sync_notes.
+
+**Step 1: Preview** - Call sync_notes with dry_run: true
+**Step 2: Sync** - Call sync_notes without dry_run
+**Step 3: Report** - Show files moved in both directions
+
+Files matching .withcontextignore patterns are moved between locations (deleted from source).
+```
+
+3. **Create `.opencode/command/ingest-notes.md`:**
+
+```markdown
+---
+description: Ingest local documentation files to Obsidian vault
+agent: general
+---
+
+Use the `ingest_notes` tool to copy local docs to vault.
+
+**Tool Priority:** First try plugin's ingest_notes, then fallback to MCP server's ingest_notes.
+
+**Step 1: Preview** - Call ingest_notes with dry_run: true
+**Step 2: Ingest** - Call ingest_notes without dry_run
+**Step 3: Report** - Show ingested files (local files are NOT deleted)
+```
+
+4. **Create `.opencode/command/teleport-notes.md`:**
+
+```markdown
+---
+description: Teleport documentation files from Obsidian vault to local project
+agent: general
+---
+
+Use the `teleport_notes` tool to download docs from vault.
+
+**Tool Priority:** First try plugin's teleport_notes, then fallback to MCP server's teleport_notes.
+
+**Step 1: Preview** - Call teleport_notes with dry_run: true
+**Step 2: Teleport** - Call teleport_notes without dry_run
+**Step 3: Report** - Show teleported files (vault files are NOT deleted)
+```
+
+5. **Create `.withcontextignore` in your project root:**
+
+```gitignore
+# Ignore all markdown files by default
+**/*.md
+
+# But keep these local
+!README.md
+!AGENTS.md
+!**/README.md
+
+# Ignore other doc formats
+*.txt
+*.rst
+*.adoc
+
+# Ignore build/deps
+dist/
+build/
+node_modules/
+```
+
+#### Using Custom Commands
+
+Once set up, use commands in OpenCode via Ctrl+P:
+
+- `/sync-notes` - Bidirectional sync (moves files both ways)
+- `/ingest-notes` - Copy local docs to vault
+- `/teleport-notes` - Download docs from vault to local
+
+Commands automatically:
+
+- Preview changes before executing
+- Show detailed results
+- Preserve directory structure
+- Handle errors gracefully
+
 ## Available Tools
 
 ### Core Operations
@@ -118,6 +267,12 @@ export PROJECT_BASE_PATH="Projects"
 - `set_project_context(project_folder)` - Manually set project context
 - `list_templates()` - View available note templates
 - `create_from_template(template_name, filename, variables)` - Create from template
+
+### Document Delegation
+
+- `ingest_notes(dry_run?, delete_local_files?)` - Copy local docs to vault
+- `sync_notes(dry_run?)` - Bidirectionally sync docs between local and vault
+- `teleport_notes(dry_run?, delete_from_vault?)` - Download docs from vault to local
 
 ## Usage Examples
 
