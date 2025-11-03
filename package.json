@@ -7,6 +7,10 @@
   "bin": {
     "with-context-mcp": "./dist/index.js"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./tools": "./dist/tools/index.js"
+  },
   "files": [
     "dist",
     "README.md",

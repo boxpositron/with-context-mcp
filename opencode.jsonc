@@ -7,7 +7,13 @@
                 "with-context-mcp"
             ],
             "enabled": true,
-            "timeout": 10000
+            "timeout": 10000,
+            "environment": {
+                "OBSIDIAN_API_URL": "{env:OBSIDIAN_API_URL}",
+                "OBSIDIAN_API_KEY": "{env:OBSIDIAN_API_KEY}",
+                "OBSIDIAN_VAULT": "{env:OBSIDIAN_VAULT}",
+                "PROJECT_BASE_PATH": "{env:PROJECT_BASE_PATH}"
+            }
         }
     }
 }

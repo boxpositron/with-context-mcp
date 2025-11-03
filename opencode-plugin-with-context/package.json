@@ -1,0 +1,40 @@
+{
+  "name": "@opencode/plugin-with-context",
+  "version": "0.1.0",
+  "description": "OpenCode plugin for with-context-mcp - project-scoped note management",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "notes",
+    "obsidian",
+    "markdown",
+    "mcp"
+  ],
+  "author": "David Ibia",
+  "license": "MIT",
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.0.15",
+    "with-context-mcp": "file:../"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
