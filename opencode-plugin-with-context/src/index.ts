@@ -2,6 +2,14 @@ import type { Plugin } from '@opencode-ai/plugin';
 import { tool } from '@opencode-ai/plugin';
 import { writeNoteTool } from './tools/write-note.js';
 import { readNoteTool } from './tools/read-note.js';
+import { listNotesTool } from './tools/list-notes.js';
+import { searchNotesTool } from './tools/search-notes.js';
+import { setProjectContextTool } from './tools/set-project-context.js';
+import { getNoteMetadataTool } from './tools/get-note-metadata.js';
+import { deleteNoteTool } from './tools/delete-note.js';
+import { batchWriteNotesTool } from './tools/batch-write-notes.js';
+import { listTemplatesTool } from './tools/list-templates.js';
+import { createFromTemplateTool } from './tools/create-from-template.js';
 
 /**
  * WithContext OpenCode Plugin
@@ -39,7 +47,8 @@ export const WithContextPlugin: Plugin = async ({ project, directory }) => {
             {
               status: 'active',
               config,
-              version: '0.1.0',
+              version: '0.2.0',
+              tools: 11,
             },
             null,
             2
@@ -47,9 +56,23 @@ export const WithContextPlugin: Plugin = async ({ project, directory }) => {
         },
       }),
 
-      // Note management tools
+      // Core note management tools
       write_note: writeNoteTool,
       read_note: readNoteTool,
+      list_notes: listNotesTool,
+      search_notes: searchNotesTool,
+
+      // Context management
+      set_project_context: setProjectContextTool,
+
+      // Metadata and operations
+      get_note_metadata: getNoteMetadataTool,
+      delete_note: deleteNoteTool,
+      batch_write_notes: batchWriteNotesTool,
+
+      // Template management
+      list_templates: listTemplatesTool,
+      create_from_template: createFromTemplateTool,
     },
   };
 };

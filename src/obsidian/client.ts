@@ -177,13 +177,13 @@ export class ObsidianClient {
   }
 
   /**
-   * List notes in a directory
+   * List notes in a directory (recursively)
    *
    * The Obsidian REST API doesn't support direct directory listing via path.
-   * Instead, we get all files and filter client-side.
+   * Instead, we get all files and filter client-side, recursively scanning subdirectories.
    *
    * @param path - Directory path within the vault (default: root)
-   * @returns Promise resolving to an array of file paths
+   * @returns Promise resolving to an array of file paths (including subdirectories)
    */
   async listNotes(path: string = ''): Promise<string[]> {
     // Normalize path: remove leading/trailing slashes and ensure trailing slash
@@ -202,14 +202,20 @@ export class ObsidianClient {
 
     // The API returns an array of filenames/directories
     // Directories end with '/', files don't
-    // Filter to only return markdown files
     const files: string[] = [];
 
     if (response.data && Array.isArray(response.data.files)) {
       for (const item of response.data.files) {
-        // Only include markdown files (not directories)
-        if (!item.endsWith('/') && item.endsWith('.md')) {
-          // Return relative paths within the project
+        if (item.endsWith('/')) {
+          // This is a directory - recursively list its contents
+          const subDirPath = dirPath + item;
+          const subFiles = await this.listNotes(subDirPath.replace(/\/+$/, '')); // Remove trailing slash
+          // Add subdirectory files with relative paths
+          for (const subFile of subFiles) {
+            files.push(item + subFile);
+          }
+        } else if (item.endsWith('.md')) {
+          // This is a markdown file - add it to the list
           files.push(item);
         }
       }
