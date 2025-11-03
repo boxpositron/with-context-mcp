@@ -49,54 +49,223 @@ npm install -g with-context-mcp
 
 ### 2. Add to MCP Client
 
-Add to your MCP client configuration (e.g., Claude Desktop):
+#### OpenCode (Recommended)
 
-**Using npx (recommended - no installation needed):**
+OpenCode is an AI coding agent built for the terminal with excellent MCP server support and custom command capabilities.
 
-```json
+**Config file location:**
+
+- **All platforms:** `opencode.jsonc` in your project root
+
+Add the with-context MCP server to your `opencode.jsonc`:
+
+```jsonc
 {
-  "mcpServers": {
+  "mcp": {
     "with-context": {
+      "type": "local",
       "command": "npx",
       "args": ["-y", "with-context-mcp"],
-      "env": {
-        "OBSIDIAN_API_KEY": "your_api_key_here",
-        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
-        "OBSIDIAN_VAULT": "MyVault",
-        "PROJECT_BASE_PATH": "Projects"
-      }
-    }
-  }
-}
-```
-
-**Using local installation:**
-
-```bash
-npm install -g with-context-mcp
-```
-
-```json
-{
-  "mcpServers": {
-    "with-context": {
-      "command": "with-context-mcp",
-      "env": {
-        "OBSIDIAN_API_KEY": "your_api_key_here",
-        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
-        "OBSIDIAN_VAULT": "MyVault",
-        "PROJECT_BASE_PATH": "Projects"
-      }
-    }
-  }
+      "environment": {
+        "OBSIDIAN_API_KEY": "{env:OBSIDIAN_API_KEY}",
+        "OBSIDIAN_API_URL": "{env:OBSIDIAN_API_URL}",
+        "OBSIDIAN_VAULT": "{env:OBSIDIAN_VAULT}",
+        "PROJECT_BASE_PATH": "{env:PROJECT_BASE_PATH}",
+      },
+      "enabled": true,
+    },
+  },
 }
 ```
 
 **Configuration values:**
 
-- `OBSIDIAN_API_KEY`: From Obsidian Settings → Local REST API
-- `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
-- `PROJECT_BASE_PATH`: Folder in vault where projects live (default: "Projects")
+- `type`: Must be `"local"` for locally-executed MCP servers
+- `command`: Use `"npx"` to run without installation
+- `args`: Include `"-y"` flag to auto-confirm package execution
+- `environment`: Environment variables for the MCP server (use `{env:VAR_NAME}` syntax to reference environment variables):
+  - `OBSIDIAN_API_KEY`: Your API key from Obsidian Settings → Local REST API
+  - `OBSIDIAN_API_URL`: REST API endpoint (default: `https://127.0.0.1:27124`)
+  - `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
+  - `PROJECT_BASE_PATH`: Base folder in vault for projects (default: `"Projects"`)
+- `enabled`: Set to `true` to activate the server
+
+Make sure to set these environment variables in your shell before starting OpenCode, or create a `.env` file in your project root.
+
+**Usage Tips:**
+
+1. **Mention the server in prompts** to ensure OpenCode uses it:
+
+   ```
+   Use the with-context MCP server to create a CHANGELOG.md for this project
+   ```
+
+2. **Add rules to AGENTS.md** to make OpenCode automatically use the server for documentation tasks. Create or edit `AGENTS.md` in your project root:
+
+   ```markdown
+   ## Documentation Guidelines
+
+   - Use the with-context MCP server for all project documentation
+   - Create changelogs in CHANGELOG.md using append mode
+   - Store API docs in docs/api/ folder
+   - Always set project context before writing notes
+   ```
+
+3. **Verify server is loaded** by checking OpenCode's startup messages. You should see:
+
+   ```
+   ✓ Loaded MCP server: with-context
+   ```
+
+4. **First-time setup** in a new project:
+   ```
+   Set project context to "my-project-name" and create a README.md
+   ```
+
+**Example Commands:**
+
+```bash
+# Start OpenCode in your project directory
+opencode
+
+# Example prompts to try:
+# "Set the project context to my-web-app"
+# "Create a CHANGELOG.md and add today's updates"
+# "List all notes in the docs folder"
+# "Search for API documentation"
+```
+
+**Troubleshooting:**
+
+- If the server doesn't load, verify your `opencode.jsonc` is valid JSON/JSONC
+- Check that all environment variables are properly quoted strings
+- Ensure Obsidian and the REST API plugin are running
+- Restart OpenCode after modifying `opencode.jsonc`
+
+#### OpenCode Custom Commands
+
+OpenCode supports custom slash commands that can be created as markdown files in the `.opencode/command/` directory. These commands provide quick access to common with-context operations with automatic dry-run previews and detailed reporting.
+
+**Setup Instructions:**
+
+1. **Create the commands directory:**
+
+```bash
+# In your project root
+mkdir -p .opencode/command
+```
+
+2. **Create custom command files:**
+
+**`.opencode/command/sync.md`** - Bidirectional sync between local and vault:
+
+```markdown
+---
+description: Bidirectionally sync documentation files between local project and Obsidian vault
+agent: general
+model: claude-3-5-sonnet-20241022
+subtask: true
+---
+
+Use the `sync_notes` tool to bidirectionally synchronize documentation files.
+
+**Arguments:** $ARGUMENTS (optional flags)
+
+**Step 1: Preview** - Call sync_notes with dry_run: true
+**Step 2: Sync** - If user approves, call sync_notes without dry_run
+**Step 3: Report** - Show files moved in both directions
+
+Files matching .withcontextignore patterns are moved between locations (deleted from source).
+```
+
+**`.opencode/command/ingest.md`** - Copy local docs to vault:
+
+```markdown
+---
+description: Ingest local documentation files to Obsidian vault
+agent: general
+model: claude-3-5-sonnet-20241022
+subtask: true
+---
+
+Use the `ingest_notes` tool to copy local docs to vault.
+
+**Arguments:** $ARGUMENTS (optional: --delete to remove local files after ingestion)
+
+**Step 1: Preview** - Call ingest_notes with dry_run: true
+**Step 2: Ingest** - If user approves, call ingest_notes with appropriate parameters
+**Step 3: Report** - Show ingested files and whether local files were deleted
+```
+
+**`.opencode/command/teleport.md`** - Download docs from vault to local:
+
+```markdown
+---
+description: Teleport documentation files from Obsidian vault to local project
+agent: general
+model: claude-3-5-sonnet-20241022
+subtask: true
+---
+
+Use the `teleport_notes` tool to download docs from vault.
+
+**Arguments:** $ARGUMENTS (optional: --delete to remove vault files after teleport)
+
+**Step 1: Preview** - Call teleport_notes with dry_run: true
+**Step 2: Teleport** - If user approves, call teleport_notes with appropriate parameters
+**Step 3: Report** - Show teleported files and whether vault files were deleted
+```
+
+3. **Create `.withcontextignore` in your project root:**
+
+```bash
+# Generate from template
+npx with-context-mcp --create-withcontextignore
+
+# Or create manually
+cat > .withcontextignore << 'EOF'
+# Delegate all markdown files
+**/*.md
+
+# But keep these local
+!README.md
+!AGENTS.md
+!LICENSE
+
+# Delegate other doc formats
+*.txt
+*.rst
+
+# Keep build artifacts local
+dist/
+build/
+node_modules/
+EOF
+```
+
+**Using Custom Commands:**
+
+Once set up, use the commands in OpenCode:
+
+```bash
+# Press Ctrl+P to open command palette, then:
+/sync              # Bidirectional sync with preview
+/ingest            # Copy local to vault
+/ingest --delete   # Copy and delete local files
+/teleport          # Download from vault
+/teleport --delete # Download and delete vault files
+```
+
+**Command Features:**
+
+- **Frontmatter Support**: Commands support `description`, `agent`, `model`, and `subtask` fields
+- **Argument Placeholders**: Use `$ARGUMENTS`, `$1`, `$2`, etc. for command arguments
+- **File References**: Use `@filename` to reference files in the command
+- **Shell Integration**: Use `!`command`` to include shell output
+- **Automatic Preview**: Commands show dry-run results before executing
+- **Error Handling**: Graceful error messages with suggestions
+
+For more examples and advanced usage, see [plugin/README.md](./plugin/README.md#opencode-custom-commands-optional).
 
 ### Configuration for Other AI Coding Agents
 
@@ -282,100 +451,6 @@ Or manually edit `mcp.json`:
   }
 }
 ```
-
-</details>
-
-<details>
-<summary><strong>OpenCode</strong></summary>
-
-**Config file location:**
-
-- **All platforms:** `opencode.jsonc` in your project root
-
-OpenCode is an AI coding agent built for the terminal that supports MCP servers through its configuration file. Add the with-context MCP server to your `opencode.jsonc`:
-
-```jsonc
-{
-  "mcp": {
-    "with-context": {
-      "type": "local",
-      "command": "npx",
-      "args": ["-y", "with-context-mcp"],
-      "environment": {
-        "OBSIDIAN_API_KEY": "{env:OBSIDIAN_API_KEY}",
-        "OBSIDIAN_API_URL": "{env:OBSIDIAN_API_URL}",
-        "OBSIDIAN_VAULT": "{env:OBSIDIAN_VAULT}",
-        "PROJECT_BASE_PATH": "{env:PROJECT_BASE_PATH}",
-      },
-      "enabled": true,
-    },
-  },
-}
-```
-
-**Configuration values:**
-
-- `type`: Must be `"local"` for locally-executed MCP servers
-- `command`: Use `"npx"` to run without installation
-- `args`: Include `"-y"` flag to auto-confirm package execution
-- `environment`: Environment variables for the MCP server (use `{env:VAR_NAME}` syntax to reference environment variables):
-  - `OBSIDIAN_API_KEY`: Your API key from Obsidian Settings → Local REST API
-  - `OBSIDIAN_API_URL`: REST API endpoint (default: `https://127.0.0.1:27124`)
-  - `OBSIDIAN_VAULT`: Your vault name (visible in Obsidian sidebar)
-  - `PROJECT_BASE_PATH`: Base folder in vault for projects (default: `"Projects"`)
-- `enabled`: Set to `true` to activate the server
-
-Make sure to set these environment variables in your shell before starting OpenCode, or create a `.env` file in your project root.
-
-**Usage Tips:**
-
-1. **Mention the server in prompts** to ensure OpenCode uses it:
-
-   ```
-   Use the with-context MCP server to create a CHANGELOG.md for this project
-   ```
-
-2. **Add rules to AGENTS.md** to make OpenCode automatically use the server for documentation tasks. Create or edit `AGENTS.md` in your project root:
-
-   ```markdown
-   ## Documentation Guidelines
-
-   - Use the with-context MCP server for all project documentation
-   - Create changelogs in CHANGELOG.md using append mode
-   - Store API docs in docs/api/ folder
-   - Always set project context before writing notes
-   ```
-
-3. **Verify server is loaded** by checking OpenCode's startup messages. You should see:
-
-   ```
-   ✓ Loaded MCP server: with-context
-   ```
-
-4. **First-time setup** in a new project:
-   ```
-   Set project context to "my-project-name" and create a README.md
-   ```
-
-**Example Commands:**
-
-```bash
-# Start OpenCode in your project directory
-opencode
-
-# Example prompts to try:
-# "Set the project context to my-web-app"
-# "Create a CHANGELOG.md and add today's updates"
-# "List all notes in the docs folder"
-# "Search for API documentation"
-```
-
-**Troubleshooting:**
-
-- If the server doesn't load, verify your `opencode.jsonc` is valid JSON/JSONC
-- Check that all environment variables are properly quoted strings
-- Ensure Obsidian and the REST API plugin are running
-- Restart OpenCode after modifying `opencode.jsonc`
 
 </details>
 
@@ -763,4 +838,4 @@ npm run dev
 
 ## License
 
-MIT
+[MIT](LICENSE)
