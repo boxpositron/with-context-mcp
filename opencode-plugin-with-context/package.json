@@ -1,33 +1,52 @@
 {
   "name": "@opencode/plugin-with-context",
-  "version": "0.1.0",
-  "description": "OpenCode plugin for with-context-mcp - project-scoped note management",
+  "version": "0.2.0",
+  "description": "OpenCode plugin for with-context-mcp - project-scoped note management in Obsidian",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
   },
   "keywords": [
     "opencode",
+    "opencode-plugin",
     "plugin",
     "notes",
     "obsidian",
     "markdown",
-    "mcp"
+    "mcp",
+    "with-context",
+    "project-context",
+    "documentation",
+    "note-taking"
   ],
-  "author": "David Ibia",
+  "author": "David Ibia <david.ibia@boxmarshall.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidibia/with-context-mcp.git",
+    "directory": "opencode-plugin-with-context"
+  },
+  "bugs": {
+    "url": "https://github.com/davidibia/with-context-mcp/issues"
+  },
+  "homepage": "https://github.com/davidibia/with-context-mcp#readme",
   "dependencies": {
     "@opencode-ai/plugin": "^1.0.15",
-    "with-context-mcp": "file:../"
+    "with-context-mcp": "^1.0.0"
+  },
+  "peerDependencies": {
+    "with-context-mcp": "^1.0.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -36,5 +55,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

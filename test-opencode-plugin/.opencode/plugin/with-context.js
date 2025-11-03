@@ -1,1 +1,0 @@
-/Users/davidibia/Projects/MCP/with-context-mcp/opencode-plugin-with-context/dist/index.js
