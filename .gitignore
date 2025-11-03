@@ -8,9 +8,8 @@ dist/
 coverage/
 .vitest
 
-# Plugin build artifacts
-opencode-plugin-with-context/dist/
-opencode-plugin-with-context/*.tgz
-
 # Test directories
 test-opencode-plugin/
+
+# EXCEPTION: Commit plugin dist for easy user installation
+!plugin/dist/

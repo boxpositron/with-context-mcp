@@ -20,7 +20,9 @@ Project-scoped note management in your OpenCode sessions with Obsidian integrati
 
 ## Installation
 
-### Quick Setup (Copy Plugin)
+### Quick Setup (No Build Required)
+
+The plugin is pre-built and committed to the repository. Just copy the file:
 
 1. Clone or download this repository:
 
@@ -29,36 +31,17 @@ git clone https://github.com/davidibia/with-context-mcp.git
 cd with-context-mcp
 ```
 
-2. Install and build the MCP server:
-
-```bash
-npm install
-npm run build
-```
-
-3. Install and build the plugin:
-
-```bash
-cd plugin
-npm install
-npm run build
-cd ..
-```
-
-4. Copy the plugin to your OpenCode config directory:
+2. Copy the plugin to your OpenCode config directory:
 
 ```bash
 # Create OpenCode plugin directory if it doesn't exist
 mkdir -p ~/.config/opencode/plugin
 
-# Copy the built plugin
+# Copy the pre-built plugin
 cp plugin/dist/index.js ~/.config/opencode/plugin/with-context.js
-
-# Or symlink it for development
-ln -s "$(pwd)/plugin/dist/index.js" ~/.config/opencode/plugin/with-context.js
 ```
 
-5. Restart OpenCode to load the plugin.
+3. Restart OpenCode to load the plugin.
 
 ### Alternative: Project-Level Installation
 
@@ -68,6 +51,25 @@ Instead of global installation, you can install per-project:
 # In your project directory
 mkdir -p .opencode/plugin
 cp /path/to/with-context-mcp/plugin/dist/index.js .opencode/plugin/with-context.js
+```
+
+### Development Setup (For Contributors)
+
+If you want to modify the plugin:
+
+```bash
+# Install dependencies for MCP server (provides core functionality)
+npm install
+npm run build
+
+# Install and build plugin
+cd plugin
+npm install
+npm run build
+cd ..
+
+# Symlink for development
+ln -s "$(pwd)/plugin/dist/index.js" ~/.config/opencode/plugin/with-context.js
 ```
 
 ## Configuration

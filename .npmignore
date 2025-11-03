@@ -1,0 +1,41 @@
+# Exclude plugin directory (users clone repo for this)
+plugin/
+
+# Exclude development files
+.github/
+.husky/
+tests/
+examples/
+src/
+*.test.ts
+*.spec.ts
+vitest.config.ts
+tsconfig.json
+
+# Exclude config files
+.env
+.env.example
+.prettierrc
+.prettierignore
+.rgignore
+eslint.config.js
+opencode.jsonc
+
+# Exclude documentation planning files
+AGENTS.md
+
+# Exclude git files
+.gitignore
+.gitattributes
+
+# Exclude editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Always include these from files field
+!dist/
+!README.md
+!LICENSE
