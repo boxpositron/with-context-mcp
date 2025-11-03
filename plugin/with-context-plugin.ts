@@ -24,11 +24,7 @@ import {
  *
  * All tools are defined inline for easy distribution and deployment
  */
-export const WithContextPlugin: Plugin = async ({ project, directory }) => {
-  console.log('WithContext plugin initialized');
-  console.log(`Project:`, project);
-  console.log(`Directory: ${directory}`);
-
+export const WithContextPlugin: Plugin = async ({ project: _project, directory: _directory }) => {
   // Initialize plugin state
   const config = {
     vaultPath: process.env.OBSIDIAN_VAULT_PATH || process.env.HOME + '/Documents/Vault',
@@ -38,8 +34,9 @@ export const WithContextPlugin: Plugin = async ({ project, directory }) => {
   return {
     // Event hook for session lifecycle
     event: async ({ event }) => {
+      // Silent cleanup on session idle
       if (event.type === 'session.idle') {
-        console.log('Session completed - WithContext plugin cleanup');
+        // No-op: cleanup if needed
       }
     },
 
