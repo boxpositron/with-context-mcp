@@ -177,32 +177,32 @@ export const WithContextPlugin = async ({ client }) => {
           case 'write_note': {
             const mode = input.args?.mode || 'overwrite';
             const notePath = input.args?.path || 'note';
-            console.log(`✅ Note ${mode === 'append' ? 'updated' : 'saved'}: ${notePath}`);
+            console.log(`[OK] Note ${mode === 'append' ? 'updated' : 'saved'}: ${notePath}`);
             break;
           }
 
           case 'set_project_context': {
             const projectFolder = input.args?.project_folder || 'unknown';
-            console.log(`📁 Project context set to: ${projectFolder}`);
+            console.log(`[FOLDER] Project context set to: ${projectFolder}`);
             break;
           }
 
           case 'delete_note': {
             const deletedPath = input.args?.path || 'note';
-            console.log(`🗑️ Note deleted: ${deletedPath}`);
+            console.log(`[DELETE] Note deleted: ${deletedPath}`);
             break;
           }
 
           case 'batch_write_notes': {
             const notesCount = input.args?.notes?.length || 0;
-            console.log(`✅ ${notesCount} notes saved successfully`);
+            console.log(`[OK] ${notesCount} notes saved successfully`);
             break;
           }
 
           case 'create_from_template': {
             const templateName = input.args?.template_name || 'template';
             const filename = input.args?.filename || 'file';
-            console.log(`📄 Created ${filename} from template: ${templateName}`);
+            console.log(`[NOTE] Created ${filename} from template: ${templateName}`);
             break;
           }
         }
@@ -219,7 +219,7 @@ export const WithContextPlugin = async ({ client }) => {
       const toolName = input.tool.replace('with-context/', '');
       const errorMessage = error?.message || String(error);
 
-      console.error(`❌ ${toolName} failed: ${errorMessage}`);
+      console.error(`[ERROR] ${toolName} failed: ${errorMessage}`);
     },
   };
 };
