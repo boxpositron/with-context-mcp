@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { promises as fs } from 'fs';
+import { promises as fs, Dirent } from 'fs';
 import path from 'path';
 import { DelegationCLI, executeCommand } from '../../../src/doc-delegator/cli.js';
 import { IgnoreConfig } from '../../../src/doc-delegator/ignore-config.js';
@@ -169,26 +169,29 @@ describe('DelegationCLI', () => {
       });
 
       // Mock directory listing
-      vi.mocked(fs.readdir).mockImplementation(async (dirPath) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(fs.readdir).mockImplementation(async (dirPath: any): Promise<any> => {
         const pathStr = typeof dirPath === 'string' ? dirPath : dirPath.toString();
 
         if (pathStr === projectRoot) {
           return [
-            { name: 'README.md', isDirectory: () => false, isFile: () => true } as any,
-            { name: 'docs', isDirectory: () => true, isFile: () => false } as any,
-            { name: 'src', isDirectory: () => true, isFile: () => false } as any,
-          ];
+            { name: 'README.md', isDirectory: () => false, isFile: () => true },
+            { name: 'docs', isDirectory: () => true, isFile: () => false },
+            { name: 'src', isDirectory: () => true, isFile: () => false },
+          ] as unknown as Dirent[];
         }
 
         if (pathStr === path.join(projectRoot, 'docs')) {
           return [
-            { name: 'guide.md', isDirectory: () => false, isFile: () => true } as any,
-            { name: 'api.md', isDirectory: () => false, isFile: () => true } as any,
-          ];
+            { name: 'guide.md', isDirectory: () => false, isFile: () => true },
+            { name: 'api.md', isDirectory: () => false, isFile: () => true },
+          ] as unknown as Dirent[];
         }
 
         if (pathStr === path.join(projectRoot, 'src')) {
-          return [{ name: 'index.ts', isDirectory: () => false, isFile: () => true } as any];
+          return [
+            { name: 'index.ts', isDirectory: () => false, isFile: () => true },
+          ] as unknown as Dirent[];
         }
 
         return [];
@@ -234,7 +237,7 @@ describe('DelegationCLI', () => {
       // Mock: ignore file doesn't exist
       vi.mocked(fs.readFile).mockImplementation(async (filePath) => {
         if (typeof filePath === 'string' && filePath.endsWith('.withcontextignore')) {
-          const error: any = new Error('ENOENT');
+          const error = new Error('ENOENT') as NodeJS.ErrnoException;
           error.code = 'ENOENT';
           throw error;
         }
@@ -250,7 +253,8 @@ describe('DelegationCLI', () => {
 
     it('should limit displayed files to 20', async () => {
       // Mock many files
-      const manyFiles: any[] = [];
+      const manyFiles: Array<{ name: string; isDirectory: () => boolean; isFile: () => boolean }> =
+        [];
       for (let i = 0; i < 30; i++) {
         manyFiles.push({
           name: `file${i}.md`,
@@ -259,7 +263,8 @@ describe('DelegationCLI', () => {
         });
       }
 
-      vi.mocked(fs.readdir).mockResolvedValue(manyFiles);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(fs.readdir).mockResolvedValue(manyFiles as any);
 
       const result = await cli.delegationReport();
 
@@ -459,9 +464,10 @@ describe('DelegationCLI', () => {
   describe('Output Formatting', () => {
     it('should use ASCII-only characters', async () => {
       vi.mocked(fs.readFile).mockResolvedValue('docs/\n');
+
       vi.mocked(fs.readdir).mockResolvedValue([
-        { name: 'test.md', isDirectory: () => false, isFile: () => true } as any,
-      ]);
+        { name: 'test.md', isDirectory: () => false, isFile: () => true },
+      ] as any);
 
       const result = await cli.delegationReport();
 

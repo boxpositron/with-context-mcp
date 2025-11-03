@@ -9,14 +9,17 @@ import path from 'path';
 import { ReadInterceptor } from '../../../src/doc-delegator/read-interceptor.js';
 import { IgnoreConfig } from '../../../src/doc-delegator/ignore-config.js';
 import { VaultCache } from '../../../src/doc-delegator/vault-cache.js';
+import type { ObsidianClient } from '../../../src/obsidian/client.js';
 
 // Mock ObsidianClient
 vi.mock('../../../src/obsidian/client.js');
 
 describe('ReadInterceptor', () => {
   let interceptor: ReadInterceptor;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockClient: any;
+  let mockClient: {
+    readNote: ReturnType<typeof vi.fn>;
+    getVaultName: ReturnType<typeof vi.fn>;
+  };
   let ignoreConfig: IgnoreConfig;
   let vaultCache: VaultCache;
   let projectRoot: string;
@@ -40,7 +43,7 @@ describe('ReadInterceptor', () => {
 
     // Create interceptor with local-first strategy
     interceptor = new ReadInterceptor({
-      client: mockClient,
+      client: mockClient as unknown as ObsidianClient,
       ignoreConfig,
       vaultCache,
       strategy: 'local-first',
