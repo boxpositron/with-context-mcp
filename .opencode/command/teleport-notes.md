@@ -3,7 +3,10 @@ description: Teleport documentation files from Obsidian vault to local project
 agent: general
 ---
 
-Use the with-context MCP server's `teleport_notes` tool to download documentation files from the Obsidian vault back to the local project.
+Use the `teleport_notes` tool to download documentation files from the Obsidian vault back to the local project.
+
+**Tool Priority:**
+First try to use the WithContext plugin's `teleport_notes` tool. If not available, fallback to the with-context MCP server's `teleport_notes` tool.
 
 **Step 1: Preview what will be teleported**
 Call teleport_notes with dry_run: true to see which files will be downloaded.

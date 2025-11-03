@@ -2,7 +2,7 @@
 
 Project-scoped note management in your OpenCode sessions with Obsidian integration.
 
-> **Version 2.0.1** - 11 tools available + 3 optional custom commands
+> **Version 2.0.1** - 14 tools available + 3 custom commands (now as tools!)
 
 ## Features
 
@@ -20,13 +20,22 @@ Project-scoped note management in your OpenCode sessions with Obsidian integrati
 - **Obsidian Integration** - Seamless vault sync via Local REST API
 - **Recursive Scanning** - Full vault traversal including subdirectories
 
-### Optional Custom Commands (3 Available)
+### Document Delegation Tools (3 Additional)
 
 - **Sync Notes** - Bidirectionally sync docs between local and vault
 - **Ingest Notes** - Copy local documentation to vault (one-way)
 - **Teleport Notes** - Download documentation from vault to local (one-way)
 
-These commands provide document delegation using `.withcontextignore` patterns for automated workflow management.
+These tools provide document delegation using `.withcontextignore` patterns for automated workflow management.
+
+## Plugin vs MCP Server
+
+**The plugin is now the preferred method for using with-context in OpenCode:**
+
+- **Plugin (Recommended)** - Direct integration, no separate server process, better performance
+- **MCP Server (Fallback)** - Use when plugin is not available or for other MCP-compatible clients
+
+OpenCode will automatically prefer the plugin when both are configured. The MCP server remains available for other MCP clients like Claude Desktop.
 
 ## Installation
 
@@ -81,7 +90,7 @@ with_context_status();
 //   "status": "active",
 //   "config": {...},
 //   "version": "2.0.1",
-//   "tools": 11,
+//   "tools": 14,
 //   "custom_commands": 3
 // }
 ```
@@ -155,7 +164,9 @@ description: Bidirectionally sync documentation files between local project and 
 agent: general
 ---
 
-Use the with-context MCP server's `sync_notes` tool to bidirectionally synchronize documentation files.
+Use the `sync_notes` tool to bidirectionally synchronize documentation files.
+
+**Tool Priority:** First try plugin's sync_notes, then fallback to MCP server's sync_notes.
 
 **Step 1: Preview** - Call sync_notes with dry_run: true
 **Step 2: Sync** - Call sync_notes without dry_run
@@ -172,7 +183,9 @@ description: Ingest local documentation files to Obsidian vault
 agent: general
 ---
 
-Use the with-context MCP server's `ingest_notes` tool to copy local docs to vault.
+Use the `ingest_notes` tool to copy local docs to vault.
+
+**Tool Priority:** First try plugin's ingest_notes, then fallback to MCP server's ingest_notes.
 
 **Step 1: Preview** - Call ingest_notes with dry_run: true
 **Step 2: Ingest** - Call ingest_notes without dry_run
@@ -187,7 +200,9 @@ description: Teleport documentation files from Obsidian vault to local project
 agent: general
 ---
 
-Use the with-context MCP server's `teleport_notes` tool to download docs from vault.
+Use the `teleport_notes` tool to download docs from vault.
+
+**Tool Priority:** First try plugin's teleport_notes, then fallback to MCP server's teleport_notes.
 
 **Step 1: Preview** - Call teleport_notes with dry_run: true
 **Step 2: Teleport** - Call teleport_notes without dry_run
@@ -252,6 +267,12 @@ Commands automatically:
 - `set_project_context(project_folder)` - Manually set project context
 - `list_templates()` - View available note templates
 - `create_from_template(template_name, filename, variables)` - Create from template
+
+### Document Delegation
+
+- `ingest_notes(dry_run?, delete_local_files?)` - Copy local docs to vault
+- `sync_notes(dry_run?)` - Bidirectionally sync docs between local and vault
+- `teleport_notes(dry_run?, delete_from_vault?)` - Download docs from vault to local
 
 ## Usage Examples
 
