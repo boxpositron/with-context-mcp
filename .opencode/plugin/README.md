@@ -119,6 +119,89 @@ The plugin source is available at `.opencode/plugin/with-context.js`. You can:
 - Customize the welcome message
 - Add notifications for other MCP tools
 
+## Documentation Delegation
+
+The plugin includes support for documentation delegation via `.withcontextignore`:
+
+### Write Delegation
+
+When you write documentation files, the plugin:
+
+- Checks if files match `.withcontextignore` patterns
+- Automatically delegates matching files to your vault
+- Provides feedback about delegation decisions
+- Handles pattern updates dynamically
+
+### Read Interception
+
+When reading delegated documentation:
+
+- Automatically fetches content from vault
+- Caches reads for performance (5-minute TTL)
+- Falls back based on strategy (local-first/vault-first/vault-only)
+- Formats content with line numbers like OpenCode's read tool
+
+### Using .withcontextignore
+
+Create a `.withcontextignore` file in your project root to control delegation:
+
+```gitignore
+# Delegate docs directory
+docs/
+
+# Keep internal docs local
+!docs/internal/
+
+# Delegate all markdown
+*.md
+
+# Keep README local
+!README.md
+```
+
+Check delegation with CLI commands:
+
+```bash
+# Check specific file
+npx with-context-mcp --check-delegation docs/guide.md
+
+# View full report
+npx with-context-mcp --delegation-report
+
+# Cache management
+npx with-context-mcp --cache-stats
+npx with-context-mcp --cache-clear
+```
+
+### How Delegation Works
+
+1. **Write**: AI writes to `docs/guide.md`
+2. **Pattern Check**: Matches `docs/` pattern in `.withcontextignore`
+3. **Delegation**: File is written to vault at `Projects/my-project/docs/guide.md`
+4. **Read**: Later reads automatically fetch from vault (with caching)
+
+### Read Strategies
+
+Configure via `DELEGATION_STRATEGY` environment variable:
+
+- `local-first` (default): Try local, fallback to vault
+- `vault-first`: Try vault, fallback to local
+- `vault-only`: Only vault, fail if not found
+
+Example:
+
+```jsonc
+{
+  "mcp": {
+    "with-context": {
+      "environment": {
+        "DELEGATION_STRATEGY": "vault-first",
+      },
+    },
+  },
+}
+```
+
 ## Troubleshooting
 
 ### Plugin not loading
@@ -132,6 +215,19 @@ The plugin source is available at `.opencode/plugin/with-context.js`. You can:
 - Verify the MCP server name matches `with-context` in your config
 - Check OpenCode logs for error messages
 - Ensure tool names match exactly (case-sensitive)
+
+### Delegation not working
+
+- Verify `.withcontextignore` exists in project root
+- Check pattern syntax using `--check-delegation <file>`
+- Run `--delegation-report` to see which files are affected
+- Ensure file extensions match (`.md`, `.txt`, `.rst`, `.adoc`)
+
+### Cache issues
+
+- Clear cache: `npx with-context-mcp --cache-clear`
+- Check stats: `npx with-context-mcp --cache-stats`
+- Cache TTL is 5 minutes by default
 
 ## Learn More
 

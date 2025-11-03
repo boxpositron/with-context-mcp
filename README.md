@@ -14,6 +14,9 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 - **Template System**: Professional templates with variable substitution
 - **Batch Operations**: Write multiple notes at once
 - **Metadata Extraction**: Get word count, tags, headings, frontmatter
+- **Documentation Delegation**: Control which docs are delegated to vault with `.withcontextignore`
+- **Read Interception**: Automatically read delegated docs from vault with caching
+- **CLI Tools**: Manage delegation patterns and view reports
 
 ## Prerequisites
 
@@ -401,6 +404,125 @@ write_note({
   project_folder: 'other-project',
 });
 ```
+
+## Documentation Delegation with .withcontextignore
+
+The `.withcontextignore` file lets you control which documentation files are delegated to your Obsidian vault. This is useful for:
+
+- Keeping internal documentation local while delegating public docs
+- Excluding auto-generated documentation
+- Managing work-in-progress or draft documents
+- Handling monorepo packages separately
+
+### Creating .withcontextignore
+
+Create a `.withcontextignore` file in your project root:
+
+```bash
+# Using the CLI (creates from template)
+npx with-context-mcp --create-withcontextignore
+
+# Or create manually
+touch .withcontextignore
+```
+
+### Pattern Syntax
+
+The `.withcontextignore` file uses glob patterns similar to `.gitignore`:
+
+```gitignore
+# Delegate entire directories
+docs/
+
+# Delegate all markdown files
+*.md
+
+# Negation - keep README in local project
+!README.md
+
+# Root-only patterns (only match at project root)
+/LICENSE
+
+# Match at any level
+**/internal/**
+
+# Directory patterns (matches directory and contents)
+build/
+dist/
+```
+
+### Examples
+
+**Keep internal docs local:**
+
+```gitignore
+docs/internal/
+docs/private/
+**/internal/**
+```
+
+**Delegate user guides, keep API docs local:**
+
+```gitignore
+# Delegate guides
+docs/guides/
+
+# Keep API docs local (negation)
+!docs/api/
+```
+
+**Monorepo pattern:**
+
+```gitignore
+# Keep package-level docs local
+packages/*/README.md
+packages/*/docs/
+
+# But delegate root docs
+!README.md
+!CONTRIBUTING.md
+```
+
+### CLI Commands
+
+Check which files will be delegated:
+
+```bash
+# Check a specific file
+npx with-context-mcp --check-delegation docs/guide.md
+
+# Generate full delegation report
+npx with-context-mcp --delegation-report
+
+# View cache statistics
+npx with-context-mcp --cache-stats
+
+# Clear cache
+npx with-context-mcp --cache-clear
+```
+
+### Read Strategies
+
+When reading delegated files, you can choose from three strategies:
+
+- **local-first** (default): Try local filesystem first, fallback to vault
+- **vault-first**: Try vault first, fallback to local filesystem
+- **vault-only**: Only read from vault, fail if not found
+
+Configure via environment variable:
+
+```bash
+DELEGATION_STRATEGY=vault-first
+```
+
+### How It Works
+
+1. **Write Operations**: When AI writes documentation matching `.withcontextignore` patterns, it's automatically delegated to your vault
+2. **Read Operations**: When AI reads delegated files, content is fetched from vault with automatic caching
+3. **Caching**: Vault reads are cached (5-minute TTL) for performance
+4. **Pattern Matching**: Uses micromatch for powerful glob pattern support
+
+For more examples, see [examples/withcontextignore-examples.md](./examples/withcontextignore-examples.md).
 
 ## Available Tools
 

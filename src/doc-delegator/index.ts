@@ -27,3 +27,4 @@ export {
 
 // Export classes
 export { IgnorePatternMatcher } from './ignore-pattern-matcher.js';
+export { IgnoreConfig } from './ignore-config.js';

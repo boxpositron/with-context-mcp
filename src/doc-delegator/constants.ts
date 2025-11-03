@@ -5,7 +5,7 @@
 /**
  * Default name for the ignore file
  */
-export const DEFAULT_IGNORE_FILE = '.opencodeignore';
+export const DEFAULT_IGNORE_FILE = '.withcontextignore';
 
 /**
  * Default cache TTL in milliseconds (5 minutes)
