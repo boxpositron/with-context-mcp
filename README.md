@@ -777,6 +777,10 @@ mkdir -p ~/.config/opencode/plugin
 
 # Copy the single-file plugin
 cp plugin/with-context.ts ~/.config/opencode/plugin/
+
+# Install with-context-mcp package so OpenCode can access it
+cd ~/.config/opencode/plugin
+npm install with-context-mcp
 ```
 
 3. **Configure environment variables:**

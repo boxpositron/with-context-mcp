@@ -48,7 +48,7 @@ The plugin is provided as a single TypeScript file - just copy it to your OpenCo
 git clone https://github.com/boxpositron/with-context-mcp.git
 cd with-context-mcp
 
-# Install the MCP server dependencies (required for plugin to work)
+# Install the with-context-mcp package (required for plugin to work)
 npm install
 
 # Create OpenCode plugin directory if it doesn't exist
@@ -56,9 +56,13 @@ mkdir -p ~/.config/opencode/plugin
 
 # Copy the single-file plugin
 cp plugin/with-context.ts ~/.config/opencode/plugin/
+
+# IMPORTANT: Install with-context-mcp in the plugin directory so OpenCode can access it
+cd ~/.config/opencode/plugin
+npm install with-context-mcp
 ```
 
-**Note:** The plugin requires the `with-context-mcp` package to be installed in this directory, as it imports the MCP tool handlers.
+**Note:** The plugin imports MCP tool handlers from `with-context-mcp/tools`, so the package must be installed in the `~/.config/opencode/plugin/` directory where OpenCode can resolve it.
 
 ### Alternative: Project-Level Installation
 
@@ -68,6 +72,10 @@ Install the plugin per-project instead of globally:
 # In your project directory
 mkdir -p .opencode/plugin
 cp /path/to/with-context-mcp/plugin/with-context.ts .opencode/plugin/
+
+# Install with-context-mcp package in the plugin directory
+cd .opencode/plugin
+npm install with-context-mcp
 ```
 
 ### Requirements
