@@ -464,9 +464,9 @@ describe('DelegationCLI', () => {
   describe('Output Formatting', () => {
     it('should use ASCII-only characters', async () => {
       vi.mocked(fs.readFile).mockResolvedValue('docs/\n');
-
       vi.mocked(fs.readdir).mockResolvedValue([
         { name: 'test.md', isDirectory: () => false, isFile: () => true },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ] as any);
 
       const result = await cli.delegationReport();
