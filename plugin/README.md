@@ -2,9 +2,11 @@
 
 Project-scoped note management in your OpenCode sessions with Obsidian integration.
 
-> **Version 0.2.0** - 11 tools available
+> **Version 2.0.1** - 11 tools available + 3 optional custom commands
 
 ## Features
+
+### Core Tools (11 Available)
 
 - **Write & Manage** - Create, update, and append notes with validation
 - **Read Notes** - Access note content with full metadata
@@ -17,6 +19,14 @@ Project-scoped note management in your OpenCode sessions with Obsidian integrati
 - **Templates** - Create notes from built-in templates (changelog, docs, meetings)
 - **Obsidian Integration** - Seamless vault sync via Local REST API
 - **Recursive Scanning** - Full vault traversal including subdirectories
+
+### Optional Custom Commands (3 Available)
+
+- **Sync Notes** - Bidirectionally sync docs between local and vault
+- **Ingest Notes** - Copy local documentation to vault (one-way)
+- **Teleport Notes** - Download documentation from vault to local (one-way)
+
+These commands provide document delegation using `.withcontextignore` patterns for automated workflow management.
 
 ## Installation
 
@@ -74,6 +84,8 @@ ln -s "$(pwd)/plugin/dist/index.js" ~/.config/opencode/plugin/with-context.js
 
 ## Configuration
 
+### Environment Variables
+
 Set environment variables in your shell or `.env` file:
 
 ```bash
@@ -96,6 +108,108 @@ export PROJECT_BASE_PATH="Projects"
 3. Go to Settings > Local REST API
 4. Copy your API key
 5. Note the API URL (usually https://127.0.0.1:27124)
+
+### OpenCode Custom Commands (Optional)
+
+For enhanced workflow automation, you can set up custom OpenCode commands for document delegation. These commands allow you to quickly sync, ingest, or teleport documentation between your local project and Obsidian vault.
+
+#### Setup Instructions
+
+1. **Copy command files to your project:**
+
+```bash
+# In your project root
+mkdir -p .opencode/command
+
+# Copy the command files
+cp /path/to/with-context-mcp/.opencode/command/*.md .opencode/command/
+```
+
+Or create them manually:
+
+2. **Create `.opencode/command/sync-notes.md`:**
+
+```markdown
+---
+description: Bidirectionally sync documentation files between local project and Obsidian vault
+agent: general
+---
+
+Use the with-context MCP server's `sync_notes` tool to bidirectionally synchronize documentation files.
+
+**Step 1: Preview** - Call sync_notes with dry_run: true
+**Step 2: Sync** - Call sync_notes without dry_run
+**Step 3: Report** - Show files moved in both directions
+
+Files matching .withcontextignore patterns are moved between locations (deleted from source).
+```
+
+3. **Create `.opencode/command/ingest-notes.md`:**
+
+```markdown
+---
+description: Ingest local documentation files to Obsidian vault
+agent: general
+---
+
+Use the with-context MCP server's `ingest_notes` tool to copy local docs to vault.
+
+**Step 1: Preview** - Call ingest_notes with dry_run: true
+**Step 2: Ingest** - Call ingest_notes without dry_run
+**Step 3: Report** - Show ingested files (local files are NOT deleted)
+```
+
+4. **Create `.opencode/command/teleport-notes.md`:**
+
+```markdown
+---
+description: Teleport documentation files from Obsidian vault to local project
+agent: general
+---
+
+Use the with-context MCP server's `teleport_notes` tool to download docs from vault.
+
+**Step 1: Preview** - Call teleport_notes with dry_run: true
+**Step 2: Teleport** - Call teleport_notes without dry_run
+**Step 3: Report** - Show teleported files (vault files are NOT deleted)
+```
+
+5. **Create `.withcontextignore` in your project root:**
+
+```gitignore
+# Ignore all markdown files by default
+**/*.md
+
+# But keep these local
+!README.md
+!AGENTS.md
+!**/README.md
+
+# Ignore other doc formats
+*.txt
+*.rst
+*.adoc
+
+# Ignore build/deps
+dist/
+build/
+node_modules/
+```
+
+#### Using Custom Commands
+
+Once set up, use commands in OpenCode via Ctrl+P:
+
+- `/sync-notes` - Bidirectional sync (moves files both ways)
+- `/ingest-notes` - Copy local docs to vault
+- `/teleport-notes` - Download docs from vault to local
+
+Commands automatically:
+
+- Preview changes before executing
+- Show detailed results
+- Preserve directory structure
+- Handle errors gracefully
 
 ## Available Tools
 

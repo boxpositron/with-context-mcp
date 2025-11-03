@@ -47,8 +47,9 @@ export const WithContextPlugin: Plugin = async ({ project, directory }) => {
             {
               status: 'active',
               config,
-              version: '0.2.0',
+              version: '2.0.1',
               tools: 11,
+              custom_commands: 3,
             },
             null,
             2
