@@ -1,9 +1,22 @@
 # WithContext MCP Server
 
+[![npm version](https://badge.fury.io/js/with-context-mcp.svg)](https://www.npmjs.com/package/with-context-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 MCP server for project-scoped note management. Allows AI coding agents to write markdown documentation directly to your note-taking apps with automatic project folder scoping for security.
 
 **Currently supports:** Obsidian (via REST API)  
 **Coming soon:** Notion, Apple Notes, and more
+
+## Installation
+
+```bash
+# Using npx (no installation needed)
+npx -y with-context-mcp
+
+# Or install globally
+npm install -g with-context-mcp
+```
 
 ## Features
 
@@ -563,7 +576,25 @@ MyVault/
 - **Project Scoping**: Operations are restricted to the configured project folder
 - **HTTPS**: Uses secure connection to Obsidian (self-signed cert in dev)
 
-## OpenCode Plugin
+## Distribution
+
+This project is available in two ways:
+
+### 1. MCP Server (npm package)
+
+For use with MCP-compatible AI clients like Claude Desktop, Cline, Cursor, Windsurf, etc.
+
+```bash
+# Using npx (recommended)
+npx -y with-context-mcp
+
+# Or install globally
+npm install -g with-context-mcp
+```
+
+**Package:** [with-context-mcp on npm](https://www.npmjs.com/package/with-context-mcp)
+
+### 2. OpenCode Plugin
 
 This project includes an **OpenCode plugin** that provides all 11 MCP tools directly in your OpenCode sessions without requiring the MCP server. The plugin is lighter weight and provides a better developer experience.
 
