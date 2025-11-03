@@ -25,3 +25,6 @@ export {
   type CreateFromTemplateInput,
 } from './create-from-template.js';
 export { setProjectContext, setProjectContextSchema } from './set-project-context.js';
+export { ingestNotes, ingestNotesSchema, type IngestNotesInput } from './ingest-notes.js';
+export { teleportNotes, teleportNotesSchema, type TeleportNotesInput } from './teleport-notes.js';
+export { syncNotes, syncNotesSchema, type SyncNotesInput } from './sync-notes.js';

@@ -1,0 +1,29 @@
+# .withcontextignore
+#
+# Configuration for with-context MCP server
+# Controls which documentation files are delegated to Obsidian vault
+#
+
+# Ignore all markdown files by default
+**/*.md
+
+!**/README.md
+# But keep the root README.md and AGENTS.md local
+!README.md
+!AGENTS.md
+
+# Ignore other documentation formats
+*.txt
+*.rst
+*.adoc
+
+# Ignore build outputs
+dist/
+build/
+node_modules/
+
+# Ignore git and IDE files
+.git/
+.github/
+.vscode/
+.idea/

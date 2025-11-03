@@ -4,7 +4,8 @@
         "with-context": {
             "type": "local",
             "command": [
-                "with-context-mcp"
+                "node",
+                "./dist/index.js"
             ],
             "enabled": true,
             "timeout": 10000,
@@ -12,8 +13,8 @@
                 "OBSIDIAN_API_URL": "{env:OBSIDIAN_API_URL}",
                 "OBSIDIAN_API_KEY": "{env:OBSIDIAN_API_KEY}",
                 "OBSIDIAN_VAULT": "{env:OBSIDIAN_VAULT}",
-                "PROJECT_BASE_PATH": "{env:PROJECT_BASE_PATH}"
-            }
-        }
-    }
+                "PROJECT_BASE_PATH": "{env:PROJECT_BASE_PATH}",
+            },
+        },
+    },
 }

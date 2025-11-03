@@ -537,6 +537,80 @@ DELEGATION_STRATEGY=vault-first
 
 For more examples, see [examples/withcontextignore-examples.md](./examples/withcontextignore-examples.md).
 
+## Syncing Documentation Files
+
+In addition to automatic delegation during AI operations, you can manually sync documentation files between your local project and Obsidian vault using three dedicated tools:
+
+### `ingest_notes` - Project → Vault
+
+Scans your local project for documentation files matching `.withcontextignore` patterns and copies them to your vault.
+
+```javascript
+// Preview what would be ingested (dry run)
+ingest_notes({
+  dry_run: true,
+});
+
+// Copy files to vault
+ingest_notes({});
+
+// Copy AND delete local files after successful ingestion
+ingest_notes({
+  delete_local_files: true,
+});
+```
+
+### `teleport_notes` - Vault → Project
+
+Copies documentation files from your vault back to your local project.
+
+```javascript
+// Preview what would be teleported (dry run)
+teleport_notes({
+  dry_run: true,
+});
+
+// Copy files to local project
+teleport_notes({});
+
+// Copy AND delete vault files after successful teleport
+teleport_notes({
+  delete_from_vault: true,
+});
+```
+
+### `sync_notes` - Bidirectional Sync ⭐
+
+Synchronizes documentation files in both directions:
+
+- Files in local project matching patterns → moved to vault (deleted from local)
+- Files in vault matching patterns → moved to local project (deleted from vault)
+
+This is the **recommended** tool for keeping your documentation in sync.
+
+```javascript
+// Preview what would be synced (dry run)
+sync_notes({
+  dry_run: true,
+});
+
+// Perform bidirectional sync (moves files, deletes from source)
+sync_notes({});
+```
+
+**Use Cases:**
+
+- **Initial Setup**: Use `ingest_notes` to move existing docs to your vault
+- **Export Docs**: Use `teleport_notes` when you need to publish or share docs from vault
+- **Regular Syncing**: Use `sync_notes` to keep vault and project in sync
+
+**Important Notes:**
+
+- All tools respect `.withcontextignore` patterns
+- Files are only synced if they match the configured patterns
+- Dry run mode (`dry_run: true`) shows what would happen without making changes
+- `sync_notes` automatically deletes files from source after successful copy
+
 ## Available Tools
 
 - `set_project_context` - Set the project folder for this session
@@ -549,6 +623,9 @@ For more examples, see [examples/withcontextignore-examples.md](./examples/withc
 - `get_note_metadata` - Get word count, tags, headings, frontmatter
 - `list_templates` - List all available templates
 - `create_from_template` - Create notes from templates
+- `ingest_notes` - Copy documentation files from project to vault (optional delete)
+- `teleport_notes` - Copy documentation files from vault to project (optional delete)
+- `sync_notes` - Bidirectionally sync docs between project and vault (auto-delete from source)
 
 ## Folder Structure
 
@@ -596,11 +673,11 @@ npm install -g with-context-mcp
 
 ### 2. OpenCode Plugin
 
-This project includes an **OpenCode plugin** that provides all 11 MCP tools directly in your OpenCode sessions without requiring the MCP server. The plugin is lighter weight and provides a better developer experience.
+This project includes an **OpenCode plugin** that provides all 14 MCP tools directly in your OpenCode sessions without requiring the MCP server. The plugin is lighter weight and provides a better developer experience.
 
 **Features:**
 
-- All 11 tools available (write, read, search, list, delete, batch, templates, metadata)
+- All 14 tools available (write, read, search, list, delete, batch, templates, metadata, ingest, teleport, sync)
 - Automatic project context detection
 - Recursive vault scanning
 - Template system with 5 built-in templates
