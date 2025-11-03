@@ -1,18 +1,20 @@
 {
-  "$schema": "https://opencode.ai/config.json",
-  "plugins": ["./plugin/with-context-plugin.ts"],
-  "mcp": {
-    "with-context": {
-      "type": "local",
-      "command": ["node", "./dist/index.js"],
-      "enabled": false,
-      "timeout": 10000,
-      "environment": {
-        "OBSIDIAN_API_URL": "{env:OBSIDIAN_API_URL}",
-        "OBSIDIAN_API_KEY": "{env:OBSIDIAN_API_KEY}",
-        "OBSIDIAN_VAULT": "{env:OBSIDIAN_VAULT}",
-        "PROJECT_BASE_PATH": "{env:PROJECT_BASE_PATH}",
-      },
+    "$schema": "https://opencode.ai/config.json",
+    "mcp": {
+        "with-context": {
+            "type": "local",
+            "command": [
+                "node",
+                "./dist/index.js"
+            ],
+            "enabled": false,
+            "timeout": 10000,
+            "environment": {
+                "OBSIDIAN_API_URL": "{env:OBSIDIAN_API_URL}",
+                "OBSIDIAN_API_KEY": "{env:OBSIDIAN_API_KEY}",
+                "OBSIDIAN_VAULT": "{env:OBSIDIAN_VAULT}",
+                "PROJECT_BASE_PATH": "{env:PROJECT_BASE_PATH}",
+            },
+        },
     },
-  },
 }
