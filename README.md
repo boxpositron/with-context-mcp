@@ -671,57 +671,40 @@ npm install -g with-context-mcp
 
 **Package:** [with-context-mcp on npm](https://www.npmjs.com/package/with-context-mcp)
 
-### 2. OpenCode Plugin
+### 2. OpenCode Plugin (Single File - No Build Required!)
 
-This project includes an **OpenCode plugin** that provides all 14 MCP tools directly in your OpenCode sessions without requiring the MCP server. The plugin is lighter weight and provides a better developer experience.
+This project includes an **OpenCode plugin** that provides all 11 MCP tools directly in your OpenCode sessions. The plugin is provided as a single TypeScript file for easy installation.
 
 **Features:**
 
-- All 14 tools available (write, read, search, list, delete, batch, templates, metadata, ingest, teleport, sync)
+- All 11 tools available (write, read, search, list, delete, batch, templates, metadata, context)
+- 3 optional custom commands (sync, ingest, teleport)
 - Automatic project context detection
 - Recursive vault scanning
 - Template system with 5 built-in templates
-- No MCP server configuration needed
+- Single file installation - no build step needed
 
 ### Installation
 
-1. **Clone this repository:**
+1. **Clone and install dependencies:**
 
 ```bash
-git clone https://github.com/davidibia/with-context-mcp.git
+git clone https://github.com/boxpositron/with-context-mcp.git
 cd with-context-mcp
+npm install  # Required for plugin to work
 ```
 
-2. **Install and build:**
+2. **Copy the plugin file:**
 
 ```bash
-# Install and build the MCP server (provides core functionality)
-npm install
-npm run build
-
-# Build the plugin
-cd plugin
-npm install
-npm run build
-cd ..
-```
-
-3. **Copy plugin to OpenCode:**
-
-```bash
-# Create OpenCode plugin directory if it doesn't exist
+# Create OpenCode plugin directory
 mkdir -p ~/.config/opencode/plugin
 
-# Copy the built plugin (or symlink for development)
-cp plugin/dist/index.js ~/.config/opencode/plugin/with-context.js
-
-# Or symlink for development:
-# ln -s "$(pwd)/plugin/dist/index.js" ~/.config/opencode/plugin/with-context.js
+# Copy the single-file plugin
+cp with-context.ts ~/.config/opencode/plugin/
 ```
 
-4. **Configure environment variables:**
-
-Set these in your shell or create a `.env` file:
+3. **Configure environment variables:**
 
 ```bash
 export OBSIDIAN_VAULT_PATH="$HOME/Documents/Vault"
@@ -731,9 +714,16 @@ export OBSIDIAN_VAULT="YourVaultName"
 export PROJECT_BASE_PATH="Projects"
 ```
 
-5. **Restart OpenCode** to load the plugin.
+4. **Restart OpenCode** - the plugin will be loaded automatically.
 
-See [plugin/README.md](./plugin/README.md) for detailed plugin documentation and usage examples.
+5. **Verify installation:**
+
+```typescript
+// In OpenCode, run:
+with_context_status();
+```
+
+See [plugin/README.md](./plugin/README.md) for detailed documentation, custom commands setup, and usage examples.
 
 ## Development
 
