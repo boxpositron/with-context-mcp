@@ -24,3 +24,6 @@ export {
   SPECIAL_DOC_PATTERNS,
   DOC_DIRECTORY_PATTERNS,
 } from './constants.js';
+
+// Export classes
+export { IgnorePatternMatcher } from './ignore-pattern-matcher.js';
