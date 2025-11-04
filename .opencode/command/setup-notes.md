@@ -282,9 +282,9 @@ Use with-context to sync notes between local project and vault
 
 If this project has OpenCode custom commands configured:
 - `/setup-notes` - Setup/update .withcontextignore and this AGENTS.md section
-- `/sync` - Bidirectional sync between local and vault
-- `/ingest` - Copy local documentation to vault
-- `/teleport` - Download documentation from vault to local
+- `/sync-notes` - Bidirectional sync between local and vault
+- `/ingest-notes` - Copy local documentation to vault
+- `/teleport-notes` - Download documentation from vault to local
 
 For more information, see the with-context MCP documentation in the project README.
 ```

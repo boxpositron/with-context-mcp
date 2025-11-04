@@ -150,10 +150,10 @@ OpenCode supports custom slash commands that can be created as markdown files in
 
 This repository includes pre-built OpenCode commands in [`.opencode/command/`](./.opencode/command/):
 
-- **[`setup-notes.md`](./.opencode/command/setup-notes.md)** - Setup `.withcontextignore` and configure `AGENTS.md` with documentation delegation guidelines
-- **[`sync-notes.md`](./.opencode/command/sync-notes.md)** - Bidirectional sync between local and vault
-- **[`ingest-notes.md`](./.opencode/command/ingest-notes.md)** - Copy local docs to vault
-- **[`teleport-notes.md`](./.opencode/command/teleport-notes.md)** - Download docs from vault to local
+- **[`setup-notes.md`](./.opencode/command/setup-notes.md)** - Intelligent project setup that creates `.withcontextignore` and configures `AGENTS.md` with documentation delegation guidelines
+- **[`sync-notes.md`](./.opencode/command/sync-notes.md)** - Bidirectional sync that moves files between local project and vault (with dry-run preview)
+- **[`ingest-notes.md`](./.opencode/command/ingest-notes.md)** - Copy documentation files from local project to vault (optionally delete local files after)
+- **[`teleport-notes.md`](./.opencode/command/teleport-notes.md)** - Download documentation files from vault to local project (optionally delete vault files after)
 
 **Installation:**
 
@@ -176,28 +176,51 @@ cp /path/to/with-context-mcp/.opencode/command/sync-notes.md .opencode/command/
 Once installed, use the commands in OpenCode:
 
 ```bash
-# Press Ctrl+P to open command palette, then:
-/setup-notes       # Setup .withcontextignore and AGENTS.md with documentation guidelines
-/sync              # Bidirectional sync with preview
-/ingest            # Copy local to vault
-/ingest --delete   # Copy and delete local files
-/teleport          # Download from vault
-/teleport --delete # Download and delete vault files
+# In OpenCode, type the command name:
+/setup-notes              # Setup .withcontextignore and AGENTS.md
+/sync-notes               # Bidirectional sync with dry-run preview
+/ingest-notes             # Copy local docs to vault with preview
+/ingest-notes --delete    # Copy and delete local files after ingestion
+/teleport-notes           # Download docs from vault to local with preview
+/teleport-notes --delete  # Download and delete vault files after teleport
 ```
 
-**The `/setup-notes` Command:**
+**Command Details:**
 
-This command provides intelligent project setup by:
+**`/setup-notes`** - Intelligent Project Setup
 
-1. **Analyzing your project structure** (monorepo, library, web app, etc.)
-2. **Creating a customized `.withcontextignore`** file with patterns appropriate for your project type
-3. **Updating `AGENTS.md`** with documentation delegation guidelines that teach AI agents:
-   - When to use with-context tools vs local filesystem
-   - Which files should be delegated to vault vs kept local
-   - Best practices for documentation management
-   - Common workflows with practical examples
+- Analyzes your project structure (monorepo, library, web app, etc.)
+- Creates a customized `.withcontextignore` file with patterns appropriate for your project type
+- Updates `AGENTS.md` with documentation delegation guidelines that teach AI agents:
+  - When to use with-context tools vs local filesystem
+  - Which files should be delegated to vault vs kept local
+  - Best practices for documentation management
+  - Common workflows with practical examples
+- Creates a cohesive system where `.withcontextignore` patterns and agent guidelines work together
 
-The result is a cohesive documentation management system where `.withcontextignore` patterns and agent guidelines work together to ensure consistent, intelligent documentation delegation across your project.
+**`/sync-notes`** - Bidirectional Sync
+
+- Shows dry-run preview of files that will be moved
+- Moves local files matching `.withcontextignore` patterns → vault (deletes from local)
+- Moves vault files matching patterns → local (deletes from vault)
+- Provides detailed report of all sync operations
+- Use this for regular synchronization between vault and project
+
+**`/ingest-notes`** - Local → Vault
+
+- Scans local project for documentation files matching `.withcontextignore` patterns
+- Shows dry-run preview before copying
+- Copies files to vault
+- Optional: `--delete` flag to remove local files after successful ingestion
+- Use this for initial setup or moving docs to vault
+
+**`/teleport-notes`** - Vault → Local
+
+- Lists documentation files in vault matching `.withcontextignore` patterns
+- Shows dry-run preview before downloading
+- Downloads files to local project
+- Optional: `--delete` flag to remove vault files after successful download
+- Use this when you need to publish or share docs from vault
 
 ### Configuration for Other AI Coding Agents
 
