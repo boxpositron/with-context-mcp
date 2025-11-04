@@ -146,116 +146,34 @@ opencode
 
 OpenCode supports custom slash commands that can be created as markdown files in the `.opencode/command/` directory. These commands provide quick access to common with-context operations with automatic dry-run previews and detailed reporting.
 
-**Setup Instructions:**
+**Available Commands:**
 
-1. **Create the commands directory:**
+This repository includes pre-built OpenCode commands in [`.opencode/command/`](./.opencode/command/):
+
+- **[`setup-notes.md`](./.opencode/command/setup-notes.md)** - Setup `.withcontextignore` for your project
+- **[`sync-notes.md`](./.opencode/command/sync-notes.md)** - Bidirectional sync between local and vault
+- **[`ingest-notes.md`](./.opencode/command/ingest-notes.md)** - Copy local docs to vault
+- **[`teleport-notes.md`](./.opencode/command/teleport-notes.md)** - Download docs from vault to local
+
+**Installation:**
+
+Simply copy the command files you want to your project:
 
 ```bash
-# In your project root
+# Create commands directory in your project
 mkdir -p .opencode/command
+
+# Copy the commands you want (copy all or pick specific ones)
+cp /path/to/with-context-mcp/.opencode/command/*.md .opencode/command/
+
+# Or copy individual commands
+cp /path/to/with-context-mcp/.opencode/command/setup-notes.md .opencode/command/
+cp /path/to/with-context-mcp/.opencode/command/sync-notes.md .opencode/command/
 ```
 
-2. **Create custom command files:**
+**Usage:**
 
-**`.opencode/command/setup-notes.md`** - Setup .withcontextignore for your project:
-
-This command includes the complete `.withcontextignore` template embedded within it, so it works in any project without requiring access to the with-context-mcp repository. The command analyzes your project structure and creates a customized `.withcontextignore` file based on:
-
-- Project type (monorepo, library, web app, etc.)
-- Existing directory structure
-- Common patterns for build output, dependencies, and sensitive files
-
-Simply run `/setup-notes` in OpenCode and it will guide you through the setup.
-
-**`.opencode/command/sync.md`** - Bidirectional sync between local and vault:
-
-```markdown
----
-description: Bidirectionally sync documentation files between local project and Obsidian vault
-agent: general
-model: claude-3-5-sonnet-20241022
-subtask: true
----
-
-Use the `sync_notes` tool to bidirectionally synchronize documentation files.
-
-**Arguments:** $ARGUMENTS (optional flags)
-
-**Step 1: Preview** - Call sync_notes with dry_run: true
-**Step 2: Sync** - If user approves, call sync_notes without dry_run
-**Step 3: Report** - Show files moved in both directions
-
-Files matching .withcontextignore patterns are moved between locations (deleted from source).
-```
-
-**`.opencode/command/ingest.md`** - Copy local docs to vault:
-
-```markdown
----
-description: Ingest local documentation files to Obsidian vault
-agent: general
-model: claude-3-5-sonnet-20241022
-subtask: true
----
-
-Use the `ingest_notes` tool to copy local docs to vault.
-
-**Arguments:** $ARGUMENTS (optional: --delete to remove local files after ingestion)
-
-**Step 1: Preview** - Call ingest_notes with dry_run: true
-**Step 2: Ingest** - If user approves, call ingest_notes with appropriate parameters
-**Step 3: Report** - Show ingested files and whether local files were deleted
-```
-
-**`.opencode/command/teleport.md`** - Download docs from vault to local:
-
-```markdown
----
-description: Teleport documentation files from Obsidian vault to local project
-agent: general
-model: claude-3-5-sonnet-20241022
-subtask: true
----
-
-Use the `teleport_notes` tool to download docs from vault.
-
-**Arguments:** $ARGUMENTS (optional: --delete to remove vault files after teleport)
-
-**Step 1: Preview** - Call teleport_notes with dry_run: true
-**Step 2: Teleport** - If user approves, call teleport_notes with appropriate parameters
-**Step 3: Report** - Show teleported files and whether vault files were deleted
-```
-
-3. **Create `.withcontextignore` in your project root:**
-
-```bash
-# Generate from template
-npx with-context-mcp --create-withcontextignore
-
-# Or create manually
-cat > .withcontextignore << 'EOF'
-# Delegate all markdown files
-**/*.md
-
-# But keep these local
-!README.md
-!AGENTS.md
-!LICENSE
-
-# Delegate other doc formats
-*.txt
-*.rst
-
-# Keep build artifacts local
-dist/
-build/
-node_modules/
-EOF
-```
-
-**Using Custom Commands:**
-
-Once set up, use the commands in OpenCode:
+Once installed, use the commands in OpenCode:
 
 ```bash
 # Press Ctrl+P to open command palette, then:
@@ -266,17 +184,6 @@ Once set up, use the commands in OpenCode:
 /teleport          # Download from vault
 /teleport --delete # Download and delete vault files
 ```
-
-**Command Features:**
-
-- **Frontmatter Support**: Commands support `description`, `agent`, `model`, and `subtask` fields
-- **Argument Placeholders**: Use `$ARGUMENTS`, `$1`, `$2`, etc. for command arguments
-- **File References**: Use `@filename` to reference files in the command
-- **Shell Integration**: Use `!`command`` to include shell output
-- **Automatic Preview**: Commands show dry-run results before executing
-- **Error Handling**: Graceful error messages with suggestions
-
-For more examples and advanced usage, see [plugin/README.md](./plugin/README.md#opencode-custom-commands-optional).
 
 ### Configuration for Other AI Coding Agents
 
