@@ -150,7 +150,7 @@ OpenCode supports custom slash commands that can be created as markdown files in
 
 This repository includes pre-built OpenCode commands in [`.opencode/command/`](./.opencode/command/):
 
-- **[`setup-notes.md`](./.opencode/command/setup-notes.md)** - Setup `.withcontextignore` for your project
+- **[`setup-notes.md`](./.opencode/command/setup-notes.md)** - Setup `.withcontextignore` and configure `AGENTS.md` with documentation delegation guidelines
 - **[`sync-notes.md`](./.opencode/command/sync-notes.md)** - Bidirectional sync between local and vault
 - **[`ingest-notes.md`](./.opencode/command/ingest-notes.md)** - Copy local docs to vault
 - **[`teleport-notes.md`](./.opencode/command/teleport-notes.md)** - Download docs from vault to local
@@ -177,13 +177,27 @@ Once installed, use the commands in OpenCode:
 
 ```bash
 # Press Ctrl+P to open command palette, then:
-/setup-notes       # Setup .withcontextignore for current project
+/setup-notes       # Setup .withcontextignore and AGENTS.md with documentation guidelines
 /sync              # Bidirectional sync with preview
 /ingest            # Copy local to vault
 /ingest --delete   # Copy and delete local files
 /teleport          # Download from vault
 /teleport --delete # Download and delete vault files
 ```
+
+**The `/setup-notes` Command:**
+
+This command provides intelligent project setup by:
+
+1. **Analyzing your project structure** (monorepo, library, web app, etc.)
+2. **Creating a customized `.withcontextignore`** file with patterns appropriate for your project type
+3. **Updating `AGENTS.md`** with documentation delegation guidelines that teach AI agents:
+   - When to use with-context tools vs local filesystem
+   - Which files should be delegated to vault vs kept local
+   - Best practices for documentation management
+   - Common workflows with practical examples
+
+The result is a cohesive documentation management system where `.withcontextignore` patterns and agent guidelines work together to ensure consistent, intelligent documentation delegation across your project.
 
 ### Configuration for Other AI Coding Agents
 
