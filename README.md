@@ -157,6 +157,16 @@ mkdir -p .opencode/command
 
 2. **Create custom command files:**
 
+**`.opencode/command/setup-ignore.md`** - Setup .withcontextignore for your project:
+
+This command includes the complete `.withcontextignore` template embedded within it, so it works in any project without requiring access to the with-context-mcp repository. The command analyzes your project structure and creates a customized `.withcontextignore` file based on:
+
+- Project type (monorepo, library, web app, etc.)
+- Existing directory structure
+- Common patterns for build output, dependencies, and sensitive files
+
+Simply run `/setup-ignore` in OpenCode and it will guide you through the setup.
+
 **`.opencode/command/sync.md`** - Bidirectional sync between local and vault:
 
 ```markdown
@@ -249,6 +259,7 @@ Once set up, use the commands in OpenCode:
 
 ```bash
 # Press Ctrl+P to open command palette, then:
+/setup-ignore      # Setup .withcontextignore for current project
 /sync              # Bidirectional sync with preview
 /ingest            # Copy local to vault
 /ingest --delete   # Copy and delete local files
