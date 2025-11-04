@@ -34,7 +34,7 @@ npm install -g with-context-mcp
 ## Prerequisites
 
 1. **A supported note-taking app:**
-   - **Obsidian** with the **Local REST API** plugin installed (primary backend)
+   - **Obsidian** with the **[Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api)** plugin installed (primary backend)
 2. **Node.js** 18+
 
 ## Setup
@@ -43,7 +43,7 @@ npm install -g with-context-mcp
 
 1. Open Obsidian Settings
 2. Go to Community Plugins → Browse
-3. Search for "Local REST API"
+3. Search for "Local REST API" ([plugin repository](https://github.com/coddingtonbear/obsidian-local-rest-api))
 4. Install and Enable
 5. Go to plugin settings and copy your API key
 
