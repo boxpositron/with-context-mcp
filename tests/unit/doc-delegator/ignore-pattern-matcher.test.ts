@@ -588,8 +588,8 @@ test/
       }
       const duration = Date.now() - start;
 
-      // Should complete in less than 200ms (CI environments may be slower)
-      expect(duration).toBeLessThan(200);
+      // Should complete in less than 500ms (CI environments may be slower)
+      expect(duration).toBeLessThan(500);
     });
   });
 
