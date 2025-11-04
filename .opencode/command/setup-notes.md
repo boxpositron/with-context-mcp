@@ -183,7 +183,111 @@ scratch.md
    - Adding project-specific patterns
    - Ensuring sensible defaults (node_modules, dist, build, etc. are ignored)
 
-4. **Explain** what you created and why certain patterns were chosen
+4. **Update or create AGENTS.md** with documentation delegation guidelines:
+   - Check if AGENTS.md exists in the current working directory
+   - If a "Documentation Delegation" section exists, update it
+   - If no such section exists, append a new "Documentation Delegation" section
+   - If AGENTS.md doesn't exist, create it with the documentation delegation section
+   - Use the template below for the AGENTS.md content
+
+5. **Explain** what you created and why certain patterns were chosen
+
+## AGENTS.md Template
+
+When creating or updating the AGENTS.md file, use this template for the documentation delegation section:
+
+```markdown
+## Documentation Delegation with with-context MCP
+
+This project uses the with-context MCP server for documentation management. The `.withcontextignore` file controls which documentation files are delegated to the Obsidian vault vs kept in the local project.
+
+### When to Use the MCP Server
+
+**Always use with-context tools for:**
+
+- Creating/updating user-facing documentation (guides, tutorials, API docs)
+- Managing changelogs and release notes
+- Writing architecture documentation meant for sharing
+- Creating team-wide documentation and wikis
+
+**Keep local (don't delegate) for:**
+
+- Internal/private documentation (matches `**/internal/**`, `**/private/**`)
+- Work-in-progress or draft documents (matches `**/*.draft.md`, `**/*.wip.md`)
+- Auto-generated documentation (matches `docs/api/generated/`, `docs/typedoc/`)
+- Build artifacts and temporary files (matches `dist/`, `build/`, `out/`)
+- Personal notes and scratch files (matches `notes/`, `scratch.md`)
+- Sensitive information (matches `**/confidential/**`, `docs/secrets/`)
+
+### Best Practices
+
+1. **Set project context first:**
+```
+
+Use with-context to set project context to "project-name"
+
+```
+
+2. **Check delegation status** before creating docs:
+- Review `.withcontextignore` patterns to understand what will be delegated
+- Files matching patterns will stay local, others go to vault
+
+3. **Use appropriate write modes:**
+- `create` - For new documentation files (fails if file exists)
+- `overwrite` - To replace existing documentation entirely
+- `append` - For changelogs and incremental updates
+
+4. **Organize documentation logically:**
+- Use folder structure: `docs/api/`, `docs/guides/`, `docs/tutorials/`
+- Keep related docs together in the vault
+- Follow consistent naming conventions
+
+5. **Leverage templates** when available:
+- Check available templates with `list_templates`
+- Use `create_from_template` for consistent documentation structure
+
+### Common Patterns in .withcontextignore
+
+Based on this project's configuration:
+
+- **Internal docs**: Patterns like `docs/internal/`, `**/private/**` keep sensitive docs local
+- **Drafts**: Patterns like `**/*.draft.md`, `docs/wip/` keep work-in-progress local
+- **Generated files**: Patterns like `docs/api/generated/`, `dist/` exclude build output
+- **Dependencies**: Patterns like `node_modules/`, `vendor/` exclude third-party docs
+
+### Example Workflows
+
+**Creating a new feature guide:**
+```
+
+Use with-context to create docs/guides/new-feature.md with content explaining the feature
+
+```
+
+**Updating the changelog:**
+```
+
+Use with-context to append today's changes to CHANGELOG.md
+
+```
+
+**Syncing documentation:**
+```
+
+Use with-context to sync notes between local project and vault
+
+```
+
+### Related Commands
+
+If this project has OpenCode custom commands configured:
+- `/setup-notes` - Setup/update .withcontextignore and this AGENTS.md section
+- `/sync` - Bidirectional sync between local and vault
+- `/ingest` - Copy local documentation to vault
+- `/teleport` - Download documentation from vault to local
+
+For more information, see the with-context MCP documentation in the project README.
+```
 
 ## Guidelines:
 
@@ -193,5 +297,7 @@ scratch.md
 - Delegate public-facing documentation to vault
 - Ignore build output and generated files
 - Use clear comments to explain patterns
+- Ensure AGENTS.md section is clear and actionable for AI agents
+- Include examples relevant to the specific project type
 
 The user may provide additional context like "$ARGUMENTS" to customize the setup further.
