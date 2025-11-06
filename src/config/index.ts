@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { parseConfigFile, createDefaultConfig, type WithContextConfig } from './config-parser.js';
+import { parseIgnoreFile, isLegacyIgnoreFormat } from './legacy-ignore-parser.js';
 
 // Load environment variables
 dotenv.config();
@@ -10,13 +14,16 @@ dotenv.config();
 const ConfigSchema = z.object({
   // Obsidian REST API settings
   obsidianApiKey: z.string().min(1, 'OBSIDIAN_API_KEY is required'),
-  obsidianApiUrl: z.string().url('OBSIDIAN_API_URL must be a valid URL').default('https://127.0.0.1:27124'),
+  obsidianApiUrl: z
+    .string()
+    .url('OBSIDIAN_API_URL must be a valid URL')
+    .default('https://127.0.0.1:27124'),
   obsidianVault: z.string().min(1, 'OBSIDIAN_VAULT is required'),
-  
+
   // Project settings
   projectBasePath: z.string().default('Projects'),
   projectFolder: z.string().optional(), // Optional: Set specific project folder
-  
+
   // Server settings
   logLevel: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   nodeEnv: z.enum(['development', 'production']).default('development'),
@@ -49,5 +56,78 @@ export function loadConfig(): Config {
   }
 }
 
+/**
+ * Load delegation config from project root
+ * Supports both new (.withcontextconfig.jsonc) and legacy (.withcontextignore) formats
+ */
+export async function loadDelegationConfig(projectRoot: string): Promise<WithContextConfig | null> {
+  const newConfigPath = path.join(projectRoot, '.withcontextconfig.jsonc');
+  const legacyConfigPath = path.join(projectRoot, '.withcontextignore');
+
+  // Try new format first
+  try {
+    await fs.access(newConfigPath);
+    return parseConfigFile(newConfigPath);
+  } catch {
+    // New format doesn't exist, try legacy format
+  }
+
+  // Try legacy format
+  try {
+    await fs.access(legacyConfigPath);
+    const content = await fs.readFile(legacyConfigPath, 'utf-8');
+
+    // Double-check it's actually legacy format (not accidentally named)
+    if (isLegacyIgnoreFormat(content)) {
+      return parseIgnoreFile(legacyConfigPath);
+    }
+  } catch {
+    // Neither config exists
+  }
+
+  // No config found - return null (caller can decide whether to use defaults)
+  return null;
+}
+
+/**
+ * Load delegation config synchronously
+ * Supports both new and legacy formats
+ */
+export function loadDelegationConfigSync(projectRoot: string): WithContextConfig | null {
+  const newConfigPath = path.join(projectRoot, '.withcontextconfig.jsonc');
+  const legacyConfigPath = path.join(projectRoot, '.withcontextignore');
+
+  // Try new format first
+  try {
+    return parseConfigFile(newConfigPath);
+  } catch {
+    // New format doesn't exist or failed to parse
+  }
+
+  // Try legacy format
+  try {
+    return parseIgnoreFile(legacyConfigPath);
+  } catch {
+    // Neither config exists or failed to parse
+  }
+
+  return null;
+}
+
+/**
+ * Load delegation config or use defaults
+ */
+export async function loadDelegationConfigOrDefault(
+  projectRoot: string
+): Promise<WithContextConfig> {
+  const config = await loadDelegationConfig(projectRoot);
+  return config ?? createDefaultConfig();
+}
+
 // Export singleton config instance
 export const config = loadConfig();
+
+// Export delegation config types and functions
+export type { WithContextConfig, DefaultBehavior, ConflictResolution } from './config-parser.js';
+export { parseConfigFile, parseConfigString, createDefaultConfig } from './config-parser.js';
+export { parseIgnoreFile, convertIgnoreToConfig } from './legacy-ignore-parser.js';
