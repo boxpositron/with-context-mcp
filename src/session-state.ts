@@ -1,6 +1,6 @@
 /**
  * Session state management for project context
- * 
+ *
  * Maintains the current project folder context for the session.
  * Supports setting context once and using it across multiple tool calls.
  */
@@ -10,6 +10,7 @@ import { detectProjectFolder } from './security/folder-detector.js';
 
 export class SessionState {
   private currentContext: ProjectContext | null = null;
+  private readFiles: Set<string> = new Set();
 
   /**
    * Set the project context for this session
@@ -66,6 +67,42 @@ export class SessionState {
    */
   getCurrentContext(): ProjectContext | null {
     return this.currentContext;
+  }
+
+  /**
+   * Mark a file as read in this session
+   * @param vaultPath - Path to the file (will be normalized)
+   */
+  markFileAsRead(vaultPath: string): void {
+    this.readFiles.add(this.normalizePath(vaultPath));
+  }
+
+  /**
+   * Check if a file has been read in this session
+   * @param vaultPath - Path to check (will be normalized)
+   * @returns true if file was read in this session
+   */
+  hasFileBeenRead(vaultPath: string): boolean {
+    return this.readFiles.has(this.normalizePath(vaultPath));
+  }
+
+  /**
+   * Clear read tracking (useful for testing or session reset)
+   */
+  clearReadTracking(): void {
+    this.readFiles.clear();
+  }
+
+  /**
+   * Normalize path for consistent tracking
+   * Removes leading slashes, ensures .md extension, converts to lowercase
+   */
+  private normalizePath(path: string): string {
+    let normalized = path.startsWith('/') ? path.slice(1) : path;
+    if (!normalized.endsWith('.md')) {
+      normalized += '.md';
+    }
+    return normalized.toLowerCase();
   }
 }
 
