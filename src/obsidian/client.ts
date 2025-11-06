@@ -15,6 +15,7 @@ import {
   ObsidianConnectionError,
   WriteMode,
 } from './types.js';
+import { sessionState } from '../session-state.js';
 
 export class ObsidianClient {
   private client: AxiosInstance;
@@ -122,6 +123,11 @@ export class ObsidianClient {
   /**
    * Write a note to the vault
    *
+   * IMPORTANT: This method enforces read-before-write for existing files.
+   * For 'overwrite' and 'append' modes, the file must be read first (via readNote)
+   * before writing is allowed. This ensures the caller has the current state.
+   * Only 'create' mode can write without a prior read (for new files only).
+   *
    * @param path - Relative path within the vault (e.g., 'daily/2024-01-01' or 'notes/example.md')
    * @param content - Markdown content to write
    * @param mode - Write mode: 'create' (POST), 'overwrite' (PUT), or 'append' (PUT with Content-Insertion-Position header)
@@ -129,6 +135,23 @@ export class ObsidianClient {
    */
   async writeNote(path: string, content: string, mode: WriteMode = 'overwrite'): Promise<void> {
     const vaultPath = this.buildVaultPath(path);
+
+    // Enforce read-before-write for existing files
+    if (mode === 'overwrite' || mode === 'append') {
+      const fileExists = await this.noteExists(path);
+
+      if (fileExists) {
+        // Check if this file was previously read in this session
+        const wasRead = sessionState.hasFileBeenRead(path);
+
+        if (!wasRead) {
+          throw new ObsidianApiError(
+            `Cannot write to existing file without reading it first. ` +
+              `File: ${path}. Call readNote() before writeNote() for existing files.`
+          );
+        }
+      }
+    }
 
     switch (mode) {
       case 'create':
@@ -160,12 +183,10 @@ export class ObsidianClient {
   }
 
   /**
-   * Read a note from the vault
-   *
-   * @param path - Relative path within the vault
-   * @returns Promise resolving to the note content as a string
+   * Internal method to fetch note content without marking as read
+   * Used by noteExists() to check existence without triggering read tracking
    */
-  async readNote(path: string): Promise<string> {
+  private async fetchNoteContent(path: string): Promise<string> {
     const vaultPath = this.buildVaultPath(path);
 
     const response = await this.client.get(vaultPath, {
@@ -174,6 +195,21 @@ export class ObsidianClient {
     });
 
     return response.data;
+  }
+
+  /**
+   * Read a note from the vault
+   *
+   * @param path - Relative path within the vault
+   * @returns Promise resolving to the note content as a string
+   */
+  async readNote(path: string): Promise<string> {
+    const content = await this.fetchNoteContent(path);
+
+    // Mark file as read in session for read-before-write enforcement
+    sessionState.markFileAsRead(path);
+
+    return content;
   }
 
   /**
@@ -238,12 +274,15 @@ export class ObsidianClient {
   /**
    * Check if a note exists
    *
+   * Note: This method does NOT mark the file as read, as it's an internal check.
+   * Use readNote() explicitly if you want to mark the file as read.
+   *
    * @param path - Relative path within the vault
    * @returns Promise resolving to true if note exists, false otherwise
    */
   async noteExists(path: string): Promise<boolean> {
     try {
-      await this.readNote(path);
+      await this.fetchNoteContent(path);
       return true;
     } catch (error) {
       if (error instanceof ObsidianNotFoundError) {

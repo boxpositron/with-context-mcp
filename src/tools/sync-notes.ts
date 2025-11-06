@@ -191,8 +191,18 @@ export async function syncNotes(input: SyncNotesInput): Promise<string> {
       // Build vault path
       const vaultPath = path.join(context.basePath, context.projectFolder, file.relativePath);
 
-      // Write to vault (overwrite mode)
-      await client.writeNote(vaultPath, content, 'overwrite');
+      // Check if file exists in vault and read it first (required by read-before-write enforcement)
+      let fileExists = false;
+      try {
+        await client.readNote(vaultPath);
+        fileExists = true;
+      } catch {
+        // File doesn't exist, will create new
+        fileExists = false;
+      }
+
+      // Write to vault (create for new files, overwrite for existing)
+      await client.writeNote(vaultPath, content, fileExists ? 'overwrite' : 'create');
 
       const result: SyncResult = {
         path: file.relativePath,
