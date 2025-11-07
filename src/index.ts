@@ -33,6 +33,15 @@ import {
 import { ingestNotes, ingestNotesSchema } from './tools/ingest-notes.js';
 import { teleportNotes, teleportNotesSchema } from './tools/teleport-notes.js';
 import { syncNotes, syncNotesSchema } from './tools/sync-notes.js';
+import { setupNotes, setupNotesSchema } from './tools/setup-notes.js';
+import {
+  migrateConfigTool,
+  migrateConfigToolSchema,
+  validateConfigTool,
+  validateConfigToolSchema,
+  previewDelegationTool,
+  previewDelegationToolSchema,
+} from './tools/config-tools.js';
 
 // Initialize MCP Server
 const server = new Server(
@@ -359,6 +368,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
+    setupNotesSchema,
+    migrateConfigToolSchema,
+    validateConfigToolSchema,
+    previewDelegationToolSchema,
   ],
 }));
 
@@ -466,6 +479,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'sync_notes': {
         const input = syncNotesSchema.parse(args);
         const result = await syncNotes(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'setup_notes': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await setupNotes(args as any);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'migrate_config': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await migrateConfigTool(args as any);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'validate_config': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await validateConfigTool(args as any);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'preview_delegation': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await previewDelegationTool(args as any);
         return {
           content: [{ type: 'text', text: result }],
         };
