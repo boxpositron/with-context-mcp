@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/yourusername/with-context-mcp/main/src/config/config-schema.json",
+  "title": "WithContext Configuration",
+  "description": "Configuration for with-context MCP documentation delegation",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^2\\.1$",
+      "description": "Configuration format version (must be 2.1)",
+      "default": "2.1"
+    },
+    "defaultBehavior": {
+      "type": "string",
+      "enum": ["local", "vault"],
+      "description": "Default behavior for files not matching any patterns. 'local' = keep in project, 'vault' = delegate to Obsidian",
+      "default": "local"
+    },
+    "vault": {
+      "type": "array",
+      "description": "Patterns for files to delegate to Obsidian vault",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "local": {
+      "type": "array",
+      "description": "Patterns for files to keep in local project",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "conflictResolution": {
+      "type": "string",
+      "enum": ["local-wins", "vault-wins", "most-specific-wins", "error"],
+      "description": "How to handle files matching both vault and local patterns",
+      "default": "local-wins"
+    }
+  },
+  "required": ["version"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "$schema": "https://raw.githubusercontent.com/yourusername/with-context-mcp/main/src/config/config-schema.json",
+      "version": "2.1",
+      "defaultBehavior": "local",
+      "vault": ["docs/**/*.md", "CHANGELOG.md", "guides/**", "tutorials/**"],
+      "local": [
+        "README.md",
+        "AGENTS.md",
+        "CONTRIBUTING.md",
+        "src/**/*.md",
+        "tests/**/*.md",
+        "**/*.draft.md",
+        "**/*.wip.md"
+      ],
+      "conflictResolution": "local-wins"
+    },
+    {
+      "$schema": "https://raw.githubusercontent.com/yourusername/with-context-mcp/main/src/config/config-schema.json",
+      "version": "2.1",
+      "defaultBehavior": "vault",
+      "vault": ["**/*.md"],
+      "local": ["README.md", "node_modules/**", "dist/**", ".git/**"],
+      "conflictResolution": "local-wins"
+    }
+  ]
+}

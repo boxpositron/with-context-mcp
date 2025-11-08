@@ -8,7 +8,7 @@ export type {
   DelegationStrategy,
   IgnorePatternConfig,
   ReadInterceptorConfig,
-  DelegationDecision,
+  DelegationDecision as LegacyDelegationDecision,
   CacheStats,
 } from './types.js';
 
@@ -25,6 +25,15 @@ export {
   DOC_DIRECTORY_PATTERNS,
 } from './constants.js';
 
-// Export classes
+// Export classes (legacy)
 export { IgnorePatternMatcher } from './ignore-pattern-matcher.js';
 export { IgnoreConfig } from './ignore-config.js';
+
+// Export new delegation decision logic
+export {
+  decideDelegation,
+  decideDelegationBatch,
+  decideDelegationWithReasoning,
+  type DelegationReasoning,
+} from './delegation-decision.js';
+export type { DelegationDecision } from '../config/config-parser.js';

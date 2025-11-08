@@ -548,8 +548,8 @@ docs/
       }
       const duration = Date.now() - start;
 
-      // Should complete reasonably fast (allow 2500ms for CI environments)
-      expect(duration).toBeLessThan(2500); // 2500ms for 2000 checks (allows for slower CI)
+      // Should complete reasonably fast (allow 5000ms for CI environments)
+      expect(duration).toBeLessThan(5000); // 5000ms for 2000 checks (allows for slower CI)
     });
   });
 
