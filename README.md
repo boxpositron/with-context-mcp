@@ -888,7 +888,37 @@ npm run watch
 
 # Development mode with auto-reload
 npm run dev
+
+# Run tests
+npm test
+
+# Run tests once (CI mode)
+npm run test:run
+
+# Generate coverage
+npm run test:coverage
 ```
+
+### Publishing
+
+The package is automatically published to npm when a new tag is pushed:
+
+1. **Update version** in `package.json`
+2. **Update** `CHANGELOG.md` with release notes
+3. **Commit changes**: `git commit -am "chore: release v2.X.X"`
+4. **Create tag**: `git tag -a v2.X.X -m "Release v2.X.X"`
+5. **Push tag**: `git push origin v2.X.X`
+
+The GitHub Actions workflow will automatically:
+
+- Run tests and build
+- Publish to npm with provenance
+- Attach release artifacts to GitHub release
+
+**Requirements:**
+
+- `NPM_TOKEN` secret configured in GitHub repository settings
+- Valid npm account with publish permissions
 
 ## Troubleshooting
 
