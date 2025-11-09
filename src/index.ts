@@ -40,6 +40,23 @@ import {
   previewDelegationTool,
   previewDelegationToolSchema,
 } from './tools/config-tools.js';
+import {
+  startSession,
+  startSessionSchema,
+  startSessionToolSchema,
+  pauseSession,
+  pauseSessionSchema,
+  pauseSessionToolSchema,
+  resumeSession,
+  resumeSessionSchema,
+  resumeSessionToolSchema,
+  endSession,
+  endSessionSchema,
+  endSessionToolSchema,
+  getSessionStatus,
+  getSessionStatusSchema,
+  getSessionStatusToolSchema,
+} from './tools/session-tools.js';
 
 // Initialize MCP Server
 const server = new Server(
@@ -369,6 +386,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     setupNotesSchema,
     validateConfigToolSchema,
     previewDelegationToolSchema,
+    startSessionToolSchema,
+    pauseSessionToolSchema,
+    resumeSessionToolSchema,
+    endSessionToolSchema,
+    getSessionStatusToolSchema,
   ],
 }));
 
@@ -500,6 +522,46 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'preview_delegation': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await previewDelegationTool(args as any);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'start_session': {
+        const input = startSessionSchema.parse(args);
+        const result = await startSession(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'pause_session': {
+        const input = pauseSessionSchema.parse(args);
+        const result = await pauseSession(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'resume_session': {
+        const input = resumeSessionSchema.parse(args);
+        const result = await resumeSession(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'end_session': {
+        const input = endSessionSchema.parse(args);
+        const result = await endSession(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'get_session_status': {
+        const input = getSessionStatusSchema.parse(args);
+        const result = await getSessionStatus(input);
         return {
           content: [{ type: 'text', text: result }],
         };
