@@ -12,6 +12,7 @@ import { config } from '../config/index.js';
 import { ObsidianClient } from '../obsidian/client.js';
 import { sessionState } from '../session-state.js';
 import { formatDuration, getSessionDuration, type SessionId } from '../session/types.js';
+import { VaultPersistence, SessionPaths } from '../session/vault-persistence.js';
 
 // ============================================
 // Start Session
@@ -58,6 +59,9 @@ export async function startSession(input: StartSessionInput): Promise<string> {
     // Start session with project name
     const projectName = message || project_folder;
     const session = await manager.startSession(project_folder, projectName);
+
+    // Store session ID in sessionState for subsequent tool calls
+    sessionState.setActiveSession(project_folder, session.sessionId);
 
     // Calculate paths for reference
     const basePath = `${config.projectBasePath}/${project_folder}`;
@@ -110,6 +114,12 @@ export async function pauseSession(input: PauseSessionInput): Promise<string> {
   const { project_folder } = input;
 
   try {
+    // Get active session ID from sessionState
+    const sessionId = sessionState.getActiveSessionId(project_folder);
+    if (!sessionId) {
+      throw new McpError(ErrorCode.InvalidRequest, 'No active session for this project');
+    }
+
     // Initialize Obsidian client
     const client = new ObsidianClient({
       apiUrl: config.obsidianApiUrl,
@@ -118,19 +128,26 @@ export async function pauseSession(input: PauseSessionInput): Promise<string> {
       allowInsecure: config.nodeEnv === 'development',
     });
 
-    // Create session manager
-    const manager = new SessionManager(client);
+    // Load session from vault
+    const persistence = new VaultPersistence(client);
+    const sessionPath = SessionPaths.getActivePath(project_folder, sessionId);
+    const session = await persistence.readSession(sessionPath);
 
-    // Get current session before pausing
-    const session = manager.getCurrentSession();
-    if (!session) {
-      throw new McpError(ErrorCode.InvalidRequest, 'No active session to pause');
+    // Verify session can be paused
+    if (session.status !== 'active') {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Cannot pause session in ${session.status} state`
+      );
     }
 
-    const sessionId = session.sessionId;
     const duration = getSessionDuration(session);
 
-    // Pause session
+    // Create session manager and load the session
+    const manager = new SessionManager(client);
+    manager.setProjectFolder(project_folder);
+    // Resume the session to load it into manager, then pause it
+    await manager.resumeSession(sessionId);
     await manager.pauseSession();
 
     return JSON.stringify(
@@ -201,6 +218,7 @@ export async function resumeSession(input: ResumeSessionInput): Promise<string> 
 
     // Create session manager
     const manager = new SessionManager(client);
+    manager.setProjectFolder(project_folder);
 
     // Resume session (cast string to SessionId if provided)
     const session = await manager.resumeSession(session_id as SessionId | undefined);
@@ -259,6 +277,12 @@ export async function endSession(input: EndSessionInput): Promise<string> {
   const { project_folder, message } = input;
 
   try {
+    // Get active session ID from sessionState
+    const sessionId = sessionState.getActiveSessionId(project_folder);
+    if (!sessionId) {
+      throw new McpError(ErrorCode.InvalidRequest, 'No active session for this project');
+    }
+
     // Initialize Obsidian client
     const client = new ObsidianClient({
       apiUrl: config.obsidianApiUrl,
@@ -267,16 +291,11 @@ export async function endSession(input: EndSessionInput): Promise<string> {
       allowInsecure: config.nodeEnv === 'development',
     });
 
-    // Create session manager
-    const manager = new SessionManager(client);
+    // Load session from vault
+    const persistence = new VaultPersistence(client);
+    const sessionPath = SessionPaths.getActivePath(project_folder, sessionId);
+    const session = await persistence.readSession(sessionPath);
 
-    // Get current session for summary
-    const session = manager.getCurrentSession();
-    if (!session) {
-      throw new McpError(ErrorCode.InvalidRequest, 'No active session to complete');
-    }
-
-    const sessionId = session.sessionId;
     const duration = getSessionDuration(session);
     const filesRead = session.context.filesRead.length;
     const filesModified = session.context.filesModified.length;
@@ -284,8 +303,16 @@ export async function endSession(input: EndSessionInput): Promise<string> {
     const changelogEntries = session.changelog.length;
     const interactions = session.metadata.interactionCount;
 
+    // Create session manager and load the session
+    const manager = new SessionManager(client);
+    manager.setProjectFolder(project_folder);
+    // Resume the session to load it into manager (works for both active and paused)
+    await manager.resumeSession(sessionId);
     // Complete session (archives and clears state)
     await manager.completeSession();
+
+    // Clear session ID from sessionState
+    sessionState.clearActiveSession(project_folder);
 
     // Calculate archive path for reference
     const date = new Date(session.startTime);
@@ -356,21 +383,9 @@ export async function getSessionStatus(input: GetSessionStatusInput): Promise<st
   const { project_folder } = input;
 
   try {
-    // Initialize Obsidian client
-    const client = new ObsidianClient({
-      apiUrl: config.obsidianApiUrl,
-      apiKey: config.obsidianApiKey,
-      vault: config.obsidianVault,
-      allowInsecure: config.nodeEnv === 'development',
-    });
-
-    // Create session manager
-    const manager = new SessionManager(client);
-
-    // Get current session
-    const session = manager.getCurrentSession();
-
-    if (!session) {
+    // Get active session ID from sessionState
+    const sessionId = sessionState.getActiveSessionId(project_folder);
+    if (!sessionId) {
       return JSON.stringify(
         {
           success: true,
@@ -382,6 +397,19 @@ export async function getSessionStatus(input: GetSessionStatusInput): Promise<st
         2
       );
     }
+
+    // Initialize Obsidian client
+    const client = new ObsidianClient({
+      apiUrl: config.obsidianApiUrl,
+      apiKey: config.obsidianApiKey,
+      vault: config.obsidianVault,
+      allowInsecure: config.nodeEnv === 'development',
+    });
+
+    // Load session from vault
+    const persistence = new VaultPersistence(client);
+    const sessionPath = SessionPaths.getActivePath(project_folder, sessionId);
+    const session = await persistence.readSession(sessionPath);
 
     const duration = getSessionDuration(session);
 

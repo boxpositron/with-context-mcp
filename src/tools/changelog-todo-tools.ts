@@ -19,7 +19,6 @@ import {
   type TodoStatus,
   type TodoPriority,
   type Session,
-  type SessionId,
   createChangelogId,
   createTodoId,
   now,
@@ -32,17 +31,26 @@ import {
 /**
  * Initialize SessionManager and load active session from vault
  *
- * This function creates a SessionManager and loads the most recent active session
- * from the vault. Since each tool call creates a new SessionManager instance,
- * we need to explicitly load the session from persistent storage.
+ * This function creates a SessionManager and loads the active session from the vault
+ * using the session ID stored in sessionState. Since each tool call creates a new
+ * SessionManager instance, we need to explicitly load the session from persistent storage.
  *
  * @param projectFolder - Project folder name
  * @returns SessionManager instance with loaded session
- * @throws {McpError} If no active session found in vault
+ * @throws {McpError} If no active session found
  */
 async function getSessionManager(
   projectFolder: string
 ): Promise<{ manager: SessionManager; session: Session }> {
+  // Get active session ID from sessionState
+  const sessionId = sessionState.getActiveSessionId(projectFolder);
+  if (!sessionId) {
+    throw new McpError(
+      ErrorCode.InvalidRequest,
+      `No active session for project "${projectFolder}". Please start a session first using start_session.`
+    );
+  }
+
   // Initialize Obsidian client
   const client = new ObsidianClient({
     apiUrl: config.obsidianApiUrl,
@@ -53,47 +61,24 @@ async function getSessionManager(
 
   // Create session manager and persistence layer
   const manager = new SessionManager(client);
+  manager.setProjectFolder(projectFolder);
   const persistence = new VaultPersistence(client);
 
-  // Try to find and load active session from vault
-  // Active sessions are stored at: Projects/{project}/.sessions/active/*.json
-  const activePath = `${config.projectBasePath}/${projectFolder}/.sessions/active`;
-
   try {
-    // List all session files in active directory
-    const files = await client.listNotes(activePath);
-
-    if (files.length === 0) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        `No active session for project "${projectFolder}". Please start a session first using start_session.`
-      );
-    }
-
-    // Get the most recent session file (they're named with sessionId which includes timestamp)
-    // Sort by filename to get most recent (session IDs are timestamp-based)
-    const sessionFile = files.sort().reverse()[0];
-
-    // Extract session ID from filename (remove .md extension)
-    const sessionId = sessionFile.replace(/\.md$/, '') as SessionId;
-
-    // Build full path and read session
+    // Load session from vault
     const sessionPath = SessionPaths.getActivePath(projectFolder, sessionId);
     const session = await persistence.readSession(sessionPath);
 
-    // If session is paused, resume it; if active, just load it
-    if (session.status === 'paused') {
-      // Resume paused session (this sets it as currentSession in manager)
-      await manager.resumeSession(sessionId);
-    } else if (session.status === 'active') {
-      // Session is already active, resume it to load into manager
-      await manager.resumeSession(sessionId);
-    } else {
+    // Verify session can be used
+    if (session.status !== 'active' && session.status !== 'paused') {
       throw new McpError(
         ErrorCode.InvalidRequest,
         `Session ${sessionId} is ${session.status}. Only active or paused sessions can be used.`
       );
     }
+
+    // Load session into manager by resuming it
+    await manager.resumeSession(sessionId);
 
     // Get the now-loaded session from manager
     const loadedSession = manager.getCurrentSession();

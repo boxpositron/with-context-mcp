@@ -128,15 +128,37 @@ export class VaultPersistence {
         await this.client.writeNote(tempPath, content, 'create');
       } catch {
         // If temp exists, overwrite it
-        await this.client.writeNote(tempPath, content, 'overwrite');
+        try {
+          await this.client.writeNote(tempPath, content, 'overwrite');
+        } catch (overwriteError) {
+          throw new SessionPersistenceError(
+            `Failed to write temp file ${tempPath}`,
+            overwriteError instanceof Error ? overwriteError : undefined
+          );
+        }
       }
 
       // Step 4: Verify temp file
-      const written = await this.client.readNote(tempPath);
-      this.validateSerialized(written);
+      let written: string;
+      try {
+        written = await this.client.readNote(tempPath);
+        this.validateSerialized(written);
+      } catch (verifyError) {
+        throw new SessionPersistenceError(
+          `Failed to verify temp file ${tempPath}`,
+          verifyError instanceof Error ? verifyError : undefined
+        );
+      }
 
       // Step 5: Overwrite final file
-      await this.client.writeNote(path, written, 'overwrite');
+      try {
+        await this.client.writeNote(path, written, 'overwrite');
+      } catch (writeError) {
+        throw new SessionPersistenceError(
+          `Failed to write final session file ${path}`,
+          writeError instanceof Error ? writeError : undefined
+        );
+      }
 
       // Step 6: Clean up temp file
       try {
@@ -159,13 +181,22 @@ export class VaultPersistence {
         try {
           const backup = await this.client.readNote(backupPath);
           await this.client.writeNote(path, backup, 'overwrite');
+          console.error(`Session write failed, successfully restored from backup: ${backupPath}`);
         } catch {
           // Recovery failed, leave backup in place
+          console.error(
+            `Session write failed and backup recovery failed. Backup preserved at: ${backupPath}`
+          );
         }
       }
 
+      // Re-throw original error with context
+      if (error instanceof SessionPersistenceError) {
+        throw error;
+      }
+
       throw new SessionPersistenceError(
-        `Failed to write session to ${path}`,
+        `Failed to write session to ${path}: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error : undefined
       );
     }
@@ -180,15 +211,34 @@ export class VaultPersistence {
   async readSession(path: string): Promise<Session> {
     try {
       const content = await this.client.readNote(path);
-      const envelope = JSON.parse(content) as SessionEnvelope;
+
+      let envelope: SessionEnvelope;
+      try {
+        envelope = JSON.parse(content) as SessionEnvelope;
+      } catch (parseError) {
+        throw new SessionPersistenceError(
+          `Failed to parse session JSON from ${path}: Invalid JSON format`,
+          parseError instanceof Error ? parseError : undefined
+        );
+      }
 
       // Validate with Zod (validates structure)
-      // Branded types are compatible at runtime since they're just strings
-      const validated = SessionSchema.parse(envelope.session);
-      return validated as unknown as Session;
+      try {
+        // Branded types are compatible at runtime since they're just strings
+        const validated = SessionSchema.parse(envelope.session);
+        return validated as unknown as Session;
+      } catch (validationError) {
+        throw new SessionPersistenceError(
+          `Failed to validate session schema from ${path}: ${validationError instanceof Error ? validationError.message : String(validationError)}`,
+          validationError instanceof Error ? validationError : undefined
+        );
+      }
     } catch (error) {
+      if (error instanceof SessionPersistenceError) {
+        throw error;
+      }
       throw new SessionPersistenceError(
-        `Failed to read session from ${path}`,
+        `Failed to read session from ${path}: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error : undefined
       );
     }

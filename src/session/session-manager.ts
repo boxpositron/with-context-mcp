@@ -84,6 +84,26 @@ export class SessionManager {
     this.inactivityTimeoutMs = options.inactivityTimeoutMs ?? 30 * 60 * 1000; // 30 minutes
   }
 
+  /**
+   * Set the project folder context
+   *
+   * Required before calling lifecycle methods if not set via startSession.
+   *
+   * @param projectFolder - Project folder name
+   */
+  setProjectFolder(projectFolder: string): void {
+    this.currentProjectFolder = projectFolder;
+  }
+
+  /**
+   * Get the current project folder
+   *
+   * @returns Current project folder or null if not set
+   */
+  getProjectFolder(): string | null {
+    return this.currentProjectFolder;
+  }
+
   // ============================================
   // Lifecycle Methods
   // ============================================
