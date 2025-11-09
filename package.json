@@ -61,6 +61,7 @@
     "dotenv": "^16.3.0",
     "glob": "^11.0.3",
     "micromatch": "^4.0.8",
+    "with-context-mcp": "^2.1.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {
