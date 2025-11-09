@@ -8,6 +8,21 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 **Currently supports:** Obsidian (via REST API)  
 **Coming soon:** Notion, Apple Notes, and more
 
+## What's New in v2.1.0
+
+- **New Configuration Format**: `.withcontextconfig.jsonc` replaces `.withcontextignore` with explicit `vault` and `local` patterns
+- **Conflict Resolution**: Choose how to handle files matching multiple patterns (`local-wins`, `vault-wins`, `most-specific-wins`, `error`)
+- **JSON Schema Support**: IDE autocomplete and validation for configuration files
+- **New MCP Tools**:
+  - `setup_notes`: Setup configuration and vault folder structure
+  - `migrate_config`: Migrate from legacy `.withcontextignore` format
+  - `validate_config`: Validate configuration against schema
+  - `preview_delegation`: Preview delegation decisions for files
+- **Legacy Support**: Automatic migration and continued support for `.withcontextignore`
+- **Better Error Handling**: Detailed validation errors and conflict reporting
+
+See [Migration Guide](#migration-from-withcontextignore) for upgrading from v2.0.x.
+
 ## Installation
 
 ```bash
@@ -27,9 +42,12 @@ npm install -g with-context-mcp
 - **Template System**: Professional templates with variable substitution
 - **Batch Operations**: Write multiple notes at once
 - **Metadata Extraction**: Get word count, tags, headings, frontmatter
-- **Documentation Delegation**: Control which docs are delegated to vault with `.withcontextignore`
+- **Documentation Delegation**: Control which docs are delegated to vault with `.withcontextconfig.jsonc` (v2.1+)
+- **Conflict Resolution**: Handle overlapping patterns with configurable resolution strategies
+- **Configuration Tools**: Setup, migrate, validate, and preview delegation decisions
 - **Read Interception**: Automatically read delegated docs from vault with caching
-- **CLI Tools**: Manage delegation patterns and view reports
+- **Bidirectional Sync**: Sync documentation between local project and vault
+- **Legacy Support**: Automatic migration from `.withcontextignore` to new config format
 
 ## Prerequisites
 
@@ -187,16 +205,18 @@ Once installed, use the commands in OpenCode:
 
 **Command Details:**
 
-**`/setup-notes`** - Intelligent Project Setup
+**`/setup-notes`** - Intelligent Project Setup (Updated for v2.1.0)
 
 - Analyzes your project structure (monorepo, library, web app, etc.)
-- Creates a customized `.withcontextignore` file with patterns appropriate for your project type
+- Creates a customized `.withcontextconfig.jsonc` file with patterns appropriate for your project type
+- Automatically migrates legacy `.withcontextignore` files to new format
 - Updates `AGENTS.md` with documentation delegation guidelines that teach AI agents:
   - When to use with-context tools vs local filesystem
   - Which files should be delegated to vault vs kept local
   - Best practices for documentation management
   - Common workflows with practical examples
-- Creates a cohesive system where `.withcontextignore` patterns and agent guidelines work together
+- Creates example folder structure in vault (optional)
+- Creates a cohesive system where `.withcontextconfig.jsonc` patterns and agent guidelines work together
 
 **`/sync-notes`** - Bidirectional Sync
 
@@ -448,100 +468,178 @@ write_note({
 });
 ```
 
-## Documentation Delegation with .withcontextignore
+## Documentation Delegation Configuration
 
-The `.withcontextignore` file lets you control which documentation files are delegated to your Obsidian vault. This is useful for:
+### New in v2.1.0: `.withcontextconfig.jsonc`
+
+The `.withcontextconfig.jsonc` file provides fine-grained control over which documentation files are delegated to your Obsidian vault. This is useful for:
 
 - Keeping internal documentation local while delegating public docs
 - Excluding auto-generated documentation
 - Managing work-in-progress or draft documents
 - Handling monorepo packages separately
+- Resolving conflicts when files match multiple patterns
 
-### Creating .withcontextignore
-
-Create a `.withcontextignore` file in your project root:
+### Quick Setup
 
 ```bash
-# Using the CLI (creates from template)
-npx with-context-mcp --create-withcontextignore
+# Using the MCP tool (recommended)
+setup_notes({
+  project_root: '/path/to/project',  // optional, defaults to cwd
+  force: false,                       // optional, overwrite existing config
+  create_structure: true              // optional, create example vault folders
+})
 
-# Or create manually
-touch .withcontextignore
+# Or using CLI
+npx with-context-mcp --setup
 ```
+
+### Configuration Format
+
+The `.withcontextconfig.jsonc` file uses this structure:
+
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/boxpositron/with-context-mcp/main/src/config/config-schema.json",
+  "version": "2.1",
+  "defaultBehavior": "local", // or "vault"
+  "vault": [
+    // Patterns for files to delegate to vault
+    "docs/**/*.md",
+    "CHANGELOG.md",
+    "guides/**",
+    "tutorials/**",
+  ],
+  "local": [
+    // Patterns for files to keep local
+    "README.md",
+    "AGENTS.md",
+    "CONTRIBUTING.md",
+    "src/**/*.md",
+    "tests/**/*.md",
+    "**/*.draft.md",
+    "**/*.wip.md",
+  ],
+  "conflictResolution": "local-wins", // or "vault-wins", "most-specific-wins", "error"
+}
+```
+
+### Configuration Options
+
+- **`version`** (required): Must be `"2.1"` for current format
+- **`defaultBehavior`** (optional, default: `"local"`): What to do with files not matching any patterns
+  - `"local"`: Keep in project (recommended for most projects)
+  - `"vault"`: Delegate to Obsidian
+- **`vault`** (optional, default: `[]`): Glob patterns for files to delegate to vault
+- **`local`** (optional, default: `[]`): Glob patterns for files to keep in project
+- **`conflictResolution`** (optional, default: `"local-wins"`): How to handle files matching both `vault` and `local` patterns
+  - `"local-wins"`: Local patterns take precedence
+  - `"vault-wins"`: Vault patterns take precedence
+  - `"most-specific-wins"`: Most specific pattern wins (e.g., `docs/api/users.md` beats `docs/**`)
+  - `"error"`: Throw error on conflicts
 
 ### Pattern Syntax
 
-The `.withcontextignore` file uses glob patterns similar to `.gitignore`:
+Uses glob patterns similar to `.gitignore`:
 
-```gitignore
-# Delegate entire directories
-docs/
-
-# Delegate all markdown files
-*.md
-
-# Negation - keep README in local project
-!README.md
-
-# Root-only patterns (only match at project root)
-/LICENSE
-
-# Match at any level
-**/internal/**
-
-# Directory patterns (matches directory and contents)
-build/
-dist/
+```jsonc
+{
+  "vault": [
+    "docs/", // Delegate entire directory
+    "*.md", // All markdown files at any level
+    "/LICENSE", // Root-only pattern
+    "**/internal/**", // Match at any level
+    "guides/**/*.md", // Nested patterns
+  ],
+  "local": [
+    "README.md", // Specific file
+    "src/**/*.md", // All markdown in src/
+    "**/*.draft.md", // All draft files
+  ],
+}
 ```
 
-### Examples
+### Configuration Examples
 
-**Keep internal docs local:**
+**Keep internal docs local, delegate user docs:**
 
-```gitignore
-docs/internal/
-docs/private/
-**/internal/**
+```jsonc
+{
+  "version": "2.1",
+  "defaultBehavior": "local",
+  "vault": ["docs/guides/**", "docs/tutorials/**", "CHANGELOG.md"],
+  "local": ["docs/internal/**", "docs/api/**", "README.md", "CONTRIBUTING.md"],
+}
 ```
 
-**Delegate user guides, keep API docs local:**
+**Monorepo configuration:**
 
-```gitignore
-# Delegate guides
-docs/guides/
-
-# Keep API docs local (negation)
-!docs/api/
+```jsonc
+{
+  "version": "2.1",
+  "defaultBehavior": "local",
+  "vault": [
+    "docs/**/*.md", // Root docs go to vault
+    "packages/*/CHANGELOG.md", // Package changelogs
+  ],
+  "local": [
+    "packages/*/README.md", // Package READMEs stay local
+    "packages/*/docs/**", // Package-specific docs stay local
+    "**/internal/**", // All internal docs stay local
+  ],
+  "conflictResolution": "most-specific-wins",
+}
 ```
 
-**Monorepo pattern:**
+### Migration from `.withcontextignore`
 
-```gitignore
-# Keep package-level docs local
-packages/*/README.md
-packages/*/docs/
+If you have a legacy `.withcontextignore` file, use the migration tool:
 
-# But delegate root docs
-!README.md
-!CONTRIBUTING.md
+```javascript
+// Using MCP tool
+migrate_config({
+  project_root: '/path/to/project', // optional
+  backup: true, // optional, create backup
+  force: false, // optional, overwrite existing
+});
 ```
 
-### CLI Commands
+The migration tool:
 
-Check which files will be delegated:
+1. Reads your `.withcontextignore` patterns
+2. Converts them to the new `.withcontextconfig.jsonc` format
+3. Preserves your pattern intent (negations become `local` patterns)
+4. Creates a backup of the original file
+5. Validates the generated configuration
 
-```bash
-# Check a specific file
-npx with-context-mcp --check-delegation docs/guide.md
+### Configuration Tools
 
-# Generate full delegation report
-npx with-context-mcp --delegation-report
+**Setup new configuration:**
 
-# View cache statistics
-npx with-context-mcp --cache-stats
+```javascript
+setup_notes({
+  project_root: '/path/to/project',
+  force: false,
+  create_structure: true,
+});
+```
 
-# Clear cache
-npx with-context-mcp --cache-clear
+**Validate configuration:**
+
+```javascript
+validate_config({
+  project_root: '/path/to/project',
+});
+```
+
+**Preview delegation decisions:**
+
+```javascript
+preview_delegation({
+  project_root: '/path/to/project',
+  file_path: 'docs/guide.md', // optional, preview specific file
+  show_all: false, // optional, show all files in project
+});
 ```
 
 ### Read Strategies
@@ -560,12 +658,20 @@ DELEGATION_STRATEGY=vault-first
 
 ### How It Works
 
-1. **Write Operations**: When AI writes documentation matching `.withcontextignore` patterns, it's automatically delegated to your vault
+1. **Write Operations**: When AI writes documentation, the system checks `.withcontextconfig.jsonc` patterns to decide whether to write to vault or local filesystem
 2. **Read Operations**: When AI reads delegated files, content is fetched from vault with automatic caching
 3. **Caching**: Vault reads are cached (5-minute TTL) for performance
-4. **Pattern Matching**: Uses micromatch for powerful glob pattern support
+4. **Pattern Matching**: Uses micromatch for powerful glob pattern support with conflict resolution
+5. **Conflict Resolution**: Handles overlapping patterns based on your `conflictResolution` setting
 
-For more examples, see [examples/withcontextignore-examples.md](./examples/withcontextignore-examples.md).
+### Legacy Support
+
+The `.withcontextignore` format is still supported but deprecated. Existing files will continue to work, but we recommend migrating to `.withcontextconfig.jsonc` for:
+
+- Better control with explicit `vault` and `local` patterns
+- Conflict resolution strategies
+- JSON schema validation and IDE autocomplete
+- Future features and improvements
 
 ## Syncing Documentation Files
 
@@ -643,6 +749,8 @@ sync_notes({});
 
 ## Available Tools
 
+### Core Tools
+
 - `set_project_context` - Set the project folder for this session
 - `write_note` - Write/update notes (create/overwrite/append modes)
 - `read_note` - Read note content
@@ -653,9 +761,19 @@ sync_notes({});
 - `get_note_metadata` - Get word count, tags, headings, frontmatter
 - `list_templates` - List all available templates
 - `create_from_template` - Create notes from templates
+
+### Documentation Management Tools
+
 - `ingest_notes` - Copy documentation files from project to vault (optional delete)
 - `teleport_notes` - Copy documentation files from vault to project (optional delete)
 - `sync_notes` - Bidirectionally sync docs between project and vault (auto-delete from source)
+
+### Configuration Tools (New in v2.1.0)
+
+- `setup_notes` - Setup `.withcontextconfig.jsonc` and create vault folder structure
+- `migrate_config` - Migrate from legacy `.withcontextignore` to new config format
+- `validate_config` - Validate configuration file against schema
+- `preview_delegation` - Preview which files will be delegated based on current config
 
 ## Folder Structure
 
@@ -794,6 +912,30 @@ npm run dev
 
 - Don't use `../` or absolute paths
 - All paths must be relative to the project folder
+
+### "Invalid configuration format"
+
+- Ensure `.withcontextconfig.jsonc` has `"version": "2.1"`
+- Validate configuration with `validate_config()` tool
+- Check JSON syntax (JSONC allows comments)
+- Use `$schema` property for IDE validation and autocomplete
+
+### "Conflicting patterns detected"
+
+- Review your `vault` and `local` patterns for overlaps
+- Set `conflictResolution` strategy in config:
+  - `"local-wins"`: Local patterns take precedence (recommended)
+  - `"vault-wins"`: Vault patterns take precedence
+  - `"most-specific-wins"`: Most specific pattern wins
+  - `"error"`: Fail on conflicts (strict mode)
+- Use `preview_delegation()` to see how files will be handled
+
+### Migration Issues
+
+- If migrating from `.withcontextignore` fails, check pattern syntax
+- Use `migrate_config({ backup: true })` to keep original file
+- Review generated `.withcontextconfig.jsonc` and adjust as needed
+- Legacy `.withcontextignore` files still work but are deprecated
 
 ## License
 
