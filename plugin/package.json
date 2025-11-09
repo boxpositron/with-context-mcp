@@ -5,6 +5,6 @@
   "author": "David Ibia <github@boxpositron.dev>",
   "dependencies": {
     "@opencode-ai/plugin": "^1.0.51",
-    "with-context-mcp": "^2.1.0"
+    "with-context-mcp": "file:.."
   }
 }
