@@ -23,26 +23,42 @@ export class SessionPaths {
   static readonly CONFIG_FILE = '.sessions/config.json';
 
   /**
+   * Extract project name from path
+   * Handles both absolute paths and project names
+   */
+  private static extractProjectName(projectFolder: string): string {
+    // If it's an absolute path, extract the last component
+    if (projectFolder.startsWith('/')) {
+      const parts = projectFolder.split('/');
+      return parts[parts.length - 1];
+    }
+    return projectFolder;
+  }
+
+  /**
    * Get path for active session
    */
   static getActivePath(projectFolder: string, sessionId: SessionId): string {
-    return `Projects/${projectFolder}/${this.ACTIVE_DIR}/${sessionId}.json`;
+    const projectName = this.extractProjectName(projectFolder);
+    return `Projects/${projectName}/${this.ACTIVE_DIR}/${sessionId}.json`;
   }
 
   /**
    * Get archived path organized by year-month
    */
   static getArchivedPath(projectFolder: string, sessionId: SessionId, startTime: string): string {
+    const projectName = this.extractProjectName(projectFolder);
     const date = new Date(startTime);
     const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    return `Projects/${projectFolder}/${this.ARCHIVED_DIR}/${yearMonth}/${sessionId}.json`;
+    return `Projects/${projectName}/${this.ARCHIVED_DIR}/${yearMonth}/${sessionId}.json`;
   }
 
   /**
    * Get config file path
    */
   static getConfigPath(projectFolder: string): string {
-    return `Projects/${projectFolder}/${this.CONFIG_FILE}`;
+    const projectName = this.extractProjectName(projectFolder);
+    return `Projects/${projectName}/${this.CONFIG_FILE}`;
   }
 }
 
