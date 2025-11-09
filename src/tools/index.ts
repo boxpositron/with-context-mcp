@@ -47,3 +47,25 @@ export {
   getSessionStatusSchema,
   type GetSessionStatusInput,
 } from './session-tools.js';
+
+// Changelog and todo management tools
+export {
+  addChangelogEntry,
+  addChangelogEntrySchema,
+  type AddChangelogEntryInput,
+  getSessionChangelog,
+  getSessionChangelogSchema,
+  type GetSessionChangelogInput,
+  getCommitSuggestion,
+  getCommitSuggestionSchema,
+  type GetCommitSuggestionInput,
+  addTodo,
+  addTodoSchema,
+  type AddTodoInput,
+  updateTodo,
+  updateTodoSchema,
+  type UpdateTodoInput,
+  listTodos,
+  listTodosSchema,
+  type ListTodosInput,
+} from './changelog-todo-tools.js';

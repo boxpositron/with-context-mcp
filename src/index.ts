@@ -57,6 +57,26 @@ import {
   getSessionStatusSchema,
   getSessionStatusToolSchema,
 } from './tools/session-tools.js';
+import {
+  addChangelogEntry,
+  addChangelogEntrySchema,
+  addChangelogEntryToolSchema,
+  getSessionChangelog,
+  getSessionChangelogSchema,
+  getSessionChangelogToolSchema,
+  getCommitSuggestion,
+  getCommitSuggestionSchema,
+  getCommitSuggestionToolSchema,
+  addTodo,
+  addTodoSchema,
+  addTodoToolSchema,
+  updateTodo,
+  updateTodoSchema,
+  updateTodoToolSchema,
+  listTodos,
+  listTodosSchema,
+  listTodosToolSchema,
+} from './tools/changelog-todo-tools.js';
 
 // Initialize MCP Server
 const server = new Server(
@@ -391,6 +411,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     resumeSessionToolSchema,
     endSessionToolSchema,
     getSessionStatusToolSchema,
+    addChangelogEntryToolSchema,
+    getSessionChangelogToolSchema,
+    getCommitSuggestionToolSchema,
+    addTodoToolSchema,
+    updateTodoToolSchema,
+    listTodosToolSchema,
   ],
 }));
 
@@ -562,6 +588,54 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'get_session_status': {
         const input = getSessionStatusSchema.parse(args);
         const result = await getSessionStatus(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'add_changelog_entry': {
+        const input = addChangelogEntrySchema.parse(args);
+        const result = await addChangelogEntry(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'get_session_changelog': {
+        const input = getSessionChangelogSchema.parse(args);
+        const result = await getSessionChangelog(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'get_commit_suggestion': {
+        const input = getCommitSuggestionSchema.parse(args);
+        const result = await getCommitSuggestion(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'add_todo': {
+        const input = addTodoSchema.parse(args);
+        const result = await addTodo(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'update_todo': {
+        const input = updateTodoSchema.parse(args);
+        const result = await updateTodo(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'list_todos': {
+        const input = listTodosSchema.parse(args);
+        const result = await listTodos(input);
         return {
           content: [{ type: 'text', text: result }],
         };
