@@ -54,25 +54,25 @@ export function getTemplate(templateName: string): Template | undefined {
  */
 function getAutoVariables(): Record<string, string> {
   const now = new Date();
-  
+
   // Format date as YYYY-MM-DD
   const date = now.toISOString().split('T')[0];
-  
+
   // Format time as HH:MM
   const time = now.toTimeString().split(' ')[0].substring(0, 5);
-  
+
   // Format datetime as ISO string
   const datetime = now.toISOString();
-  
+
   // Get day of week
   const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
-  
+
   // Get month name
   const month = now.toLocaleDateString('en-US', { month: 'long' });
-  
+
   // Get year
   const year = now.getFullYear().toString();
-  
+
   return {
     date,
     time,
@@ -96,37 +96,35 @@ export function renderTemplate(
   variables: Record<string, string> = {}
 ): string {
   const template = getTemplate(templateName);
-  
+
   if (!template) {
     throw new Error(`Template '${templateName}' not found`);
   }
-  
+
   // Merge auto variables with user-provided variables
   // User variables take precedence
   const allVariables = {
     ...getAutoVariables(),
     ...variables,
   };
-  
+
   // Check for missing required variables
-  const missingVariables = template.variables.filter(
-    (varName) => !(varName in allVariables)
-  );
-  
+  const missingVariables = template.variables.filter((varName) => !(varName in allVariables));
+
   if (missingVariables.length > 0) {
     throw new Error(
       `Missing required variables for template '${templateName}': ${missingVariables.join(', ')}`
     );
   }
-  
+
   // Replace all {{variable}} placeholders with their values
   let rendered = template.content;
-  
+
   for (const [key, value] of Object.entries(allVariables)) {
     const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
     rendered = rendered.replace(regex, value);
   }
-  
+
   return rendered;
 }
 
@@ -139,11 +137,11 @@ export function extractVariables(content: string): string[] {
   const regex = /\{\{(\w+)\}\}/g;
   const variables = new Set<string>();
   let match;
-  
+
   while ((match = regex.exec(content)) !== null) {
     variables.add(match[1]);
   }
-  
+
   return Array.from(variables);
 }
 
@@ -155,7 +153,7 @@ export function extractVariables(content: string): string[] {
 export function validateTemplate(template: Template): boolean {
   const declaredVariables = new Set(template.variables);
   const usedVariables = extractVariables(template.content);
-  
+
   // Check if all used variables are declared
   for (const varName of usedVariables) {
     // Skip auto-filled variables
@@ -164,7 +162,7 @@ export function validateTemplate(template: Template): boolean {
       return false;
     }
   }
-  
+
   return true;
 }
 
@@ -175,17 +173,13 @@ export function validateTemplate(template: Template): boolean {
  * @param content - Template content with {{variable}} placeholders
  * @returns Template object
  */
-export function createTemplate(
-  name: string,
-  description: string,
-  content: string
-): Template {
+export function createTemplate(name: string, description: string, content: string): Template {
   const variables = extractVariables(content);
-  
+
   // Filter out auto-filled variables from required variables
   const autoVars = Object.keys(getAutoVariables());
-  const requiredVariables = variables.filter(v => !autoVars.includes(v));
-  
+  const requiredVariables = variables.filter((v) => !autoVars.includes(v));
+
   return {
     name,
     description,

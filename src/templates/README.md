@@ -14,9 +14,11 @@ A flexible template system for the Obsidian Context MCP server that provides pro
 ## Available Templates
 
 ### 1. `changelog`
+
 Standard CHANGELOG.md format following [Keep a Changelog](https://keepachangelog.com/) guidelines.
 
 **Required Variables:**
+
 - `project`: Project name
 - `version`: Version number (e.g., "1.0.0")
 - `date`: Release date (auto-filled if not provided)
@@ -24,9 +26,11 @@ Standard CHANGELOG.md format following [Keep a Changelog](https://keepachangelog
 **Use Case:** Track project changes, releases, and version history.
 
 ### 2. `meeting-notes`
+
 Meeting documentation with agenda, discussion notes, and action items.
 
 **Required Variables:**
+
 - `title`: Meeting title
 - `date`: Meeting date (auto-filled if not provided)
 - `time`: Meeting time (auto-filled if not provided)
@@ -35,9 +39,11 @@ Meeting documentation with agenda, discussion notes, and action items.
 **Use Case:** Document team meetings, sprint planning, retrospectives.
 
 ### 3. `technical-doc`
+
 Comprehensive technical documentation structure for features, systems, or architectures.
 
 **Required Variables:**
+
 - `title`: Document title
 - `project`: Project name
 - `author`: Document author
@@ -46,9 +52,11 @@ Comprehensive technical documentation structure for features, systems, or archit
 **Use Case:** Architecture decisions, system design, feature specifications.
 
 ### 4. `api-doc`
+
 API endpoint documentation with request/response examples and authentication details.
 
 **Required Variables:**
+
 - `title`: API documentation title
 - `project`: API/Service name
 - `author`: Documentation author
@@ -57,9 +65,11 @@ API endpoint documentation with request/response examples and authentication det
 **Use Case:** REST API documentation, endpoint specifications, integration guides.
 
 ### 5. `project-update`
+
 Weekly or sprint status update with metrics, achievements, and blockers.
 
 **Required Variables:**
+
 - `title`: Update title
 - `project`: Project name
 - `author`: Report author
@@ -73,19 +83,21 @@ Weekly or sprint status update with metrics, achievements, and blockers.
 ### Core Functions
 
 #### `listTemplates(): Template[]`
+
 Get a list of all available templates with their metadata.
 
 ```typescript
 import { listTemplates } from './templates';
 
 const templates = listTemplates();
-templates.forEach(t => {
+templates.forEach((t) => {
   console.log(`${t.name}: ${t.description}`);
   console.log(`Variables: ${t.variables.join(', ')}`);
 });
 ```
 
 #### `getDefaultTemplates(): Record<string, Template>`
+
 Get all default templates as a record keyed by template name.
 
 ```typescript
@@ -96,6 +108,7 @@ const changelog = templates['changelog'];
 ```
 
 #### `renderTemplate(templateName: string, variables: Record<string, string>): string`
+
 Render a template by replacing variables with actual values.
 
 ```typescript
@@ -103,12 +116,13 @@ import { renderTemplate } from './templates';
 
 const content = renderTemplate('meeting-notes', {
   title: 'Sprint Planning',
-  project: 'MCP Server'
+  project: 'MCP Server',
 });
 // date and time are auto-filled
 ```
 
 **Auto-Filled Variables:**
+
 - `{{date}}`: Current date in YYYY-MM-DD format
 - `{{time}}`: Current time in HH:MM format
 - `{{datetime}}`: ISO 8601 datetime string
@@ -118,10 +132,12 @@ const content = renderTemplate('meeting-notes', {
 - `{{day}}`: Current day of month
 
 **Throws:**
+
 - `Error` if template is not found
 - `Error` if required variables are missing
 
 #### `getTemplate(templateName: string): Template | undefined`
+
 Get a specific template by name.
 
 ```typescript
@@ -134,6 +150,7 @@ if (template) {
 ```
 
 #### `extractVariables(content: string): string[]`
+
 Extract all variable placeholders from a template string.
 
 ```typescript
@@ -144,6 +161,7 @@ console.log(vars); // ['name', 'date']
 ```
 
 #### `createTemplate(name: string, description: string, content: string): Template`
+
 Create a custom template with automatic variable detection.
 
 ```typescript
@@ -166,6 +184,7 @@ console.log(custom.variables); // ['notes']
 ```
 
 #### `validateTemplate(template: Template): boolean`
+
 Validate that a template has all required variables properly declared.
 
 ```typescript
@@ -258,7 +277,7 @@ import { listTemplates } from './templates';
 const templates = listTemplates();
 
 console.log('Available Templates:\n');
-templates.forEach(template => {
+templates.forEach((template) => {
   console.log(`📄 ${template.name}`);
   console.log(`   ${template.description}`);
   console.log(`   Required: ${template.variables.join(', ')}\n`);
@@ -326,7 +345,7 @@ const bugContent = renderTemplate('bug-report', {
   component: 'Authentication',
   description: 'The login button does not respond to clicks',
   expected: 'User should be logged in',
-  actual: 'Nothing happens when clicking the button'
+  actual: 'Nothing happens when clicking the button',
 });
 ```
 
@@ -346,40 +365,43 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           template: {
             type: 'string',
-            description: 'Template name (changelog, meeting-notes, technical-doc, api-doc, project-update)',
-            enum: ['changelog', 'meeting-notes', 'technical-doc', 'api-doc', 'project-update']
+            description:
+              'Template name (changelog, meeting-notes, technical-doc, api-doc, project-update)',
+            enum: ['changelog', 'meeting-notes', 'technical-doc', 'api-doc', 'project-update'],
           },
           notePath: {
             type: 'string',
-            description: 'Path where the note should be created'
+            description: 'Path where the note should be created',
           },
           variables: {
             type: 'object',
             description: 'Template variables as key-value pairs',
-            additionalProperties: { type: 'string' }
-          }
+            additionalProperties: { type: 'string' },
+          },
         },
-        required: ['template', 'notePath', 'variables']
-      }
-    }
-  ]
+        required: ['template', 'notePath', 'variables'],
+      },
+    },
+  ],
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   if (request.params.name === 'create_from_template') {
     const { template, notePath, variables } = request.params.arguments;
-    
+
     // Render template
     const content = renderTemplate(template, variables);
-    
+
     // Write to Obsidian vault
     await obsidianClient.writeNote(notePath, content);
-    
+
     return {
-      content: [{
-        type: 'text',
-        text: `Created note from template '${template}' at ${notePath}`
-      }]
+      content: [
+        {
+          type: 'text',
+          text: `Created note from template '${template}' at ${notePath}`,
+        },
+      ],
     };
   }
 });
@@ -418,7 +440,7 @@ import { renderTemplate } from './templates';
 
 try {
   const content = renderTemplate('meeting-notes', {
-    title: 'Sprint Planning'
+    title: 'Sprint Planning',
     // Missing 'project' variable
   });
 } catch (error) {

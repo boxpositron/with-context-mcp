@@ -64,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Removed** - Removed features
 - **Fixed** - Bug fixes
 - **Security** - Security fixes
-`
+`,
   },
 
   'meeting-notes': {
@@ -138,7 +138,7 @@ attendees: []
 ## Notes & References
 
 - 
-`
+`,
   },
 
   'technical-doc': {
@@ -299,7 +299,7 @@ VARIABLE_NAME=description
 
 - [Link to related documentation]
 - [Link to external resources]
-`
+`,
   },
 
   'api-doc': {
@@ -554,7 +554,7 @@ All errors follow this format:
 - **Documentation:** https://docs.example.com
 - **Support Email:** support@example.com
 - **Status Page:** https://status.example.com
-`
+`,
   },
 
   'project-update': {
@@ -735,6 +735,6 @@ Brief 2-3 sentence overview of the week/sprint. Highlight key achievements and a
 ---
 
 **Next Update:** [Date of next update]
-`
-  }
+`,
+  },
 };

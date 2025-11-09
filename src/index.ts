@@ -47,7 +47,7 @@ import {
 const server = new Server(
   {
     name: 'with-context-mcp',
-    version: '1.0.0',
+    version: '2.1.0',
   },
   {
     capabilities: {
@@ -534,7 +534,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error('WithContext MCP Server v1.0.0');
+  console.error('WithContext MCP Server v2.1.0');
   console.error(`Backend: Obsidian`);
   console.error(`Vault: ${config.obsidianVault}`);
   console.error(`Base Path: ${config.projectBasePath}`);

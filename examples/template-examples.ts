@@ -19,7 +19,7 @@ console.log('='.repeat(80));
 // Example 1: List all available templates
 console.log('\n📋 Example 1: List All Templates\n');
 const templates = listTemplates();
-templates.forEach(template => {
+templates.forEach((template) => {
   console.log(`  📄 ${template.name}`);
   console.log(`     ${template.description}`);
   console.log(`     Required variables: ${template.variables.join(', ') || 'none'}`);
@@ -159,7 +159,9 @@ tags:
 console.log('Created custom template:');
 console.log(`  Name: ${customTemplate.name}`);
 console.log(`  Description: ${customTemplate.description}`);
-console.log(`  Required variables: ${customTemplate.variables.join(', ') || 'none (all auto-filled)'}`);
+console.log(
+  `  Required variables: ${customTemplate.variables.join(', ') || 'none (all auto-filled)'}`
+);
 console.log(`  Validation: ${validateTemplate(customTemplate) ? '✅ Valid' : '❌ Invalid'}`);
 
 // Example 9: Render project update

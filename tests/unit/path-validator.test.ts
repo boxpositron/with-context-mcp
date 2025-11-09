@@ -17,21 +17,17 @@ describe('Path Validator', () => {
     });
 
     it('should reject paths with directory traversal', () => {
-      expect(() => 
-        sanitizePath('../etc/passwd', projectFolder, basePath)
-      ).toThrow();
+      expect(() => sanitizePath('../etc/passwd', projectFolder, basePath)).toThrow();
     });
 
     it('should reject absolute paths', () => {
-      expect(() =>
-        sanitizePath('/etc/passwd', projectFolder, basePath)
-      ).toThrow();
+      expect(() => sanitizePath('/etc/passwd', projectFolder, basePath)).toThrow();
     });
 
     it('should reject empty paths', () => {
-      expect(() =>
-        sanitizePath('', projectFolder, basePath)
-      ).toThrow('Path must be a non-empty string');
+      expect(() => sanitizePath('', projectFolder, basePath)).toThrow(
+        'Path must be a non-empty string'
+      );
     });
 
     it('should handle nested directories', () => {

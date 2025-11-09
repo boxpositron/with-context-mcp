@@ -1,6 +1,6 @@
 /**
  * Verification script to demonstrate the path sanitization fix
- * 
+ *
  * This script shows that sanitizePath now returns vault-relative paths
  * instead of absolute filesystem paths.
  */
@@ -13,7 +13,7 @@ console.log('=== Path Sanitization Fix Verification ===\n');
 const test1 = {
   inputPath: 'test-note',
   projectFolder: 'test-project',
-  basePath: 'Development Sessions'
+  basePath: 'Development Sessions',
 };
 
 console.log('Test 1: Basic note');
@@ -28,7 +28,7 @@ console.log();
 const test2 = {
   inputPath: 'docs/api-reference',
   projectFolder: 'my-app',
-  basePath: 'Projects'
+  basePath: 'Projects',
 };
 
 console.log('Test 2: Note with subdirectory');
@@ -43,7 +43,7 @@ console.log();
 const test3 = {
   inputPath: 'README.md',
   projectFolder: 'awesome-lib',
-  basePath: 'Open Source'
+  basePath: 'Open Source',
 };
 
 console.log('Test 3: Note with .md extension');

@@ -1,6 +1,6 @@
 /**
  * Obsidian REST API Client
- * 
+ *
  * Export main client and types
  */
 
