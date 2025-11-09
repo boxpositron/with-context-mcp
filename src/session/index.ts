@@ -72,3 +72,11 @@ export {
   createTimeRetentionPolicy,
   createNeverRetentionPolicy,
 } from './config.js';
+
+// Export persistence layer
+export { VaultPersistence, SessionPaths, SessionPersistenceError } from './vault-persistence.js';
+export type { SessionEnvelope } from './vault-persistence.js';
+
+// Export session manager
+export { SessionManager, SessionManagerError } from './session-manager.js';
+export type { SessionManagerOptions } from './session-manager.js';
