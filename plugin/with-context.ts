@@ -17,12 +17,15 @@ import {
 } from 'with-context-mcp/tools';
 
 /**
- * WithContext OpenCode Plugin - Monolithic Version
+ * WithContext OpenCode Plugin - Enhanced Version
  *
  * Provides project-scoped note management for OpenCode sessions
  * Integrates with Obsidian and other note-taking apps via with-context-mcp
  *
  * All tools are defined inline for easy distribution and deployment
+ *
+ * Note: Full auto-tracking capabilities require OpenCode plugin API enhancements.
+ * Current version provides all MCP tools as native OpenCode tools.
  */
 export const WithContextPlugin: Plugin = async ({ project: _project, directory: _directory }) => {
   // Initialize plugin state
@@ -37,6 +40,8 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
       // Silent cleanup on session idle
       if (event.type === 'session.idle') {
         // No-op: cleanup if needed
+        // Note: Full session status display requires access to SessionManager
+        // which needs to be initialized within tool context
       }
     },
 
@@ -51,9 +56,10 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             {
               status: 'active',
               config,
-              version: '2.0.1',
+              version: '2.1.0',
               tools: 14,
               custom_commands: 3,
+              note: 'Full auto-tracking requires OpenCode plugin API enhancements. Use session tools manually for now.',
             },
             null,
             2
