@@ -7,7 +7,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { config } from '../config/index.js';
-import { generateConfigFromIgnore, isLegacyIgnoreFormat } from '../config/legacy-ignore-parser.js';
 import { ObsidianClient } from '../obsidian/client.js';
 import { analyzeDocumentation } from '../doc-analyzer/index.js';
 
@@ -52,34 +51,23 @@ export async function setupNotesEnhanced(args: SetupNotesArgs): Promise<string> 
     results.push('=== Intelligent Documentation Setup ===\n');
 
     // Phase 1: Check for existing config
-    const newConfigPath = path.join(projectRoot, '.withcontextconfig.jsonc');
-    const oldConfigPath = path.join(projectRoot, '.withcontextignore');
+    const configPath = path.join(projectRoot, '.withcontextconfig.jsonc');
 
     let configExists = false;
-    let isOldFormat = false;
     let existingVaultPatterns: string[] = [];
 
     try {
-      await fs.access(newConfigPath);
+      await fs.access(configPath);
       configExists = true;
-      results.push(`✓ Found existing config: ${newConfigPath}`);
+      results.push(`✓ Found existing config: ${configPath}`);
 
       // Read existing vault patterns for analysis
-      const content = await fs.readFile(newConfigPath, 'utf-8');
+      const content = await fs.readFile(configPath, 'utf-8');
       const config = JSON.parse(content.replace(/\/\/.*/g, '')); // Remove comments
       existingVaultPatterns = config.vault || [];
     } catch {
-      // New config doesn't exist
-    }
-
-    if (!configExists) {
-      try {
-        await fs.access(oldConfigPath);
-        isOldFormat = true;
-        results.push(`✓ Found legacy config: ${oldConfigPath}`);
-      } catch {
-        results.push('✓ No existing configuration found');
-      }
+      // Config doesn't exist
+      results.push('✓ No existing configuration found');
     }
 
     // Phase 2: Analyze repository documentation
@@ -129,31 +117,14 @@ export async function setupNotesEnhanced(args: SetupNotesArgs): Promise<string> 
     if (configExists && !force) {
       results.push('⚠ Configuration already exists. Recommendations shown above.');
       results.push('Use force=true to overwrite with recommended configuration.\n');
-    } else if (isOldFormat) {
-      // Migrate from old format
-      results.push('📦 Migrating from legacy .withcontextignore format...\n');
-
-      const oldContent = await fs.readFile(oldConfigPath, 'utf-8');
-
-      if (isLegacyIgnoreFormat(oldContent)) {
-        const newContent = generateConfigFromIgnore(oldContent);
-        await fs.writeFile(newConfigPath, newContent, 'utf-8');
-
-        const backupPath = path.join(projectRoot, '.withcontextignore.backup');
-        await fs.copyFile(oldConfigPath, backupPath);
-
-        results.push(`✓ Created new config: ${newConfigPath}`);
-        results.push(`✓ Backed up old config: ${backupPath}`);
-        results.push('💡 Review the new config and delete the old .withcontextignore when ready\n');
-      }
     } else {
       // Create new config with intelligent recommendations
       results.push('📝 Creating intelligent configuration...\n');
 
       const configContent = generateIntelligentConfig(analysis);
-      await fs.writeFile(newConfigPath, configContent, 'utf-8');
+      await fs.writeFile(configPath, configContent, 'utf-8');
 
-      results.push(`✓ Created: ${newConfigPath}`);
+      results.push(`✓ Created: ${configPath}`);
       results.push('  Based on repository analysis and best practices\n');
     }
 

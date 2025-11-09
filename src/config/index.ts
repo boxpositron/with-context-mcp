@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { parseConfigFile, createDefaultConfig, type WithContextConfig } from './config-parser.js';
-import { parseIgnoreFile, isLegacyIgnoreFormat } from './legacy-ignore-parser.js';
 
 // Load environment variables
 dotenv.config();
@@ -58,60 +57,31 @@ export function loadConfig(): Config {
 
 /**
  * Load delegation config from project root
- * Supports both new (.withcontextconfig.jsonc) and legacy (.withcontextignore) formats
  */
 export async function loadDelegationConfig(projectRoot: string): Promise<WithContextConfig | null> {
-  const newConfigPath = path.join(projectRoot, '.withcontextconfig.jsonc');
-  const legacyConfigPath = path.join(projectRoot, '.withcontextignore');
+  const configPath = path.join(projectRoot, '.withcontextconfig.jsonc');
 
-  // Try new format first
   try {
-    await fs.access(newConfigPath);
-    return parseConfigFile(newConfigPath);
+    await fs.access(configPath);
+    return parseConfigFile(configPath);
   } catch {
-    // New format doesn't exist, try legacy format
+    // Config doesn't exist
+    return null;
   }
-
-  // Try legacy format
-  try {
-    await fs.access(legacyConfigPath);
-    const content = await fs.readFile(legacyConfigPath, 'utf-8');
-
-    // Double-check it's actually legacy format (not accidentally named)
-    if (isLegacyIgnoreFormat(content)) {
-      return parseIgnoreFile(legacyConfigPath);
-    }
-  } catch {
-    // Neither config exists
-  }
-
-  // No config found - return null (caller can decide whether to use defaults)
-  return null;
 }
 
 /**
  * Load delegation config synchronously
- * Supports both new and legacy formats
  */
 export function loadDelegationConfigSync(projectRoot: string): WithContextConfig | null {
-  const newConfigPath = path.join(projectRoot, '.withcontextconfig.jsonc');
-  const legacyConfigPath = path.join(projectRoot, '.withcontextignore');
+  const configPath = path.join(projectRoot, '.withcontextconfig.jsonc');
 
-  // Try new format first
   try {
-    return parseConfigFile(newConfigPath);
+    return parseConfigFile(configPath);
   } catch {
-    // New format doesn't exist or failed to parse
+    // Config doesn't exist or failed to parse
+    return null;
   }
-
-  // Try legacy format
-  try {
-    return parseIgnoreFile(legacyConfigPath);
-  } catch {
-    // Neither config exists or failed to parse
-  }
-
-  return null;
 }
 
 /**
@@ -130,4 +100,3 @@ export const config = loadConfig();
 // Export delegation config types and functions
 export type { WithContextConfig, DefaultBehavior, ConflictResolution } from './config-parser.js';
 export { parseConfigFile, parseConfigString, createDefaultConfig } from './config-parser.js';
-export { parseIgnoreFile, convertIgnoreToConfig } from './legacy-ignore-parser.js';

@@ -7,7 +7,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { config } from '../config/index.js';
-import { generateConfigFromIgnore, isLegacyIgnoreFormat } from '../config/legacy-ignore-parser.js';
 import { ObsidianClient } from '../obsidian/client.js';
 
 export interface SetupNotesArgs {
@@ -114,60 +113,28 @@ export async function setupNotes(args: SetupNotesArgs): Promise<string> {
     const results: string[] = [];
     results.push('=== Documentation Setup ===\n');
 
-    // 1. Check for existing config files
-    const newConfigPath = path.join(projectRoot, '.withcontextconfig.jsonc');
-    const oldConfigPath = path.join(projectRoot, '.withcontextignore');
+    // 1. Check for existing config file
+    const configPath = path.join(projectRoot, '.withcontextconfig.jsonc');
 
     let configExists = false;
-    let isOldFormat = false;
 
     try {
-      await fs.access(newConfigPath);
+      await fs.access(configPath);
       configExists = true;
-      results.push(`✓ Found existing config: ${newConfigPath}`);
+      results.push(`✓ Found existing config: ${configPath}`);
     } catch {
-      // New config doesn't exist
+      // Config doesn't exist
+      results.push('✓ No existing configuration found');
     }
 
-    if (!configExists) {
-      try {
-        await fs.access(oldConfigPath);
-        isOldFormat = true;
-        results.push(`✓ Found legacy config: ${oldConfigPath}`);
-      } catch {
-        // No config exists
-        results.push('✓ No existing configuration found');
-      }
-    }
-
-    // 2. Handle config creation/migration
+    // 2. Handle config creation
     if (configExists && !force) {
       results.push(`\n⚠ Configuration already exists. Use force=true to overwrite.`);
-    } else if (isOldFormat) {
-      // Migrate from old format
-      results.push('\n📦 Migrating from legacy .withcontextignore format...');
-
-      const oldContent = await fs.readFile(oldConfigPath, 'utf-8');
-
-      if (isLegacyIgnoreFormat(oldContent)) {
-        const newContent = generateConfigFromIgnore(oldContent);
-        await fs.writeFile(newConfigPath, newContent, 'utf-8');
-
-        // Create backup
-        const backupPath = path.join(projectRoot, '.withcontextignore.backup');
-        await fs.copyFile(oldConfigPath, backupPath);
-
-        results.push(`✓ Created new config: ${newConfigPath}`);
-        results.push(`✓ Backed up old config: ${backupPath}`);
-        results.push(`\n💡 Review the new config and delete the old .withcontextignore when ready`);
-      } else {
-        results.push(`⚠ Old config doesn't look like legacy format, skipping migration`);
-      }
     } else {
       // Create new config
       results.push('\n📝 Creating new configuration file...');
-      await fs.writeFile(newConfigPath, DEFAULT_CONFIG_TEMPLATE, 'utf-8');
-      results.push(`✓ Created: ${newConfigPath}`);
+      await fs.writeFile(configPath, DEFAULT_CONFIG_TEMPLATE, 'utf-8');
+      results.push(`✓ Created: ${configPath}`);
     }
 
     // 3. Create vault folder structure (if requested and project_folder provided)

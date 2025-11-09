@@ -35,8 +35,6 @@ import { teleportNotes, teleportNotesSchema } from './tools/teleport-notes.js';
 import { syncNotes, syncNotesSchema } from './tools/sync-notes.js';
 import { setupNotes, setupNotesSchema } from './tools/setup-notes.js';
 import {
-  migrateConfigTool,
-  migrateConfigToolSchema,
   validateConfigTool,
   validateConfigToolSchema,
   previewDelegationTool,
@@ -47,7 +45,7 @@ import {
 const server = new Server(
   {
     name: 'with-context-mcp',
-    version: '2.1.0',
+    version: '3.0.0',
   },
   {
     capabilities: {
@@ -369,7 +367,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     setupNotesSchema,
-    migrateConfigToolSchema,
     validateConfigToolSchema,
     previewDelegationToolSchema,
   ],
@@ -487,14 +484,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'setup_notes': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await setupNotes(args as any);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
-      }
-
-      case 'migrate_config': {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result = await migrateConfigTool(args as any);
         return {
           content: [{ type: 'text', text: result }],
         };
