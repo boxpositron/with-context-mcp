@@ -4,7 +4,10 @@
  */
 
 import { CacheStats } from './types.js';
-import { DEFAULT_CACHE_TTL_MS, CACHE_MAX_ENTRIES } from './constants.js';
+
+// Cache configuration constants
+const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_MAX_ENTRIES = 1000;
 
 /**
  * Interface for cached content with metadata

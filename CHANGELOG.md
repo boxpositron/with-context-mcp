@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2025-11-10
+
+### Changed
+
+- **Config System Unification** (BREAKING CHANGE): Removed `.withcontextignore` pattern file system entirely
+  - `ingest_notes`, `sync_notes`, and `teleport_notes` now use `.withcontextconfig.jsonc` delegation system
+  - All tools now share the same delegation decision logic
+  - Simpler mental model: one config file (`.withcontextconfig.jsonc`) controls all delegation decisions
+  - **Migration**: Users must create `.withcontextconfig.jsonc` using `setup_notes()` tool
+
+### Removed
+
+- **IgnoreConfig System**: Removed deprecated simple pattern matching system
+  - Deleted `src/doc-delegator/ignore-config.ts`
+  - Deleted `src/doc-delegator/ignore-pattern-matcher.ts`
+  - Deleted `src/doc-delegator/cli.ts`
+  - Deleted `src/doc-delegator/read-interceptor.ts`
+  - Deleted `src/doc-delegator/constants.ts`
+  - Removed 5 source files and 6 test files (1,200+ lines of legacy code)
+- **Legacy Support**: No longer supports `.withcontextignore` pattern files
+- Tool descriptions updated to reference `.withcontextconfig.jsonc`
+
+### Fixed
+
+- Eliminated confusion between two separate config systems
+- Consistent delegation behavior across all tools
+
 ## [3.0.1] - 2025-11-10
 
 ### Fixed

@@ -3,8 +3,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { ObsidianClient } from '../obsidian/index.js';
 import { sessionState } from '../session-state.js';
-import { config } from '../config/index.js';
-import { IgnoreConfig } from '../doc-delegator/ignore-config.js';
+import { config, loadDelegationConfigOrDefault } from '../config/index.js';
+import { decideDelegation } from '../doc-delegator/delegation-decision.js';
 
 const DOC_EXTENSIONS = ['.md', '.txt', '.rst', '.adoc'];
 
@@ -89,8 +89,8 @@ async function findDocFiles(
 
 /**
  * Bidirectionally sync documentation files between local project and Obsidian vault.
- * - Files matching .withcontextignore in local project → moved to vault (deleted from local)
- * - Files matching .withcontextignore in vault → moved to local (deleted from vault)
+ * - Files with delegation decision 'vault' in local project → moved to vault (deleted from local)
+ * - Files with delegation decision 'local' in vault → moved to local (deleted from vault)
  */
 export async function syncNotes(input: SyncNotesInput): Promise<string> {
   const { project_folder, dry_run } = input;
@@ -101,9 +101,8 @@ export async function syncNotes(input: SyncNotesInput): Promise<string> {
   // Get project root (cwd or detected git root)
   const projectRoot = context.cwd || process.cwd();
 
-  // Load .withcontextignore patterns
-  const ignoreConfig = IgnoreConfig.getInstance(projectRoot);
-  const matcher = await ignoreConfig.getMatcher();
+  // Load delegation config from .withcontextconfig.jsonc
+  const delegationConfig = await loadDelegationConfigOrDefault(projectRoot);
 
   // Initialize Obsidian client
   const client = new ObsidianClient({
@@ -122,9 +121,9 @@ export async function syncNotes(input: SyncNotesInput): Promise<string> {
 
   for (const filePath of allLocalDocFiles) {
     const relativePath = path.relative(projectRoot, filePath);
-    const shouldDelegate = matcher.isIgnored(relativePath);
+    const decision = decideDelegation(relativePath, delegationConfig);
 
-    if (shouldDelegate) {
+    if (decision === 'vault') {
       localToVault.push({
         localPath: filePath,
         relativePath,
@@ -144,10 +143,10 @@ export async function syncNotes(input: SyncNotesInput): Promise<string> {
   const vaultToLocal: Array<{ vaultPath: string; relativePath: string }> = [];
 
   for (const vaultFile of vaultFiles) {
-    const shouldDelegate = matcher.isIgnored(vaultFile);
+    const decision = decideDelegation(vaultFile, delegationConfig);
 
-    // If file should NOT be delegated to vault, move it back to local
-    if (!shouldDelegate) {
+    // If file should NOT be delegated to vault (decision is 'local'), move it back to local
+    if (decision === 'local') {
       vaultToLocal.push({
         vaultPath: path.join(vaultProjectPath, vaultFile),
         relativePath: vaultFile,

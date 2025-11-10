@@ -8,14 +8,21 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 **Currently supports:** Obsidian (via REST API)  
 **Coming soon:** Notion, Apple Notes, and more
 
-## What's New in v3.0.1
+## What's New in v3.0.2
+
+- **Config System Unification**: Removed `.withcontextignore` in favor of unified `.withcontextconfig.jsonc`
+  - All delegation decisions now use the config system
+  - `ingest_notes`, `sync_notes`, `teleport_notes` now use delegation config
+  - Simplified architecture with single source of truth
+  - Better conflict resolution and pattern matching
+
+See [CHANGELOG.md](CHANGELOG.md) for complete details.
+
+### v3.0.1 Highlights
 
 - **Bug Fix**: Fixed path resolution issue with Obsidian Local REST API
   - Changed session storage from `.sessions/` to `sessions/` for proper directory listing
-  - The Obsidian API filters hidden folders from listings, making `.sessions/` invisible
   - **Migration**: Rename `.sessions` → `sessions` in your vault (one-time only)
-
-See [CHANGELOG.md](CHANGELOG.md) for complete details.
 
 ### v3.0.0 Highlights
 
@@ -43,12 +50,11 @@ npm install -g with-context-mcp
 - **Template System**: Professional templates with variable substitution
 - **Batch Operations**: Write multiple notes at once
 - **Metadata Extraction**: Get word count, tags, headings, frontmatter
-- **Documentation Delegation**: Control which docs are delegated to vault with `.withcontextconfig.jsonc` (v2.1+)
+- **Documentation Delegation**: Control which docs are delegated to vault with `.withcontextconfig.jsonc`
 - **Conflict Resolution**: Handle overlapping patterns with configurable resolution strategies
-- **Configuration Tools**: Setup, migrate, validate, and preview delegation decisions
+- **Configuration Tools**: Setup, validate, and preview delegation decisions
 - **Read Interception**: Automatically read delegated docs from vault with caching
-- **Bidirectional Sync**: Sync documentation between local project and vault
-- **Legacy Support**: Automatic migration from `.withcontextignore` to new config format
+- **Bidirectional Sync**: Sync documentation between local project and vault using delegation config
 
 ## Prerequisites
 
@@ -169,10 +175,10 @@ OpenCode supports custom slash commands that can be created as markdown files in
 
 This repository includes pre-built OpenCode commands in [`.opencode/command/`](./.opencode/command/):
 
-- **[`setup-notes.md`](./.opencode/command/setup-notes.md)** - Intelligent project setup that creates `.withcontextignore` and configures `AGENTS.md` with documentation delegation guidelines
-- **[`sync-notes.md`](./.opencode/command/sync-notes.md)** - Bidirectional sync that moves files between local project and vault (with dry-run preview)
-- **[`ingest-notes.md`](./.opencode/command/ingest-notes.md)** - Copy documentation files from local project to vault (optionally delete local files after)
-- **[`teleport-notes.md`](./.opencode/command/teleport-notes.md)** - Download documentation files from vault to local project (optionally delete vault files after)
+- **[`setup-notes.md`](./.opencode/command/setup-notes.md)** - Intelligent project setup that creates `.withcontextconfig.jsonc` and configures `AGENTS.md` with documentation delegation guidelines
+- **[`sync-notes.md`](./.opencode/command/sync-notes.md)** - Bidirectional sync that moves files between local project and vault based on delegation config (with dry-run preview)
+- **[`ingest-notes.md`](./.opencode/command/ingest-notes.md)** - Copy documentation files from local project to vault based on delegation config (optionally delete local files after)
+- **[`teleport-notes.md`](./.opencode/command/teleport-notes.md)** - Download documentation files from vault to local project based on delegation config (optionally delete vault files after)
 
 **Installation:**
 
@@ -196,7 +202,7 @@ Once installed, use the commands in OpenCode:
 
 ```bash
 # In OpenCode, type the command name:
-/setup-notes              # Setup .withcontextignore and AGENTS.md
+/setup-notes              # Setup .withcontextconfig.jsonc and AGENTS.md
 /sync-notes               # Bidirectional sync with dry-run preview
 /ingest-notes             # Copy local docs to vault with preview
 /ingest-notes --delete    # Copy and delete local files after ingestion
@@ -206,11 +212,10 @@ Once installed, use the commands in OpenCode:
 
 **Command Details:**
 
-**`/setup-notes`** - Intelligent Project Setup (Updated for v2.1.0)
+**`/setup-notes`** - Intelligent Project Setup
 
 - Analyzes your project structure (monorepo, library, web app, etc.)
 - Creates a customized `.withcontextconfig.jsonc` file with patterns appropriate for your project type
-- Automatically migrates legacy `.withcontextignore` files to new format
 - Updates `AGENTS.md` with documentation delegation guidelines that teach AI agents:
   - When to use with-context tools vs local filesystem
   - Which files should be delegated to vault vs kept local
@@ -222,14 +227,14 @@ Once installed, use the commands in OpenCode:
 **`/sync-notes`** - Bidirectional Sync
 
 - Shows dry-run preview of files that will be moved
-- Moves local files matching `.withcontextignore` patterns → vault (deletes from local)
+- Moves local files matching delegation config patterns → vault (deletes from local)
 - Moves vault files matching patterns → local (deletes from vault)
 - Provides detailed report of all sync operations
 - Use this for regular synchronization between vault and project
 
 **`/ingest-notes`** - Local → Vault
 
-- Scans local project for documentation files matching `.withcontextignore` patterns
+- Scans local project for documentation files matching delegation config patterns
 - Shows dry-run preview before copying
 - Copies files to vault
 - Optional: `--delete` flag to remove local files after successful ingestion
@@ -237,7 +242,7 @@ Once installed, use the commands in OpenCode:
 
 **`/teleport-notes`** - Vault → Local
 
-- Lists documentation files in vault matching `.withcontextignore` patterns
+- Lists documentation files in vault matching delegation config patterns
 - Shows dry-run preview before downloading
 - Downloads files to local project
 - Optional: `--delete` flag to remove vault files after successful download
@@ -592,26 +597,16 @@ Uses glob patterns similar to `.gitignore`:
 }
 ```
 
-### Migration from `.withcontextignore`
+### Migration Notes (v3.0.2+)
 
-If you have a legacy `.withcontextignore` file, use the migration tool:
+**Important:** The `.withcontextignore` file format has been removed in v3.0.2. All delegation decisions now use `.withcontextconfig.jsonc`.
 
-```javascript
-// Using MCP tool
-migrate_config({
-  project_root: '/path/to/project', // optional
-  backup: true, // optional, create backup
-  force: false, // optional, overwrite existing
-});
-```
+If you're upgrading from an earlier version:
 
-The migration tool:
-
-1. Reads your `.withcontextignore` patterns
-2. Converts them to the new `.withcontextconfig.jsonc` format
-3. Preserves your pattern intent (negations become `local` patterns)
-4. Creates a backup of the original file
-5. Validates the generated configuration
+1. The `setup_notes` tool will automatically detect and help you migrate
+2. All sync tools (`ingest_notes`, `sync_notes`, `teleport_notes`) now use the delegation config
+3. Pattern matching is more powerful with explicit `vault` and `local` arrays
+4. Conflict resolution strategies provide better control over overlapping patterns
 
 ### Configuration Tools
 
@@ -643,6 +638,8 @@ preview_delegation({
 });
 ```
 
+**Note:** The `migrate_config` tool has been removed in v3.0.2. Use `setup_notes` for new projects.
+
 ### Read Strategies
 
 When reading delegated files, you can choose from three strategies:
@@ -665,14 +662,15 @@ DELEGATION_STRATEGY=vault-first
 4. **Pattern Matching**: Uses micromatch for powerful glob pattern support with conflict resolution
 5. **Conflict Resolution**: Handles overlapping patterns based on your `conflictResolution` setting
 
-### Legacy Support
+### Unified Configuration (v3.0.2+)
 
-The `.withcontextignore` format is still supported but deprecated. Existing files will continue to work, but we recommend migrating to `.withcontextconfig.jsonc` for:
+All delegation decisions now use `.withcontextconfig.jsonc` exclusively:
 
-- Better control with explicit `vault` and `local` patterns
-- Conflict resolution strategies
+- Explicit `vault` and `local` pattern arrays for better control
+- Configurable conflict resolution strategies
 - JSON schema validation and IDE autocomplete
-- Future features and improvements
+- Single source of truth for all delegation decisions
+- Used by all sync tools (`ingest_notes`, `sync_notes`, `teleport_notes`)
 
 ## Syncing Documentation Files
 
@@ -680,7 +678,7 @@ In addition to automatic delegation during AI operations, you can manually sync 
 
 ### `ingest_notes` - Project → Vault
 
-Scans your local project for documentation files matching `.withcontextignore` patterns and copies them to your vault.
+Scans your local project for documentation files matching `.withcontextconfig.jsonc` delegation patterns and copies them to your vault.
 
 ```javascript
 // Preview what would be ingested (dry run)
@@ -699,7 +697,7 @@ ingest_notes({
 
 ### `teleport_notes` - Vault → Project
 
-Copies documentation files from your vault back to your local project.
+Copies documentation files from your vault back to your local project based on delegation config patterns.
 
 ```javascript
 // Preview what would be teleported (dry run)
@@ -718,9 +716,9 @@ teleport_notes({
 
 ### `sync_notes` - Bidirectional Sync ⭐
 
-Synchronizes documentation files in both directions:
+Synchronizes documentation files in both directions based on `.withcontextconfig.jsonc` patterns:
 
-- Files in local project matching patterns → moved to vault (deleted from local)
+- Files in local project matching `vault` patterns → moved to vault (deleted from local)
 - Files in vault matching patterns → moved to local project (deleted from vault)
 
 This is the **recommended** tool for keeping your documentation in sync.
@@ -743,8 +741,8 @@ sync_notes({});
 
 **Important Notes:**
 
-- All tools respect `.withcontextignore` patterns
-- Files are only synced if they match the configured patterns
+- All tools use `.withcontextconfig.jsonc` delegation patterns (v3.0.2+)
+- Files are only synced if they match the configured `vault` patterns
 - Dry run mode (`dry_run: true`) shows what would happen without making changes
 - `sync_notes` automatically deletes files from source after successful copy
 
@@ -769,10 +767,9 @@ sync_notes({});
 - `teleport_notes` - Copy documentation files from vault to project (optional delete)
 - `sync_notes` - Bidirectionally sync docs between project and vault (auto-delete from source)
 
-### Configuration Tools (New in v2.1.0)
+### Configuration Tools
 
 - `setup_notes` - Setup `.withcontextconfig.jsonc` and create vault folder structure
-- `migrate_config` - Migrate from legacy `.withcontextignore` to new config format
 - `validate_config` - Validate configuration file against schema
 - `preview_delegation` - Preview which files will be delegated based on current config
 
@@ -961,12 +958,12 @@ The GitHub Actions workflow will automatically:
   - `"error"`: Fail on conflicts (strict mode)
 - Use `preview_delegation()` to see how files will be handled
 
-### Migration Issues
+### Configuration Issues
 
-- If migrating from `.withcontextignore` fails, check pattern syntax
-- Use `migrate_config({ backup: true })` to keep original file
-- Review generated `.withcontextconfig.jsonc` and adjust as needed
-- Legacy `.withcontextignore` files still work but are deprecated
+- Ensure `.withcontextconfig.jsonc` has `"version": "2.1"` or later
+- Use `validate_config()` to check for syntax errors
+- Use `preview_delegation()` to verify pattern matching behavior
+- Run `setup_notes()` to create a new config with recommended patterns
 
 ## License
 

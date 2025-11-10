@@ -3,8 +3,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { ObsidianClient } from '../obsidian/index.js';
 import { sessionState } from '../session-state.js';
-import { config } from '../config/index.js';
-import { IgnoreConfig } from '../doc-delegator/ignore-config.js';
+import { config, loadDelegationConfigOrDefault } from '../config/index.js';
+import { decideDelegation } from '../doc-delegator/delegation-decision.js';
 
 export const teleportNotesSchema = z.object({
   project_folder: z
@@ -48,9 +48,8 @@ export async function teleportNotes(input: TeleportNotesInput): Promise<string> 
   // Get project root (cwd or detected git root)
   const projectRoot = context.cwd || process.cwd();
 
-  // Load .withcontextignore patterns
-  const ignoreConfig = IgnoreConfig.getInstance(projectRoot);
-  const matcher = await ignoreConfig.getMatcher();
+  // Load delegation config
+  const delegationConfig = await loadDelegationConfigOrDefault(projectRoot);
 
   // Initialize Obsidian client
   const client = new ObsidianClient({
@@ -85,10 +84,11 @@ export async function teleportNotes(input: TeleportNotesInput): Promise<string> 
 
   for (const vaultFile of vaultFiles) {
     // vaultFile is relative to vaultProjectPath
-    // Check if it matches ignore patterns (should be delegated)
-    const shouldDelegate = matcher.isIgnored(vaultFile);
+    // Check if delegation decision is 'vault' (should be teleported to local)
+    const decision = decideDelegation(vaultFile, delegationConfig);
+    const shouldTeleport = decision === 'vault';
 
-    if (shouldDelegate) {
+    if (shouldTeleport) {
       filesToTeleport.push({
         vaultPath: path.join(vaultProjectPath, vaultFile),
         relativePath: vaultFile,
@@ -97,7 +97,7 @@ export async function teleportNotes(input: TeleportNotesInput): Promise<string> 
       skippedFiles.push({
         vaultPath: path.join(vaultProjectPath, vaultFile),
         relativePath: vaultFile,
-        reason: 'Does not match .withcontextignore patterns',
+        reason: 'Delegation decision is not vault',
       });
     }
   }

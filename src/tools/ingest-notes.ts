@@ -3,8 +3,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { ObsidianClient } from '../obsidian/index.js';
 import { sessionState } from '../session-state.js';
-import { config } from '../config/index.js';
-import { IgnoreConfig } from '../doc-delegator/ignore-config.js';
+import { config, loadDelegationConfigOrDefault } from '../config/index.js';
+import { decideDelegation } from '../doc-delegator/delegation-decision.js';
 
 const DOC_EXTENSIONS = ['.md', '.txt', '.rst', '.adoc'];
 
@@ -109,14 +109,13 @@ export async function ingestNotes(input: IngestNotesInput): Promise<string> {
   // Get project root (cwd or detected git root)
   const projectRoot = context.cwd || process.cwd();
 
-  // Load .withcontextignore patterns
-  const ignoreConfig = IgnoreConfig.getInstance(projectRoot);
-  const matcher = await ignoreConfig.getMatcher();
+  // Load delegation config (.withcontextconfig.jsonc)
+  const delegationConfig = await loadDelegationConfigOrDefault(projectRoot);
 
   // Find all documentation files in project
   const allDocFiles = await findDocFiles(projectRoot);
 
-  // Filter files that should be delegated (match ignore patterns)
+  // Filter files that should be delegated to vault
   const filesToIngest: Array<{ localPath: string; relativePath: string }> = [];
   const skippedFiles: Array<{ localPath: string; relativePath: string; reason: string }> = [];
 
@@ -124,10 +123,10 @@ export async function ingestNotes(input: IngestNotesInput): Promise<string> {
     // Get relative path from project root
     const relativePath = path.relative(projectRoot, filePath);
 
-    // Check if file matches ignore patterns (should be delegated)
-    const shouldDelegate = matcher.isIgnored(relativePath);
+    // Check delegation decision
+    const decision = decideDelegation(relativePath, delegationConfig);
 
-    if (shouldDelegate) {
+    if (decision === 'vault') {
       filesToIngest.push({
         localPath: filePath,
         relativePath,
@@ -136,7 +135,7 @@ export async function ingestNotes(input: IngestNotesInput): Promise<string> {
       skippedFiles.push({
         localPath: filePath,
         relativePath,
-        reason: 'Does not match .withcontextignore patterns',
+        reason: 'Delegation decision: local (not delegated to vault)',
       });
     }
   }

@@ -59,7 +59,7 @@ function calculateSpecificity(pattern: string): number {
 }
 
 /**
- * Normalize path for matching (same logic as IgnorePatternMatcher)
+ * Normalize path for matching
  */
 function normalizePath(filePath: string): string {
   // Convert Windows paths to Unix-style

@@ -327,7 +327,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: 'ingest_notes',
       description:
-        'Scan the current project for documentation files that match .withcontextignore patterns and copy them to Obsidian vault. Maintains directory structure.',
+        'Scan the current project for documentation files with delegation decision "vault" (configured in .withcontextconfig.jsonc) and copy them to Obsidian vault. Maintains directory structure.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -357,7 +357,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: 'teleport_notes',
       description:
-        'Teleport documentation files from Obsidian vault to local project. Filters by .withcontextignore patterns. Maintains directory structure.',
+        'Teleport documentation files from Obsidian vault to local project. Only files with delegation decision "vault" (configured in .withcontextconfig.jsonc) are teleported. Maintains directory structure.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -387,7 +387,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: 'sync_notes',
       description:
-        'Bidirectionally sync documentation files between local project and Obsidian vault. Files matching .withcontextignore patterns are moved between locations (deleted from source after successful copy).',
+        'Bidirectionally sync documentation files between local project and Obsidian vault. Files with delegation decision "vault" are moved to vault, files with decision "local" are moved to project (deleted from source after successful copy). Configured in .withcontextconfig.jsonc.',
       inputSchema: {
         type: 'object',
         properties: {

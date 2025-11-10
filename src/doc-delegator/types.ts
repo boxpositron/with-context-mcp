@@ -1,6 +1,5 @@
 /**
  * Types and interfaces for documentation delegation features
- * Shared between ignore patterns and read interception functionality
  */
 
 /**
@@ -10,66 +9,6 @@
  * - vault-only: Only read from vault, fail if not found
  */
 export type DelegationStrategy = 'local-first' | 'vault-first' | 'vault-only';
-
-/**
- * Configuration for ignore pattern matching
- */
-export interface IgnorePatternConfig {
-  /**
-   * List of patterns to ignore (delegate to vault)
-   */
-  patterns: string[];
-
-  /**
-   * List of negation patterns (include patterns that start with !)
-   */
-  negatePatterns: string[];
-
-  /**
-   * Whether the configuration was successfully loaded
-   */
-  configLoaded: boolean;
-
-  /**
-   * Project root directory (for relative path resolution)
-   */
-  projectRoot: string;
-}
-
-/**
- * Configuration for read interception
- */
-export interface ReadInterceptorConfig {
-  /**
-   * Project root directory
-   */
-  projectRoot: string;
-
-  /**
-   * Strategy for reading files
-   */
-  readStrategy: DelegationStrategy;
-
-  /**
-   * Whether to enable caching
-   */
-  enableCache: boolean;
-
-  /**
-   * Cache TTL in milliseconds
-   */
-  cacheTTL: number;
-
-  /**
-   * Whether to show feedback messages
-   */
-  showFeedback: boolean;
-
-  /**
-   * Timeout for vault operations in milliseconds
-   */
-  timeout: number;
-}
 
 /**
  * Result of delegation decision
