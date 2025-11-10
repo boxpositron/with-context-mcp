@@ -14,15 +14,31 @@ import {
   ingestNotes as mcpIngestNotes,
   syncNotes as mcpSyncNotes,
   teleportNotes as mcpTeleportNotes,
+  // Session management tools
+  startSession as mcpStartSession,
+  pauseSession as mcpPauseSession,
+  resumeSession as mcpResumeSession,
+  endSession as mcpEndSession,
+  getSessionStatus as mcpGetSessionStatus,
+  // Changelog and todo tools
+  addChangelogEntry as mcpAddChangelogEntry,
+  getSessionChangelog as mcpGetSessionChangelog,
+  getCommitSuggestion as mcpGetCommitSuggestion,
+  addTodo as mcpAddTodo,
+  updateTodo as mcpUpdateTodo,
+  listTodos as mcpListTodos,
 } from 'with-context-mcp/tools';
 
 /**
- * WithContext OpenCode Plugin - Monolithic Version
+ * WithContext OpenCode Plugin - Enhanced Version
  *
  * Provides project-scoped note management for OpenCode sessions
  * Integrates with Obsidian and other note-taking apps via with-context-mcp
  *
  * All tools are defined inline for easy distribution and deployment
+ *
+ * Note: Full auto-tracking capabilities require OpenCode plugin API enhancements.
+ * Current version provides all MCP tools as native OpenCode tools.
  */
 export const WithContextPlugin: Plugin = async ({ project: _project, directory: _directory }) => {
   // Initialize plugin state
@@ -37,6 +53,8 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
       // Silent cleanup on session idle
       if (event.type === 'session.idle') {
         // No-op: cleanup if needed
+        // Note: Full session status display requires access to SessionManager
+        // which needs to be initialized within tool context
       }
     },
 
@@ -51,9 +69,10 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             {
               status: 'active',
               config,
-              version: '2.0.1',
-              tools: 14,
+              version: '3.0.0',
+              tools: 25,
               custom_commands: 3,
+              note: 'Full auto-tracking requires OpenCode plugin API enhancements. Use session tools manually for now.',
             },
             null,
             2
@@ -460,6 +479,300 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
               dry_run: args.dry_run ?? false,
               delete_from_vault: args.delete_from_vault ?? false,
               force_delete: args.force_delete ?? false,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Start Session Tool ====================
+      start_session: tool({
+        description:
+          'Start a new development session for the project. Creates a new session and persists it to vault. Sets the project context for subsequent operations.',
+        args: {
+          project_folder: tool.schema
+            .string()
+            .describe('Project folder name in vault (e.g., "my-project")'),
+          message: tool.schema
+            .string()
+            .optional()
+            .describe('Optional message to describe session purpose'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpStartSession({
+              project_folder: args.project_folder,
+              message: args.message,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Pause Session Tool ====================
+      pause_session: tool({
+        description:
+          'Pause the current active session. Saves session state to vault and clears timers. Session can be resumed later with resume_session.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpPauseSession({
+              project_folder: args.project_folder,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Resume Session Tool ====================
+      resume_session: tool({
+        description:
+          'Resume a paused session. If session_id is provided, loads that specific session from vault. Otherwise, resumes the most recent paused session.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          session_id: tool.schema
+            .string()
+            .optional()
+            .describe('Optional session ID to resume (defaults to most recent paused session)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpResumeSession({
+              project_folder: args.project_folder,
+              session_id: args.session_id,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== End Session Tool ====================
+      end_session: tool({
+        description:
+          'Complete and archive the current session. Marks session as completed, saves final state to vault archive, and clears active session. Generates comprehensive summary.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          message: tool.schema
+            .string()
+            .optional()
+            .describe('Optional completion message or summary'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpEndSession({
+              project_folder: args.project_folder,
+              message: args.message,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Get Session Status Tool ====================
+      get_session_status: tool({
+        description:
+          'Get current session status and comprehensive details. Returns session information including ID, status, duration, files tracked, todos, changelog entries, git context, and metadata.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpGetSessionStatus({
+              project_folder: args.project_folder,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Add Changelog Entry Tool ====================
+      add_changelog_entry: tool({
+        description:
+          'Add a changelog entry to the current session. User provides type and message for semi-automatic tracking. Entry is immediately persisted to session state.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          type: tool.schema
+            .enum(['feature', 'fix', 'refactor', 'docs', 'test', 'chore'])
+            .describe('Type of change (conventional commit type)'),
+          message: tool.schema.string().describe('Description of the change'),
+          files: tool.schema
+            .array(tool.schema.string())
+            .optional()
+            .describe('Optional: Files affected by this change'),
+          breaking: tool.schema
+            .boolean()
+            .optional()
+            .describe('Optional: Whether this is a breaking change'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpAddChangelogEntry({
+              project_folder: args.project_folder,
+              type: args.type as 'feature' | 'fix' | 'refactor' | 'docs' | 'test' | 'chore',
+              message: args.message,
+              files: args.files,
+              breaking: args.breaking,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Get Session Changelog Tool ====================
+      get_session_changelog: tool({
+        description:
+          'View changelog for the current session. Returns all entries grouped by type with file counts and breaking change indicators.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpGetSessionChangelog({
+              project_folder: args.project_folder,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Get Commit Suggestion Tool ====================
+      get_commit_suggestion: tool({
+        description:
+          'Generate a conventional commit message from session changelog. Analyzes entries to determine primary type and formats message. Includes all changes as bullet points and detects breaking changes.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          conventional: tool.schema
+            .boolean()
+            .optional()
+            .describe('Use conventional commit format (default: true)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpGetCommitSuggestion({
+              project_folder: args.project_folder,
+              conventional: args.conventional ?? true,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Add Todo Tool ====================
+      add_todo: tool({
+        description:
+          'Add a todo to the current session. Todos persist across sessions and are tracked per project. Immediately saved to session state in vault.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          content: tool.schema.string().describe('Todo content/description'),
+          priority: tool.schema
+            .enum(['high', 'medium', 'low'])
+            .optional()
+            .describe('Priority level (default: medium)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpAddTodo({
+              project_folder: args.project_folder,
+              content: args.content,
+              priority: (args.priority as 'high' | 'medium' | 'low') ?? 'medium',
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Update Todo Tool ====================
+      update_todo: tool({
+        description:
+          'Update todo status or priority. Automatically sets completedAt timestamp when marked as completed. Changes are immediately persisted to vault.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          todo_id: tool.schema.string().describe('Todo ID to update'),
+          status: tool.schema
+            .enum(['pending', 'in_progress', 'completed', 'cancelled'])
+            .optional()
+            .describe('New status'),
+          priority: tool.schema.enum(['high', 'medium', 'low']).optional().describe('New priority'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpUpdateTodo({
+              project_folder: args.project_folder,
+              todo_id: args.todo_id,
+              status: args.status as
+                | 'pending'
+                | 'in_progress'
+                | 'completed'
+                | 'cancelled'
+                | undefined,
+              priority: args.priority as 'high' | 'medium' | 'low' | undefined,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== List Todos Tool ====================
+      list_todos: tool({
+        description:
+          'List todos from current session with optional filters. Returns todos grouped by status with counts and priority indicators. Can filter by status and/or priority.',
+        args: {
+          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          status: tool.schema
+            .enum(['pending', 'in_progress', 'completed', 'cancelled'])
+            .optional()
+            .describe('Filter by status'),
+          priority: tool.schema
+            .enum(['high', 'medium', 'low'])
+            .optional()
+            .describe('Filter by priority'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpListTodos({
+              project_folder: args.project_folder,
+              status: args.status as
+                | 'pending'
+                | 'in_progress'
+                | 'completed'
+                | 'cancelled'
+                | undefined,
+              priority: args.priority as 'high' | 'medium' | 'low' | undefined,
             });
             return result;
           } catch (error) {

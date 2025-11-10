@@ -35,19 +35,54 @@ import { teleportNotes, teleportNotesSchema } from './tools/teleport-notes.js';
 import { syncNotes, syncNotesSchema } from './tools/sync-notes.js';
 import { setupNotes, setupNotesSchema } from './tools/setup-notes.js';
 import {
-  migrateConfigTool,
-  migrateConfigToolSchema,
   validateConfigTool,
   validateConfigToolSchema,
   previewDelegationTool,
   previewDelegationToolSchema,
 } from './tools/config-tools.js';
+import {
+  startSession,
+  startSessionSchema,
+  startSessionToolSchema,
+  pauseSession,
+  pauseSessionSchema,
+  pauseSessionToolSchema,
+  resumeSession,
+  resumeSessionSchema,
+  resumeSessionToolSchema,
+  endSession,
+  endSessionSchema,
+  endSessionToolSchema,
+  getSessionStatus,
+  getSessionStatusSchema,
+  getSessionStatusToolSchema,
+} from './tools/session-tools.js';
+import {
+  addChangelogEntry,
+  addChangelogEntrySchema,
+  addChangelogEntryToolSchema,
+  getSessionChangelog,
+  getSessionChangelogSchema,
+  getSessionChangelogToolSchema,
+  getCommitSuggestion,
+  getCommitSuggestionSchema,
+  getCommitSuggestionToolSchema,
+  addTodo,
+  addTodoSchema,
+  addTodoToolSchema,
+  updateTodo,
+  updateTodoSchema,
+  updateTodoToolSchema,
+  listTodos,
+  listTodosSchema,
+  listTodosToolSchema,
+} from './tools/changelog-todo-tools.js';
 
 // Initialize MCP Server
 const server = new Server(
   {
     name: 'with-context-mcp',
-    version: '2.1.0',
+    version: '3.0.0',
   },
   {
     capabilities: {
@@ -369,9 +404,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     setupNotesSchema,
-    migrateConfigToolSchema,
     validateConfigToolSchema,
     previewDelegationToolSchema,
+    startSessionToolSchema,
+    pauseSessionToolSchema,
+    resumeSessionToolSchema,
+    endSessionToolSchema,
+    getSessionStatusToolSchema,
+    addChangelogEntryToolSchema,
+    getSessionChangelogToolSchema,
+    getCommitSuggestionToolSchema,
+    addTodoToolSchema,
+    updateTodoToolSchema,
+    listTodosToolSchema,
   ],
 }));
 
@@ -492,14 +537,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'migrate_config': {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result = await migrateConfigTool(args as any);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
-      }
-
       case 'validate_config': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await validateConfigTool(args as any);
@@ -511,6 +548,94 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'preview_delegation': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await previewDelegationTool(args as any);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'start_session': {
+        const input = startSessionSchema.parse(args);
+        const result = await startSession(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'pause_session': {
+        const input = pauseSessionSchema.parse(args);
+        const result = await pauseSession(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'resume_session': {
+        const input = resumeSessionSchema.parse(args);
+        const result = await resumeSession(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'end_session': {
+        const input = endSessionSchema.parse(args);
+        const result = await endSession(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'get_session_status': {
+        const input = getSessionStatusSchema.parse(args);
+        const result = await getSessionStatus(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'add_changelog_entry': {
+        const input = addChangelogEntrySchema.parse(args);
+        const result = await addChangelogEntry(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'get_session_changelog': {
+        const input = getSessionChangelogSchema.parse(args);
+        const result = await getSessionChangelog(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'get_commit_suggestion': {
+        const input = getCommitSuggestionSchema.parse(args);
+        const result = await getCommitSuggestion(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'add_todo': {
+        const input = addTodoSchema.parse(args);
+        const result = await addTodo(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'update_todo': {
+        const input = updateTodoSchema.parse(args);
+        const result = await updateTodo(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'list_todos': {
+        const input = listTodosSchema.parse(args);
+        const result = await listTodos(input);
         return {
           content: [{ type: 'text', text: result }],
         };

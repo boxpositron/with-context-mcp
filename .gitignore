@@ -13,3 +13,4 @@ test-opencode-plugin/
 
 # EXCEPTION: Commit plugin dist for easy user installation
 !plugin/dist/
+.env.npm

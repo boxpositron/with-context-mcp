@@ -28,3 +28,44 @@ export { setProjectContext, setProjectContextSchema } from './set-project-contex
 export { ingestNotes, ingestNotesSchema, type IngestNotesInput } from './ingest-notes.js';
 export { teleportNotes, teleportNotesSchema, type TeleportNotesInput } from './teleport-notes.js';
 export { syncNotes, syncNotesSchema, type SyncNotesInput } from './sync-notes.js';
+
+// Session management tools
+export {
+  startSession,
+  startSessionSchema,
+  type StartSessionInput,
+  pauseSession,
+  pauseSessionSchema,
+  type PauseSessionInput,
+  resumeSession,
+  resumeSessionSchema,
+  type ResumeSessionInput,
+  endSession,
+  endSessionSchema,
+  type EndSessionInput,
+  getSessionStatus,
+  getSessionStatusSchema,
+  type GetSessionStatusInput,
+} from './session-tools.js';
+
+// Changelog and todo management tools
+export {
+  addChangelogEntry,
+  addChangelogEntrySchema,
+  type AddChangelogEntryInput,
+  getSessionChangelog,
+  getSessionChangelogSchema,
+  type GetSessionChangelogInput,
+  getCommitSuggestion,
+  getCommitSuggestionSchema,
+  type GetCommitSuggestionInput,
+  addTodo,
+  addTodoSchema,
+  type AddTodoInput,
+  updateTodo,
+  updateTodoSchema,
+  type UpdateTodoInput,
+  listTodos,
+  listTodosSchema,
+  type ListTodosInput,
+} from './changelog-todo-tools.js';

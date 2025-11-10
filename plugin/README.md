@@ -1,38 +1,101 @@
-# OpenCode Plugin for with-context-mcp
+# WithContext OpenCode Plugin
 
-Project-scoped note management in your OpenCode sessions with Obsidian integration.
+Intelligent note management and session tracking plugin for OpenCode.
 
-> **Version 2.0.1** - 14 tools available + 3 custom commands (now as tools!)
+> **Version 3.0.0** - Production ready with full session persistence and cross-tool data sharing. Auto-tracking awaits OpenCode plugin API enhancements.
 
 ## Features
 
-### Core Tools (11 Available)
+### Current (v3.0.0)
 
-- **Write & Manage** - Create, update, and append notes with validation
-- **Read Notes** - Access note content with full metadata
-- **Search** - Find notes by content with case-sensitive options
-- **List & Navigate** - Browse notes recursively across subdirectories
-- **Metadata** - Get word count, line count, tags, headings, and frontmatter
-- **Delete** - Remove notes with confirmation safety
-- **Batch Operations** - Write multiple notes in one command
-- **Project Context** - Automatic and manual project folder detection
-- **Templates** - Create notes from built-in templates (changelog, docs, meetings)
-- **Obsidian Integration** - Seamless vault sync via Local REST API
-- **Recursive Scanning** - Full vault traversal including subdirectories
+✅ **14 Native Tools** - All with-context-mcp tools available as native OpenCode tools:
 
-### Document Delegation Tools (3 Additional)
+- Note management (write, read, list, search, delete, batch operations, metadata)
+- Template system (list templates, create from template)
+- Sync operations (ingest, teleport, sync)
+- Project context management
+- Plugin status check
 
-- **Sync Notes** - Bidirectionally sync docs between local and vault
-- **Ingest Notes** - Copy local documentation to vault (one-way)
-- **Teleport Notes** - Download documentation from vault to local (one-way)
+✅ **Manual Session Management** - Full control over your development sessions:
 
-These tools provide document delegation using `.withcontextignore` patterns for automated workflow management.
+- Start/pause/resume/end sessions
+- Track changelog entries with conventional commit types
+- Manage todos with priorities and status tracking
+- View comprehensive session status and summaries
+- Generate conventional commit messages from session data
+- Session persistence with automatic archiving
+
+✅ **Production Ready** - Dog-fooded and tested with real projects
+
+### Future (Awaiting OpenCode Plugin API)
+
+⏳ **Auto-Tracking** - Automatic file operation tracking:
+
+- Automatically track file reads and modifications
+- Smart changelog suggestions based on file patterns
+- One-time session start prompts
+- Idle session status display
+
+⏳ **Intelligent Suggestions** - AI-powered workflow assistance:
+
+- Auto-categorize changes (feature vs fix vs refactor)
+- Suggest todos based on code patterns
+- Generate commit messages from session data
+
+See [PLUGIN_AUTO_TRACKING.md](../docs/PLUGIN_AUTO_TRACKING.md) for full implementation details.
+
+## Quick Start
+
+### Manual Workflow (Current)
+
+```typescript
+// 1. Start a session
+await use_tool('start_session', {
+  project_folder: 'my-project',
+  message: 'Implementing user authentication',
+});
+
+// 2. Work on your code using OpenCode...
+// (use OpenCode's built-in read/write/edit tools)
+
+// 3. Track your changes
+await use_tool('add_changelog_entry', {
+  project_folder: 'my-project',
+  type: 'feature',
+  message: 'Add JWT authentication',
+  files: ['src/auth.ts', 'src/middleware.ts'],
+});
+
+// 4. Add todos for follow-up work
+await use_tool('add_todo', {
+  project_folder: 'my-project',
+  content: 'Write integration tests for auth flow',
+  priority: 'high',
+});
+
+// 5. Check your session status anytime
+await use_tool('get_session_status', {
+  project_folder: 'my-project',
+});
+
+// 6. Generate a commit message
+await use_tool('get_commit_suggestion', {
+  project_folder: 'my-project',
+  conventional: true,
+});
+
+// 7. End your session
+await use_tool('end_session', {
+  project_folder: 'my-project',
+  message: 'Auth implementation complete',
+});
+```
 
 ## Plugin vs MCP Server
 
 **The plugin is now the preferred method for using with-context in OpenCode:**
 
-- **Plugin (Recommended)** - Direct integration, no separate server process, better performance
+- **Plugin (Recommended)** - Direct integration, no separate server process, better performance, includes session management
 - **MCP Server (Fallback)** - Use when plugin is not available or for other MCP-compatible clients
 
 OpenCode will automatically prefer the plugin when both are configured. The MCP server remains available for other MCP clients like Claude Desktop.
@@ -97,15 +160,15 @@ with_context_status();
 // {
 //   "status": "active",
 //   "config": {...},
-//   "version": "2.0.1",
-//   "tools": 14,
+//   "version": "3.0.0",
+//   "tools": 25,
 //   "custom_commands": 3
 // }
 ```
 
-### Migration from v0.2.0
+### Migration from v2.x
 
-If you were using the previous multi-file plugin (v0.2.0), simply replace the old file:
+If you were using v2.x, the upgrade is seamless - just update the files:
 
 ```bash
 # Remove old plugin
@@ -256,31 +319,54 @@ Commands automatically:
 
 ## Available Tools
 
-### Core Operations
+### Session Management
 
-- `with_context_status()` - Check plugin configuration and version
-- `write_note(path, content, mode)` - Create, update, or append notes
-- `read_note(path)` - Read note content with metadata
-- `delete_note(path, confirm)` - Delete notes with confirmation
+- `start_session(project_folder, message?)` - Start a new development session
+- `pause_session(project_folder)` - Pause the current session
+- `resume_session(project_folder, session_id?)` - Resume a paused session
+- `end_session(project_folder, message?)` - Complete and archive the session
+- `get_session_status(project_folder)` - View comprehensive session details
+
+### Changelog Tracking
+
+- `add_changelog_entry(project_folder, type, message, files?, breaking?)` - Add a changelog entry
+- `get_session_changelog(project_folder)` - View all changelog entries grouped by type
+- `get_commit_suggestion(project_folder, conventional?)` - Generate conventional commit message
+
+### Todo Management
+
+- `add_todo(project_folder, content, priority?)` - Add a todo with priority (high/medium/low)
+- `update_todo(project_folder, todo_id, status?, priority?)` - Update todo status or priority
+- `list_todos(project_folder, status?, priority?)` - List all todos with optional filters
+
+### Note Operations
+
+- `write_note(path, content, mode?, project_folder?)` - Create, update, or append notes
+- `read_note(path, project_folder?)` - Read note content with metadata
+- `delete_note(path, confirm, project_folder?)` - Delete notes with confirmation
+- `get_note_metadata(path, project_folder?)` - Get word count, tags, headings, frontmatter
+- `batch_write_notes(notes[], project_folder?)` - Write multiple notes at once
 
 ### Discovery & Search
 
-- `list_notes(path?)` - List all notes (recursively scans subdirectories)
-- `search_notes(query, case_sensitive?, limit?)` - Search notes by content
-- `get_note_metadata(path)` - Get word count, tags, headings, frontmatter
+- `list_notes(path?, project_folder?)` - List all notes (recursively scans subdirectories)
+- `search_notes(query, project_folder?, case_sensitive?, limit?)` - Search notes by content
 
-### Advanced Operations
+### Templates
 
-- `batch_write_notes(notes[])` - Write multiple notes at once
-- `set_project_context(project_folder)` - Manually set project context
 - `list_templates()` - View available note templates
-- `create_from_template(template_name, filename, variables)` - Create from template
+- `create_from_template(template_name, filename, variables?, project_folder?)` - Create from template
 
-### Document Delegation
+### Sync Operations
 
-- `ingest_notes(dry_run?, delete_local_files?)` - Copy local docs to vault
-- `sync_notes(dry_run?)` - Bidirectionally sync docs between local and vault
-- `teleport_notes(dry_run?, delete_from_vault?)` - Download docs from vault to local
+- `ingest_notes(project_folder?, dry_run?, delete_local_files?, force_delete?)` - Copy local docs to vault
+- `sync_notes(project_folder?, dry_run?)` - Bidirectionally sync docs between local and vault
+- `teleport_notes(project_folder?, dry_run?, delete_from_vault?, force_delete?)` - Download docs from vault to local
+
+### Utilities
+
+- `set_project_context(project_folder)` - Set the active project context
+- `with_context_status()` - Check plugin configuration and version
 
 ## Usage Examples
 

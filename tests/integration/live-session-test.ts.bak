@@ -1,0 +1,461 @@
+/**
+ * Live Session Workflow Test
+ * Tests the actual session tools with real Obsidian API
+ */
+
+import { startSession, pauseSession, resumeSession, endSession, getSessionStatus } from '../../src/tools/session-tools.js';
+import { addTodo, updateTodo, listTodos, addChangelogEntry, getSessionChangelog, getCommitSuggestion } from '../../src/tools/changelog-todo-tools.js';
+
+const PROJECT_FOLDER = '/Users/davidibia/Projects/MCP/with-context-mcp';
+
+interface TestResult {
+  testName: string;
+  status: 'PASS' | 'FAIL';
+  sessionId?: string;
+  vaultPath?: string;
+  error?: string;
+  details?: any;
+}
+
+const results: TestResult[] = [];
+
+function log(message: string) {
+  console.log(`\n${'='.repeat(80)}`);
+  console.log(message);
+  console.log('='.repeat(80));
+}
+
+function parseResult(jsonString: string) {
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    console.error('Failed to parse JSON:', jsonString);
+    throw e;
+  }
+}
+
+async function test1_BasicSessionLifecycle() {
+  log('TEST 1: Basic Session Lifecycle');
+  
+  try {
+    // 1. Start session
+    console.log('\n1. Starting session...');
+    const startResult = parseResult(await startSession({
+      project_folder: PROJECT_FOLDER,
+      message: 'Final verification after path fix'
+    }));
+    console.log('Start result:', JSON.stringify(startResult, null, 2));
+    
+    if (!startResult.success) throw new Error('Failed to start session');
+    const sessionId = startResult.session_id;
+    const vaultPath = startResult.vault_path;
+    
+    // Check for double slashes
+    if (vaultPath?.includes('//')) {
+      throw new Error(`Double slashes detected in vault path: ${vaultPath}`);
+    }
+    
+    // 2. Get status - verify active
+    console.log('\n2. Getting session status (should be active)...');
+    const status1 = parseResult(await getSessionStatus({ project_folder: PROJECT_FOLDER }));
+    console.log('Status:', JSON.stringify(status1, null, 2));
+    
+    if (!status1.has_active_session || status1.session.status !== 'active') {
+      throw new Error('Session not active after start');
+    }
+    
+    // 3. Pause session
+    console.log('\n3. Pausing session...');
+    const pauseResult = parseResult(await pauseSession({ project_folder: PROJECT_FOLDER }));
+    console.log('Pause result:', JSON.stringify(pauseResult, null, 2));
+    
+    if (!pauseResult.success) throw new Error('Failed to pause session');
+    
+    // 4. Get status - verify paused
+    console.log('\n4. Getting session status (should be paused)...');
+    const status2 = parseResult(await getSessionStatus({ project_folder: PROJECT_FOLDER }));
+    console.log('Status:', JSON.stringify(status2, null, 2));
+    
+    if (!status2.has_active_session || status2.session.status !== 'paused') {
+      throw new Error('Session not paused after pause');
+    }
+    
+    // 5. Resume session
+    console.log('\n5. Resuming session...');
+    const resumeResult = parseResult(await resumeSession({ project_folder: PROJECT_FOLDER }));
+    console.log('Resume result:', JSON.stringify(resumeResult, null, 2));
+    
+    if (!resumeResult.success) throw new Error('Failed to resume session');
+    
+    // 6. Get status - verify active again
+    console.log('\n6. Getting session status (should be active again)...');
+    const status3 = parseResult(await getSessionStatus({ project_folder: PROJECT_FOLDER }));
+    console.log('Status:', JSON.stringify(status3, null, 2));
+    
+    if (!status3.has_active_session || status3.session.status !== 'active') {
+      throw new Error('Session not active after resume');
+    }
+    
+    // 7. End session
+    console.log('\n7. Ending session...');
+    const endResult = parseResult(await endSession({ project_folder: PROJECT_FOLDER }));
+    console.log('End result:', JSON.stringify(endResult, null, 2));
+    
+    if (!endResult.success) throw new Error('Failed to end session');
+    
+    // 8. Get status - verify no active session
+    console.log('\n8. Getting session status (should be no active session)...');
+    const status4 = parseResult(await getSessionStatus({ project_folder: PROJECT_FOLDER }));
+    console.log('Status:', JSON.stringify(status4, null, 2));
+    
+    if (status4.has_active_session) {
+      throw new Error('Session still active after end');
+    }
+    
+    results.push({
+      testName: 'Test 1: Basic Session Lifecycle',
+      status: 'PASS',
+      sessionId,
+      vaultPath,
+      details: { message: 'All lifecycle operations successful' }
+    });
+    
+  } catch (error: any) {
+    results.push({
+      testName: 'Test 1: Basic Session Lifecycle',
+      status: 'FAIL',
+      error: error.message
+    });
+  }
+}
+
+async function test2_TodoPersistence() {
+  log('TEST 2: Todo Persistence');
+  
+  try {
+    // 1. Start session
+    console.log('\n1. Starting session...');
+    const startResult = parseResult(await startSession({
+      project_folder: PROJECT_FOLDER,
+      message: 'Todo persistence test'
+    }));
+    const sessionId = startResult.session_id;
+    
+    // 2. Add 3 todos
+    console.log('\n2. Adding 3 todos...');
+    await addTodo({ project_folder: PROJECT_FOLDER, content: 'High priority task', priority: 'high' });
+    await addTodo({ project_folder: PROJECT_FOLDER, content: 'Medium priority task', priority: 'medium' });
+    await addTodo({ project_folder: PROJECT_FOLDER, content: 'Low priority task', priority: 'low' });
+    
+    // 3. List todos
+    console.log('\n3. Listing todos (should show 3)...');
+    const list1 = parseResult(await listTodos({ project_folder: PROJECT_FOLDER }));
+    console.log('Todos:', JSON.stringify(list1, null, 2));
+    
+    if (list1.todos.length !== 3) {
+      throw new Error(`Expected 3 todos, got ${list1.todos.length}`);
+    }
+    
+    const firstTodoId = list1.todos[0].id;
+    
+    // 4. Update first todo
+    console.log('\n4. Updating first todo to in_progress...');
+    await updateTodo({ project_folder: PROJECT_FOLDER, todo_id: firstTodoId, status: 'in_progress' });
+    
+    // 5. List todos - verify update
+    console.log('\n5. Listing todos (verify update)...');
+    const list2 = parseResult(await listTodos({ project_folder: PROJECT_FOLDER }));
+    console.log('Todos:', JSON.stringify(list2, null, 2));
+    
+    const updatedTodo = list2.todos.find((t: any) => t.id === firstTodoId);
+    if (updatedTodo?.status !== 'in_progress') {
+      throw new Error('Todo status not updated');
+    }
+    
+    // 6. Pause session
+    console.log('\n6. Pausing session...');
+    await pauseSession({ project_folder: PROJECT_FOLDER });
+    
+    // 7. Resume session
+    console.log('\n7. Resuming session...');
+    await resumeSession({ project_folder: PROJECT_FOLDER });
+    
+    // 8. List todos - CRITICAL: should still show all 3
+    console.log('\n8. Listing todos after resume (CRITICAL: should still show 3)...');
+    const list3 = parseResult(await listTodos({ project_folder: PROJECT_FOLDER }));
+    console.log('Todos:', JSON.stringify(list3, null, 2));
+    
+    if (list3.todos.length !== 3) {
+      throw new Error(`Expected 3 todos after resume, got ${list3.todos.length}`);
+    }
+    
+    const persistedTodo = list3.todos.find((t: any) => t.id === firstTodoId);
+    if (persistedTodo?.status !== 'in_progress') {
+      throw new Error('Todo status not persisted across pause/resume');
+    }
+    
+    // 9. End session
+    console.log('\n9. Ending session...');
+    await endSession({ project_folder: PROJECT_FOLDER });
+    
+    results.push({
+      testName: 'Test 2: Todo Persistence',
+      status: 'PASS',
+      sessionId,
+      details: { todosCount: 3, persistedAcrossPauseResume: true }
+    });
+    
+  } catch (error: any) {
+    results.push({
+      testName: 'Test 2: Todo Persistence',
+      status: 'FAIL',
+      error: error.message
+    });
+  }
+}
+
+async function test3_ChangelogPersistence() {
+  log('TEST 3: Changelog Persistence');
+  
+  try {
+    // 1. Start session
+    console.log('\n1. Starting session...');
+    const startResult = parseResult(await startSession({
+      project_folder: PROJECT_FOLDER,
+      message: 'Changelog persistence test'
+    }));
+    const sessionId = startResult.session_id;
+    
+    // 2. Add 3 changelog entries
+    console.log('\n2. Adding 3 changelog entries...');
+    await addChangelogEntry({ project_folder: PROJECT_FOLDER, type: 'feature', message: 'Add new feature' });
+    await addChangelogEntry({ project_folder: PROJECT_FOLDER, type: 'fix', message: 'Fix critical bug' });
+    await addChangelogEntry({ project_folder: PROJECT_FOLDER, type: 'test', message: 'Add integration tests' });
+    
+    // 3. Get changelog
+    console.log('\n3. Getting changelog (should show 3 entries)...');
+    const changelog1 = parseResult(await getSessionChangelog({ project_folder: PROJECT_FOLDER }));
+    console.log('Changelog:', JSON.stringify(changelog1, null, 2));
+    
+    if (changelog1.total_entries !== 3) {
+      throw new Error(`Expected 3 changelog entries, got ${changelog1.total_entries}`);
+    }
+    
+    // 4. Pause session
+    console.log('\n4. Pausing session...');
+    await pauseSession({ project_folder: PROJECT_FOLDER });
+    
+    // 5. Resume session
+    console.log('\n5. Resuming session...');
+    await resumeSession({ project_folder: PROJECT_FOLDER });
+    
+    // 6. Get changelog - CRITICAL: should still show all 3
+    console.log('\n6. Getting changelog after resume (CRITICAL: should still show 3)...');
+    const changelog2 = parseResult(await getSessionChangelog({ project_folder: PROJECT_FOLDER }));
+    console.log('Changelog:', JSON.stringify(changelog2, null, 2));
+    
+    if (changelog2.total_entries !== 3) {
+      throw new Error(`Expected 3 changelog entries after resume, got ${changelog2.total_entries}`);
+    }
+    
+    // 7. Get commit suggestion
+    console.log('\n7. Getting commit suggestion...');
+    const commitSuggestion = parseResult(await getCommitSuggestion({ project_folder: PROJECT_FOLDER }));
+    console.log('Commit suggestion:', JSON.stringify(commitSuggestion, null, 2));
+    
+    if (!commitSuggestion.success) {
+      throw new Error('Failed to generate commit suggestion');
+    }
+    
+    // 8. End session
+    console.log('\n8. Ending session...');
+    await endSession({ project_folder: PROJECT_FOLDER });
+    
+    results.push({
+      testName: 'Test 3: Changelog Persistence',
+      status: 'PASS',
+      sessionId,
+      details: { changelogEntries: 3, persistedAcrossPauseResume: true }
+    });
+    
+  } catch (error: any) {
+    results.push({
+      testName: 'Test 3: Changelog Persistence',
+      status: 'FAIL',
+      error: error.message
+    });
+  }
+}
+
+async function test4_CrossToolPersistence() {
+  log('TEST 4: Cross-Tool Persistence (MOST CRITICAL)');
+  
+  try {
+    // 1. Start session
+    console.log('\n1. Starting session...');
+    const startResult = parseResult(await startSession({
+      project_folder: PROJECT_FOLDER,
+      message: 'Cross-tool persistence final test'
+    }));
+    const sessionId = startResult.session_id;
+    
+    // 2. Add todo before pause
+    console.log('\n2. Adding todo: "Before pause"...');
+    await addTodo({ project_folder: PROJECT_FOLDER, content: 'Before pause' });
+    
+    // 3. Add changelog before pause
+    console.log('\n3. Adding changelog: feature "Before pause"...');
+    await addChangelogEntry({ project_folder: PROJECT_FOLDER, type: 'feature', message: 'Before pause' });
+    
+    // 4. Pause session
+    console.log('\n4. Pausing session...');
+    await pauseSession({ project_folder: PROJECT_FOLDER });
+    
+    // 5. Resume session
+    console.log('\n5. Resuming session...');
+    await resumeSession({ project_folder: PROJECT_FOLDER });
+    
+    // 6. Add todo after resume
+    console.log('\n6. Adding todo: "After resume"...');
+    await addTodo({ project_folder: PROJECT_FOLDER, content: 'After resume' });
+    
+    // 7. Add changelog after resume
+    console.log('\n7. Adding changelog: fix "After resume"...');
+    await addChangelogEntry({ project_folder: PROJECT_FOLDER, type: 'fix', message: 'After resume' });
+    
+    // 8. List todos - MUST show both
+    console.log('\n8. Listing todos (MUST show both)...');
+    const todos = parseResult(await listTodos({ project_folder: PROJECT_FOLDER }));
+    console.log('Todos:', JSON.stringify(todos, null, 2));
+    
+    if (todos.todos.length !== 2) {
+      throw new Error(`Expected 2 todos, got ${todos.todos.length}`);
+    }
+    
+    const todoContents = todos.todos.map((t: any) => t.content);
+    if (!todoContents.includes('Before pause') || !todoContents.includes('After resume')) {
+      throw new Error('Todos not persisted correctly across pause/resume');
+    }
+    
+    // 9. Get changelog - MUST show both
+    console.log('\n9. Getting changelog (MUST show both entries)...');
+    const changelog = parseResult(await getSessionChangelog({ project_folder: PROJECT_FOLDER }));
+    console.log('Changelog:', JSON.stringify(changelog, null, 2));
+    
+    if (changelog.total_entries !== 2) {
+      throw new Error(`Expected 2 changelog entries, got ${changelog.total_entries}`);
+    }
+    
+    // 10. Get session status - verify counts
+    console.log('\n10. Getting session status (verify 2 todos, 2 changelog entries)...');
+    const status = parseResult(await getSessionStatus({ project_folder: PROJECT_FOLDER }));
+    console.log('Status:', JSON.stringify(status, null, 2));
+    
+    if (status.session.todos?.length !== 2) {
+      throw new Error(`Expected 2 todos in status, got ${status.session.todos?.length}`);
+    }
+    
+    if (status.session.changelog?.length !== 2) {
+      throw new Error(`Expected 2 changelog entries in status, got ${status.session.changelog?.length}`);
+    }
+    
+    // 11. End session
+    console.log('\n11. Ending session...');
+    await endSession({ project_folder: PROJECT_FOLDER });
+    
+    results.push({
+      testName: 'Test 4: Cross-Tool Persistence',
+      status: 'PASS',
+      sessionId,
+      details: {
+        todosBeforePause: 1,
+        todosAfterResume: 2,
+        changelogBeforePause: 1,
+        changelogAfterResume: 2,
+        crossToolPersistenceWorks: true
+      }
+    });
+    
+  } catch (error: any) {
+    results.push({
+      testName: 'Test 4: Cross-Tool Persistence',
+      status: 'FAIL',
+      error: error.message
+    });
+  }
+}
+
+async function runAllTests() {
+  console.log('\n\n');
+  console.log('╔════════════════════════════════════════════════════════════════════════════╗');
+  console.log('║                  LIVE SESSION WORKFLOW TEST SUITE                          ║');
+  console.log('║                  Testing with Real Obsidian API                            ║');
+  console.log('╚════════════════════════════════════════════════════════════════════════════╝');
+  
+  await test1_BasicSessionLifecycle();
+  await test2_TodoPersistence();
+  await test3_ChangelogPersistence();
+  await test4_CrossToolPersistence();
+  
+  // Print final report
+  console.log('\n\n');
+  console.log('╔════════════════════════════════════════════════════════════════════════════╗');
+  console.log('║                           FINAL TEST REPORT                                ║');
+  console.log('╚════════════════════════════════════════════════════════════════════════════╝');
+  
+  const passed = results.filter(r => r.status === 'PASS').length;
+  const failed = results.filter(r => r.status === 'FAIL').length;
+  
+  console.log(`\nTests passed: ${passed}/4`);
+  console.log(`Tests failed: ${failed}/4\n`);
+  
+  results.forEach((result, index) => {
+    const icon = result.status === 'PASS' ? '✅' : '❌';
+    console.log(`${icon} ${result.testName}`);
+    if (result.sessionId) console.log(`   Session ID: ${result.sessionId}`);
+    if (result.vaultPath) console.log(`   Vault Path: ${result.vaultPath}`);
+    if (result.error) console.log(`   Error: ${result.error}`);
+    if (result.details) console.log(`   Details: ${JSON.stringify(result.details)}`);
+    console.log('');
+  });
+  
+  // Final verdict
+  console.log('═'.repeat(80));
+  console.log('FINAL VERDICT:');
+  console.log('═'.repeat(80));
+  
+  const test4 = results.find(r => r.testName.includes('Test 4'));
+  const crossToolPersistenceWorks = test4?.status === 'PASS';
+  
+  console.log(`\n✓ Does cross-tool persistence work? ${crossToolPersistenceWorks ? 'YES ✅' : 'NO ❌'}`);
+  
+  if (test4?.details) {
+    console.log('\nProof:');
+    console.log(`  - Todos before pause: ${test4.details.todosBeforePause}`);
+    console.log(`  - Todos after resume: ${test4.details.todosAfterResume}`);
+    console.log(`  - Changelog before pause: ${test4.details.changelogBeforePause}`);
+    console.log(`  - Changelog after resume: ${test4.details.changelogAfterResume}`);
+  }
+  
+  const allPassed = passed === 4;
+  const noDoubleSlashes = !results.some(r => r.vaultPath?.includes('//'));
+  
+  console.log(`\n✓ Are the fixes successful? ${allPassed && noDoubleSlashes ? 'YES ✅' : 'NO ❌'}`);
+  console.log(`  Confidence level: ${allPassed ? '100%' : `${(passed / 4 * 100).toFixed(0)}%`}`);
+  
+  console.log(`\n✓ Ready for production? ${allPassed && crossToolPersistenceWorks ? 'YES ✅' : 'NO ❌'}`);
+  if (allPassed && crossToolPersistenceWorks) {
+    console.log('  Reasoning: All tests passed, cross-tool persistence verified, no path issues');
+  } else {
+    console.log(`  Reasoning: ${failed} test(s) failed, needs investigation`);
+  }
+  
+  console.log('\n' + '═'.repeat(80) + '\n');
+  
+  process.exit(allPassed ? 0 : 1);
+}
+
+runAllTests().catch(error => {
+  console.error('\n\nFATAL ERROR:', error);
+  process.exit(1);
+});

@@ -8,20 +8,17 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 **Currently supports:** Obsidian (via REST API)  
 **Coming soon:** Notion, Apple Notes, and more
 
-## What's New in v2.1.0
+## What's New in v3.0.0
 
-- **New Configuration Format**: `.withcontextconfig.jsonc` replaces `.withcontextignore` with explicit `vault` and `local` patterns
-- **Conflict Resolution**: Choose how to handle files matching multiple patterns (`local-wins`, `vault-wins`, `most-specific-wins`, `error`)
-- **JSON Schema Support**: IDE autocomplete and validation for configuration files
-- **New MCP Tools**:
-  - `setup_notes`: Setup configuration and vault folder structure
-  - `migrate_config`: Migrate from legacy `.withcontextignore` format
-  - `validate_config`: Validate configuration against schema
-  - `preview_delegation`: Preview delegation decisions for files
-- **Legacy Support**: Automatic migration and continued support for `.withcontextignore`
-- **Better Error Handling**: Detailed validation errors and conflict reporting
+- **Session Persistence**: Full cross-tool data persistence - todos and changelog survive tool calls
+- **Session Management**: Complete lifecycle tracking (start/pause/resume/end) with vault persistence
+- **Todo Management**: Track tasks with priorities and status across sessions
+- **Changelog Tracking**: Semi-automatic changelog with conventional commit support
+- **Enhanced Error Handling**: Better error messages and validation throughout
+- **OpenCode Plugin**: Direct integration with 25 native tools (v3.0.0)
+- **Breaking Change**: Removed legacy `.withcontextignore` format (use `.withcontextconfig.jsonc`)
 
-See [Migration Guide](#migration-from-withcontextignore) for upgrading from v2.0.x.
+See [CHANGELOG.md](CHANGELOG.md) for complete v3.0.0 details.
 
 ## Installation
 

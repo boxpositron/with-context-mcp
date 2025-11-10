@@ -4,109 +4,12 @@
  */
 
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
-import { migrateConfig, needsMigration, type MigrateConfigOptions } from './migrate-config.js';
 import { validateConfig, type ValidateConfigOptions } from './validate-config.js';
 import {
   previewDelegation,
   previewDelegationForFiles,
   type PreviewDelegationOptions,
 } from './preview-delegation.js';
-
-/**
- * Migrate configuration from .withcontextignore to .withcontextconfig.jsonc
- */
-export async function migrateConfigTool(args: {
-  project_root: string;
-  create_backup?: boolean;
-  keep_old_file?: boolean;
-  dry_run?: boolean;
-  force?: boolean;
-}): Promise<string> {
-  try {
-    const options: MigrateConfigOptions = {
-      projectRoot: args.project_root,
-      createBackup: args.create_backup ?? true,
-      keepOldFile: args.keep_old_file ?? true,
-      dryRun: args.dry_run ?? false,
-      force: args.force ?? false,
-    };
-
-    // Check if migration is needed
-    const needs = await needsMigration(args.project_root);
-
-    if (!needs && !args.force) {
-      return 'No migration needed. New configuration already exists or no legacy config found.';
-    }
-
-    // Perform migration
-    const result = await migrateConfig(options);
-
-    if (!result.success) {
-      throw new McpError(ErrorCode.InternalError, result.message);
-    }
-
-    // Format output
-    const lines: string[] = [];
-    lines.push('=== Configuration Migration ===\n');
-    lines.push(result.message);
-
-    if (result.configPreview && args.dry_run) {
-      lines.push('\n--- Preview of New Configuration ---');
-      lines.push(result.configPreview);
-    }
-
-    if (result.validationResult) {
-      lines.push('\n--- Validation ---');
-      lines.push(result.validationResult);
-    }
-
-    return lines.join('\n');
-  } catch (error) {
-    if (error instanceof McpError) {
-      throw error;
-    }
-    throw new McpError(
-      ErrorCode.InternalError,
-      `Migration failed: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
-}
-
-export const migrateConfigToolSchema = {
-  name: 'migrate_config',
-  description:
-    'Migrate from legacy .withcontextignore to new .withcontextconfig.jsonc format. Automatically converts patterns and creates backup.',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      project_root: {
-        type: 'string',
-        description: 'Project root directory',
-      },
-      create_backup: {
-        type: 'boolean',
-        description: 'Create backup of old configuration',
-        default: true,
-      },
-      keep_old_file: {
-        type: 'boolean',
-        description: 'Keep old .withcontextignore file after migration',
-        default: true,
-      },
-      dry_run: {
-        type: 'boolean',
-        description: 'Preview migration without writing files',
-        default: false,
-      },
-      force: {
-        type: 'boolean',
-        description: 'Force migration even if new config exists',
-        default: false,
-      },
-    },
-    required: ['project_root'],
-  },
-};
 
 /**
  * Validate configuration file

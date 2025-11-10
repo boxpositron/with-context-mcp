@@ -7,10 +7,12 @@
 
 import { ProjectContext } from './types/index.js';
 import { detectProjectFolder } from './security/folder-detector.js';
+import type { SessionId } from './session/types.js';
 
 export class SessionState {
   private currentContext: ProjectContext | null = null;
   private readFiles: Set<string> = new Set();
+  private activeSessionIds: Map<string, SessionId> = new Map(); // projectFolder -> SessionId
 
   /**
    * Set the project context for this session
@@ -91,6 +93,39 @@ export class SessionState {
    */
   clearReadTracking(): void {
     this.readFiles.clear();
+  }
+
+  /**
+   * Set the active session ID for a project
+   * @param projectFolder - Absolute path to project folder
+   * @param sessionId - Session ID to track
+   */
+  setActiveSession(projectFolder: string, sessionId: SessionId): void {
+    this.activeSessionIds.set(projectFolder, sessionId);
+  }
+
+  /**
+   * Get the active session ID for a project
+   * @param projectFolder - Absolute path to project folder
+   * @returns Session ID if active session exists, null otherwise
+   */
+  getActiveSessionId(projectFolder: string): SessionId | null {
+    return this.activeSessionIds.get(projectFolder) ?? null;
+  }
+
+  /**
+   * Clear the active session for a project
+   * @param projectFolder - Absolute path to project folder
+   */
+  clearActiveSession(projectFolder: string): void {
+    this.activeSessionIds.delete(projectFolder);
+  }
+
+  /**
+   * Clear all active sessions (useful for testing)
+   */
+  clearAllSessions(): void {
+    this.activeSessionIds.clear();
   }
 
   /**
