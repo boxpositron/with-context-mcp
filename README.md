@@ -8,17 +8,21 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 **Currently supports:** Obsidian (via REST API)  
 **Coming soon:** Notion, Apple Notes, and more
 
-## What's New in v3.0.0
+## What's New in v3.0.1
+
+- **Bug Fix**: Fixed path resolution issue with Obsidian Local REST API
+  - Changed session storage from `.sessions/` to `sessions/` for proper directory listing
+  - The Obsidian API filters hidden folders from listings, making `.sessions/` invisible
+  - **Migration**: Rename `.sessions` → `sessions` in your vault (one-time only)
+
+See [CHANGELOG.md](CHANGELOG.md) for complete details.
+
+### v3.0.0 Highlights
 
 - **Session Persistence**: Full cross-tool data persistence - todos and changelog survive tool calls
 - **Session Management**: Complete lifecycle tracking (start/pause/resume/end) with vault persistence
 - **Todo Management**: Track tasks with priorities and status across sessions
 - **Changelog Tracking**: Semi-automatic changelog with conventional commit support
-- **Enhanced Error Handling**: Better error messages and validation throughout
-- **OpenCode Plugin**: Direct integration with 25 native tools (v3.0.0)
-- **Breaking Change**: Removed legacy `.withcontextignore` format (use `.withcontextconfig.jsonc`)
-
-See [CHANGELOG.md](CHANGELOG.md) for complete v3.0.0 details.
 
 ## Installation
 

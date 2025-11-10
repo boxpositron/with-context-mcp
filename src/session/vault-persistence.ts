@@ -17,10 +17,10 @@ import { SessionSchema, SessionConfigSchema } from './config.js';
  * Session storage path utilities
  */
 export class SessionPaths {
-  static readonly SESSIONS_DIR = '.sessions';
-  static readonly ACTIVE_DIR = '.sessions/active';
-  static readonly ARCHIVED_DIR = '.sessions/archived';
-  static readonly CONFIG_FILE = '.sessions/config.json';
+  static readonly SESSIONS_DIR = 'sessions';
+  static readonly ACTIVE_DIR = 'sessions/active';
+  static readonly ARCHIVED_DIR = 'sessions/archived';
+  static readonly CONFIG_FILE = 'sessions/config.json';
 
   /**
    * Extract project name from path

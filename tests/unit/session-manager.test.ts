@@ -77,7 +77,7 @@ describe('SessionManager', () => {
       // VaultPersistence writes to temp file then final file (2 writes + backup check)
       expect(mockWriteNote).toHaveBeenCalled();
       const finalCall = mockWriteNote.mock.calls.find(
-        (call) => call[0].includes('.sessions/active/') && !call[0].includes('.tmp')
+        (call) => call[0].includes('sessions/active/') && !call[0].includes('.tmp')
       );
       expect(finalCall).toBeDefined();
       // Check for status in pretty-printed JSON
@@ -222,7 +222,7 @@ describe('SessionManager', () => {
       // Should write to archive location
       expect(mockWriteNote).toHaveBeenCalled();
       const archiveCall = mockWriteNote.mock.calls.find((call) =>
-        call[0].includes('.sessions/archived/')
+        call[0].includes('sessions/archived/')
       );
       expect(archiveCall).toBeDefined();
       // Check for status in pretty-printed JSON
