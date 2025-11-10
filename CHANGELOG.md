@@ -5,6 +5,130 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2025-11-10
+
+### Added
+
+#### Session Management System
+
+- **Session Lifecycle Management** - Complete start/pause/resume/end workflow with vault persistence
+- **Cross-Tool Data Persistence** - Todos and changelog entries survive across tool invocations
+- **Session State Tracking** - Singleton `sessionState` maintains active session IDs per project
+- **Vault-Based Storage** - Atomic writes with backup recovery to Obsidian vault
+- **Session Archiving** - Automatic archiving of completed sessions organized by year-month
+- **loadSession Method** - Load sessions without changing their status (for pause/end operations)
+
+#### Todo Management
+
+- **Priority Levels** - High, medium, and low priority support
+- **Status Tracking** - Pending, in_progress, completed, and cancelled states
+- **Persistence** - Todos persist across sessions and tool calls
+- **Filtering** - List todos by status and/or priority
+- **Automatic Timestamps** - Track creation and completion times
+
+#### Changelog Tracking
+
+- **Conventional Commits** - Support for feature, fix, refactor, docs, test, chore types
+- **Breaking Changes** - Flag breaking changes in changelog entries
+- **Commit Generation** - Automatically generate conventional commit messages from session data
+- **File Tracking** - Associate changelog entries with affected files
+- **Semi-Automatic Tracking** - User provides type and message, system handles metadata
+
+#### MCP Tools
+
+- `start_session` - Start a new development session with vault persistence
+- `pause_session` - Pause the current active session
+- `resume_session` - Resume a paused session (with optional session_id)
+- `end_session` - Complete and archive the current session
+- `get_session_status` - View comprehensive session details
+- `add_changelog_entry` - Add a changelog entry to current session
+- `get_session_changelog` - View changelog entries grouped by type
+- `get_commit_suggestion` - Generate conventional commit message
+- `add_todo` - Add a todo with priority to current session
+- `update_todo` - Update todo status or priority
+- `list_todos` - List todos with optional filters
+
+#### OpenCode Plugin
+
+- **Plugin v3.0.0** - Updated to match MCP server version
+- **25 Native Tools** - All MCP tools available as native OpenCode tools
+- **Direct Integration** - Runs inside OpenCode (no separate server process)
+- **Enhanced Performance** - No IPC overhead for better responsiveness
+- **Code Reuse** - Plugin wraps MCP handlers for consistency
+
+#### Documentation
+
+- **Session Management Guide** (`docs/CHANGELOG_TODO_GUIDE.md`) - Complete guide for session, changelog, and todo features
+- **Plugin Auto-Tracking Roadmap** (`docs/PLUGIN_AUTO_TRACKING.md`) - Future auto-tracking implementation plan
+- **Session Workflow Tests** (`tests/integration/SESSION_WORKFLOW_TEST_SUMMARY.md`) - Integration test documentation
+
+### Fixed
+
+#### Session Persistence
+
+- **Session state not persisting across tool calls** - Added `sessionState.activeSessionIds` Map to track sessions
+- **Vault-first loading** - All tools now load sessions from vault using tracked IDs
+- **Session continuity** - Sessions created by `start_session` are now accessible by subsequent tools
+
+#### Path Construction
+
+- **Double slash bug in vault paths** - Fixed path construction for absolute project folders
+- **Path normalization** - Added `extractProjectName()` helper to handle both absolute and relative paths
+- **Vault path format** - Ensures consistent `Projects/project-name/.sessions/` structure
+
+#### Session Loading
+
+- **"Cannot resume session in active state" errors** - Added `loadSession()` method for status-preserving reads
+- **Pause/end operations** - Now work correctly with active sessions
+- **Project context** - Added `setProjectFolder()` method to SessionManager
+
+#### Error Handling
+
+- **Enhanced error messages** - Better error reporting throughout vault persistence layer
+- **Temp file write failures** - Detailed error messages for atomic write steps
+- **JSON parsing errors** - Clear error messages for malformed session data
+- **Validation errors** - Improved Zod schema validation error messages
+- **Backup recovery logging** - Added console logging for backup operations
+
+### Changed
+
+- **Unified setup-notes tool** - Merged `setup-notes-new.ts` into enhanced `setup-notes.ts`
+- **Session paths** - Uses `SessionPaths` helper for consistent path construction
+- **Resume session logic** - Gets session ID from `sessionState` if not provided
+- **Error propagation** - Errors are no longer silently swallowed in vault operations
+
+### Removed
+
+- **Legacy `.withcontextignore` support** - Use `.withcontextconfig.jsonc` instead (BREAKING CHANGE)
+- **Legacy ignore parser** (`src/config/legacy-ignore-parser.ts`) - 129 lines removed
+- **Migration tool** (`src/tools/migrate-config.ts`) - 249 lines removed
+- **Legacy migration tests** (`tests/unit/legacy-migration.test.ts`) - 252 lines removed
+- **Old setup-notes variant** (`src/tools/setup-notes-new.ts`) - 339 lines removed
+
+### Testing
+
+- **356 tests passing** - Across 16 test files
+- **23 integration tests** - For session workflow (7 passing + 16 documented)
+- **27 SessionManager tests** - Comprehensive unit tests for session manager
+- **Real-world verification** - Tested with actual Obsidian vault
+- **Integration test suite** - `tests/integration/session-workflow.test.ts` added
+
+### Migration Guide
+
+If upgrading from v2.x:
+
+1. **Configuration**: Ensure you're using `.withcontextconfig.jsonc` (legacy `.withcontextignore` no longer supported)
+2. **No Breaking Changes for Users**: All existing tools work as before
+3. **New Features Available**: Start using session management, todos, and changelog tracking
+4. **Plugin Update**: Update OpenCode plugin to v3.0.0 if using OpenCode
+
+### Package Changes
+
+- **Package size**: 160.8 kB (227 files)
+- **Lines added**: 7,093
+- **Lines removed**: 3,160
+- **Net change**: +3,933 lines
+
 ## [2.1.0] - 2024-11-09
 
 ### Added
