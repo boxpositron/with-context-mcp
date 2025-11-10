@@ -69,7 +69,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             {
               status: 'active',
               config,
-              version: '2.2.0',
+              version: '3.0.0',
               tools: 25,
               custom_commands: 3,
               note: 'Full auto-tracking requires OpenCode plugin API enhancements. Use session tools manually for now.',

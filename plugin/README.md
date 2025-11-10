@@ -2,11 +2,11 @@
 
 Intelligent note management and session tracking plugin for OpenCode.
 
-> **Version 2.1.0** - Production ready with manual session management. Auto-tracking awaits OpenCode plugin API enhancements.
+> **Version 3.0.0** - Production ready with full session persistence and cross-tool data sharing. Auto-tracking awaits OpenCode plugin API enhancements.
 
 ## Features
 
-### Current (v2.1.0)
+### Current (v3.0.0)
 
 ✅ **14 Native Tools** - All with-context-mcp tools available as native OpenCode tools:
 
@@ -160,15 +160,15 @@ with_context_status();
 // {
 //   "status": "active",
 //   "config": {...},
-//   "version": "2.0.1",
-//   "tools": 14,
+//   "version": "3.0.0",
+//   "tools": 25,
 //   "custom_commands": 3
 // }
 ```
 
-### Migration from v0.2.0
+### Migration from v2.x
 
-If you were using the previous multi-file plugin (v0.2.0), simply replace the old file:
+If you were using v2.x, the upgrade is seamless - just update the files:
 
 ```bash
 # Remove old plugin
