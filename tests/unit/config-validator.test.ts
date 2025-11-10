@@ -161,7 +161,7 @@ describe('Config Validator', () => {
       const result = validateConfigSemantic(config);
       const formatted = formatValidationResult(result);
 
-      expect(formatted).toContain('✓');
+      expect(formatted).toContain('[OK]');
       expect(formatted).toContain('valid');
     });
 
@@ -177,7 +177,7 @@ describe('Config Validator', () => {
       const result = validateConfigSemantic(config);
       const formatted = formatValidationResult(result);
 
-      expect(formatted).toContain('✗');
+      expect(formatted).toContain('[X]');
       expect(formatted).toContain('ERRORS:');
       expect(formatted).toContain('Invalid glob patterns');
     });
@@ -194,7 +194,7 @@ describe('Config Validator', () => {
       const result = validateConfigSemantic(config);
       const formatted = formatValidationResult(result);
 
-      expect(formatted).toContain('⚠');
+      expect(formatted).toContain('[!]');
       expect(formatted).toContain('WARNINGS:');
       expect(formatted).toContain('Overly broad');
     });

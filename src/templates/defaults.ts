@@ -587,16 +587,16 @@ tags:
 
 Brief 2-3 sentence overview of the week/sprint. Highlight key achievements and any critical issues.
 
-**Status:** 🟢 On Track | 🟡 At Risk | 🔴 Blocked
+**Status:** [On Track] | [At Risk] | [Blocked]
 
 ---
 
 ## Key Achievements
 
 ### Completed This Week
-- ✅ **[Feature/Task Name]** - Brief description of what was completed
-- ✅ **[Feature/Task Name]** - Brief description of what was completed
-- ✅ **[Feature/Task Name]** - Brief description of what was completed
+- [x] **[Feature/Task Name]** - Brief description of what was completed
+- [x] **[Feature/Task Name]** - Brief description of what was completed
+- [x] **[Feature/Task Name]** - Brief description of what was completed
 
 ### Metrics & Impact
 - **Deployments:** X production releases
@@ -609,12 +609,12 @@ Brief 2-3 sentence overview of the week/sprint. Highlight key achievements and a
 ## Work In Progress
 
 ### Active Tasks
-- 🔄 **[Task Name]** - Current status and ETA
+- [ ] **[Task Name]** - Current status and ETA
   - Progress: 60% complete
   - Blocker: None
   - ETA: {{date}}
 
-- 🔄 **[Task Name]** - Current status and ETA
+- [ ] **[Task Name]** - Current status and ETA
   - Progress: 30% complete
   - Blocker: Waiting on [dependency]
   - ETA: TBD
@@ -637,13 +637,13 @@ Brief 2-3 sentence overview of the week/sprint. Highlight key achievements and a
 ## Blockers & Risks
 
 ### Current Blockers
-- 🚫 **[Blocker Description]**
+- [!] **[Blocker Description]**
   - Impact: High/Medium/Low
   - Owner: [Name]
   - Action Required: [What needs to happen]
 
 ### Risks
-- ⚠️ **[Risk Description]**
+- [!] **[Risk Description]**
   - Probability: High/Medium/Low
   - Impact: High/Medium/Low
   - Mitigation: [Plan to address]
@@ -687,10 +687,10 @@ Brief 2-3 sentence overview of the week/sprint. Highlight key achievements and a
 
 | Metric | Target | Actual | Trend |
 |--------|--------|--------|-------|
-| Deployment Frequency | X/week | Y/week | ↗️ |
-| Bug Resolution Time | X hours | Y hours | → |
-| Code Coverage | X% | Y% | ↗️ |
-| API Response Time | X ms | Y ms | ↘️ |
+| Deployment Frequency | X/week | Y/week | UP |
+| Bug Resolution Time | X hours | Y hours | STABLE |
+| Code Coverage | X% | Y% | UP |
+| API Response Time | X ms | Y ms | DOWN |
 
 ---
 

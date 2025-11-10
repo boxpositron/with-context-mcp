@@ -143,7 +143,7 @@ function formatChangelog(entries: readonly ChangelogEntry[]): string {
 
     sections.push(`\n${label}:`);
     for (const item of items) {
-      const breaking = item.impact ? ` ⚠ ${item.impact}` : '';
+      const breaking = item.impact ? ` [!] ${item.impact}` : '';
       const fileCount = item.files.length > 0 ? ` (${item.files.length} files)` : '';
       sections.push(`  - ${item.message}${fileCount}${breaking}`);
     }
@@ -193,9 +193,9 @@ function formatTodos(
 
   const sections: string[] = [];
   const prioritySymbols: Record<TodoPriority, string> = {
-    high: '🔴',
-    medium: '🟡',
-    low: '🔵',
+    high: '[HIGH]',
+    medium: '[MED]',
+    low: '[LOW]',
   };
 
   const statusLabels: Record<TodoStatus, string> = {
@@ -286,7 +286,7 @@ export async function addChangelogEntry(input: AddChangelogEntryInput): Promise<
         files_count: files.length,
         breaking,
         total_entries: session.changelog.length + 1,
-        message_text: `✓ Changelog entry added successfully`,
+        message_text: `[OK] Changelog entry added successfully`,
       },
       null,
       2
@@ -590,9 +590,9 @@ export async function addTodo(input: AddTodoInput): Promise<string> {
     }));
 
     const prioritySymbols: Record<TodoPriority, string> = {
-      high: '🔴',
-      medium: '🟡',
-      low: '🔵',
+      high: '[HIGH]',
+      medium: '[MED]',
+      low: '[LOW]',
     };
 
     return JSON.stringify(
@@ -603,7 +603,7 @@ export async function addTodo(input: AddTodoInput): Promise<string> {
         priority,
         status: 'pending',
         total_todos: session.todos.length + 1,
-        message: `✓ Todo added successfully ${prioritySymbols[priority]}`,
+        message: `[OK] Todo added successfully ${prioritySymbols[priority]}`,
       },
       null,
       2
@@ -688,7 +688,7 @@ export async function updateTodo(input: UpdateTodoInput): Promise<string> {
         status: updatedTodo.status,
         priority: updatedTodo.priority,
         completed_at: updatedTodo.completedAt,
-        message: `✓ Todo updated successfully`,
+        message: `[OK] Todo updated successfully`,
       },
       null,
       2

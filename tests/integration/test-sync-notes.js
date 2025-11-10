@@ -8,7 +8,7 @@
 import { syncNotes } from '../../dist/tools/sync-notes.js';
 
 async function testSyncNotes() {
-  console.log('🧪 Testing sync_notes tool...\n');
+  console.log('[TEST] Testing sync_notes tool...\n');
 
   try {
     // Test 1: Dry run to see what would be synced
@@ -32,15 +32,15 @@ async function testSyncNotes() {
       dryRunData.vault_to_local.files.forEach((f) => console.log(`    - ${f}`));
     }
 
-    console.log('\n✅ Dry run test passed\n');
+    console.log('\n[OK] Dry run test passed\n');
 
     // Note: We don't run actual sync in automated tests to avoid modifying files
-    console.log('⚠️  Skipping actual sync test to preserve files');
+    console.log('[!]  Skipping actual sync test to preserve files');
     console.log('   To test actual sync, run manually with dry_run: false\n');
 
-    console.log('✅ All sync_notes tests completed successfully!');
+    console.log('[OK] All sync_notes tests completed successfully!');
   } catch (error) {
-    console.error('❌ Test failed:', error);
+    console.error('[ERROR] Test failed:', error);
     process.exit(1);
   }
 }

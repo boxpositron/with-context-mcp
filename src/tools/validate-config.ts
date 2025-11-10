@@ -62,7 +62,7 @@ export async function validateConfig(
         errors: ['File not found'],
         warnings: [],
         infos: [],
-        formattedReport: `✗ Configuration file not found: ${resolvedConfigPath}`,
+        formattedReport: `[X] Configuration file not found: ${resolvedConfigPath}`,
       };
     }
 
@@ -80,7 +80,7 @@ export async function validateConfig(
         errors,
         warnings: [],
         infos: [],
-        formattedReport: `✗ Configuration has errors:\n\n${errorMsg}`,
+        formattedReport: `[X] Configuration has errors:\n\n${errorMsg}`,
       };
     }
 
@@ -118,7 +118,7 @@ export async function validateConfig(
       errors,
       warnings: [],
       infos: [],
-      formattedReport: `✗ Validation failed:\n\n${errorMsg}`,
+      formattedReport: `[X] Validation failed:\n\n${errorMsg}`,
     };
   }
 }

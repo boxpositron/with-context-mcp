@@ -9,6 +9,7 @@ import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { config } from '../config/index.js';
 import { ObsidianClient } from '../obsidian/client.js';
 import { analyzeDocumentation } from '../doc-analyzer/index.js';
+import type { AnalysisReport } from '../doc-analyzer/types.js';
 
 export interface SetupNotesArgs {
   /**
@@ -59,7 +60,7 @@ export async function setupNotes(args: SetupNotesArgs): Promise<string> {
     try {
       await fs.access(configPath);
       configExists = true;
-      results.push(`✓ Found existing config: ${configPath}`);
+      results.push(`[OK] Found existing config: ${configPath}`);
 
       // Read existing vault patterns for analysis
       const content = await fs.readFile(configPath, 'utf-8');
@@ -67,11 +68,11 @@ export async function setupNotes(args: SetupNotesArgs): Promise<string> {
       existingVaultPatterns = config.vault || [];
     } catch {
       // Config doesn't exist
-      results.push('✓ No existing configuration found');
+      results.push('[OK] No existing configuration found');
     }
 
     // Phase 2: Analyze repository documentation
-    results.push('\n📊 Analyzing repository documentation...\n');
+    results.push('\n=== Analyzing repository documentation ===\n');
 
     const analysis = await analyzeDocumentation(projectRoot, existingVaultPatterns);
 
@@ -83,22 +84,30 @@ export async function setupNotes(args: SetupNotesArgs): Promise<string> {
     if (analysis.readmeAnalysis.exists) {
       const readme = analysis.readmeAnalysis;
       results.push('=== README Health Report ===\n');
-      results.push(`Health Score: ${readme.healthScore}/100`);
 
-      if (readme.hasBadges) results.push('✓ Has badges');
-      else results.push('⚠ Missing badges');
+      // Health score with visual indicator
+      const scoreSymbol =
+        readme.healthScore >= 80 ? '[OK]' : readme.healthScore >= 60 ? '[!]' : '[X]';
+      results.push(`${scoreSymbol} Health Score: ${readme.healthScore}/100\n`);
 
-      if (readme.hasQuickStart) results.push('✓ Has quick start section');
-      else results.push('⚠ Missing quick start section');
+      // Completeness checks
+      results.push('Completeness:');
+      if (readme.hasBadges) results.push('  [OK] Has badges');
+      else results.push('  [!] Missing badges');
 
-      if (readme.hasInstallation) results.push('✓ Has installation instructions');
-      else results.push('⚠ Missing installation instructions');
+      if (readme.hasQuickStart) results.push('  [OK] Has quick start section');
+      else results.push('  [!] Missing quick start section');
 
-      if (readme.hasUsage) results.push('✓ Has usage examples');
-      else results.push('⚠ Missing usage examples');
+      if (readme.hasInstallation) results.push('  [OK] Has installation instructions');
+      else results.push('  [!] Missing installation instructions');
 
-      if (readme.isSelfContained) results.push('✓ Self-contained (no vault dependencies)');
-      else results.push('⚠ Has dependencies on vault content');
+      if (readme.hasUsage) results.push('  [OK] Has usage examples');
+      else results.push('  [!] Missing usage examples');
+
+      // Self-containment check
+      results.push('\nSelf-containment:');
+      if (readme.isSelfContained) results.push('  [OK] Self-contained (no vault dependencies)');
+      else results.push('  [!] Has dependencies on vault content');
 
       if (readme.warnings.length > 0) {
         results.push('\nWarnings:');
@@ -115,22 +124,22 @@ export async function setupNotes(args: SetupNotesArgs): Promise<string> {
 
     // Phase 5: Handle configuration
     if (configExists && !force) {
-      results.push('⚠ Configuration already exists. Recommendations shown above.');
+      results.push('[!] Configuration already exists. Recommendations shown above.');
       results.push('Use force=true to overwrite with recommended configuration.\n');
     } else {
       // Create new config with intelligent recommendations
-      results.push('📝 Creating intelligent configuration...\n');
+      results.push('=== Creating intelligent configuration ===\n');
 
       const configContent = generateIntelligentConfig(analysis);
       await fs.writeFile(configPath, configContent, 'utf-8');
 
-      results.push(`✓ Created: ${configPath}`);
+      results.push(`[OK] Created: ${configPath}`);
       results.push('  Based on repository analysis and best practices\n');
     }
 
     // Phase 6: Create vault structure
     if (createStructure && args.project_folder) {
-      results.push('📁 Setting up vault folder structure...\n');
+      results.push('=== Setting up vault folder structure ===\n');
 
       const obsidianClient = new ObsidianClient({
         apiKey: config.obsidianApiKey,
@@ -157,34 +166,44 @@ export async function setupNotes(args: SetupNotesArgs): Promise<string> {
           const template = generateFolderReadme(folder.path, folder.description);
           await obsidianClient.writeNote(readmePath, template, 'create');
 
-          results.push(`  ✓ Created: ${folder.path}/README.md`);
+          results.push(`  [OK] Created: ${folder.path}/README.md`);
           structureCreated = true;
         } catch {
-          results.push(`  ⊝ Skipped: ${folder.path}/ (already exists)`);
+          results.push(`  [-] Skipped: ${folder.path}/ (already exists)`);
         }
       }
 
       if (structureCreated) {
-        results.push(`\n✓ Vault folder structure created at: ${basePath}\n`);
+        results.push(`\n[OK] Vault folder structure created at: ${basePath}\n`);
       } else {
-        results.push(`\n⊝ Folder structure already exists at: ${basePath}\n`);
+        results.push(`\n[-] Folder structure already exists at: ${basePath}\n`);
       }
     }
 
     // Phase 7: Summary and next steps
     results.push('=== Next Steps ===\n');
-    results.push('1. Review .withcontextconfig.jsonc and customize if needed');
-    results.push('2. Fix README issues highlighted above');
 
-    if (analysis.recommendation.readmeChanges.length > 0) {
-      results.push('3. Apply recommended README changes:');
-      analysis.recommendation.readmeChanges.forEach((change) => {
-        results.push(`   ${change}`);
-      });
+    let stepNumber = 1;
+    results.push(`${stepNumber}. Review .withcontextconfig.jsonc and customize if needed`);
+    stepNumber++;
+
+    if (analysis.readmeAnalysis.warnings.length > 0) {
+      results.push(`${stepNumber}. Fix README issues highlighted above`);
+      stepNumber++;
     }
 
-    results.push('4. Use /sync-notes or /ingest-notes to migrate files to vault');
-    results.push('5. Run /validate-config to ensure configuration is valid\n');
+    if (analysis.recommendation.readmeChanges.length > 0) {
+      results.push(`${stepNumber}. Apply recommended README changes:`);
+      analysis.recommendation.readmeChanges.forEach((change) => {
+        results.push(`   • ${change}`);
+      });
+      stepNumber++;
+    }
+
+    results.push(`${stepNumber}. Use /sync-notes or /ingest-notes to migrate files to vault`);
+    stepNumber++;
+    results.push(`${stepNumber}. Run /validate-config to ensure configuration is valid`);
+    results.push('');
 
     return results.join('\n');
   } catch (error) {
@@ -201,7 +220,7 @@ export async function setupNotes(args: SetupNotesArgs): Promise<string> {
 /**
  * Generate intelligent configuration based on analysis
  */
-function generateIntelligentConfig(analysis: any): string {
+function generateIntelligentConfig(analysis: AnalysisReport): string {
   const local = JSON.stringify(analysis.recommendation.localFiles, null, 4);
   const vault = JSON.stringify(analysis.recommendation.vaultFiles, null, 4);
 

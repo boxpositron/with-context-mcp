@@ -28,6 +28,7 @@ export { setProjectContext, setProjectContextSchema } from './set-project-contex
 export { ingestNotes, ingestNotesSchema, type IngestNotesInput } from './ingest-notes.js';
 export { teleportNotes, teleportNotesSchema, type TeleportNotesInput } from './teleport-notes.js';
 export { syncNotes, syncNotesSchema, type SyncNotesInput } from './sync-notes.js';
+export { setupNotes, setupNotesSchema, type SetupNotesArgs } from './setup-notes.js';
 
 // Session management tools
 export {

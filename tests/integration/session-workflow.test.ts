@@ -48,8 +48,8 @@ vi.mock('../../src/obsidian/client.js', () => {
     async readNote(path: string) {
       const content = mockStorage.get(path);
       if (!content) {
-        const error = new Error('Not Found');
-        (error as any).response = { status: 404 };
+        const error = new Error('Not Found') as Error & { response?: { status: number } };
+        error.response = { status: 404 };
         throw error;
       }
       return content;

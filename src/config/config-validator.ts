@@ -135,15 +135,15 @@ export function validateConfigSemantic(config: WithContextConfig): ValidationRes
  */
 export function formatValidationResult(result: ValidationResult): string {
   if (result.valid && result.issues.length === 0) {
-    return '✓ Configuration is valid';
+    return '[OK] Configuration is valid';
   }
 
   const lines: string[] = [];
 
   if (result.valid) {
-    lines.push('✓ Configuration is valid (with warnings/info)');
+    lines.push('[OK] Configuration is valid (with warnings/info)');
   } else {
-    lines.push('✗ Configuration has errors');
+    lines.push('[ERROR] Configuration has errors');
   }
 
   lines.push('');
@@ -156,7 +156,7 @@ export function formatValidationResult(result: ValidationResult): string {
   if (errors.length > 0) {
     lines.push('ERRORS:');
     errors.forEach((issue) => {
-      lines.push(`  ✗ ${issue.message}`);
+      lines.push(`  [X] ${issue.message}`);
       if (issue.field) {
         lines.push(`    Field: ${issue.field}`);
       }
@@ -170,7 +170,7 @@ export function formatValidationResult(result: ValidationResult): string {
   if (warnings.length > 0) {
     lines.push('WARNINGS:');
     warnings.forEach((issue) => {
-      lines.push(`  ⚠ ${issue.message}`);
+      lines.push(`  [!] ${issue.message}`);
       if (issue.field) {
         lines.push(`    Field: ${issue.field}`);
       }
@@ -184,7 +184,7 @@ export function formatValidationResult(result: ValidationResult): string {
   if (infos.length > 0) {
     lines.push('INFO:');
     infos.forEach((issue) => {
-      lines.push(`  ℹ ${issue.message}`);
+      lines.push(`  [i] ${issue.message}`);
       if (issue.field) {
         lines.push(`    Field: ${issue.field}`);
       }

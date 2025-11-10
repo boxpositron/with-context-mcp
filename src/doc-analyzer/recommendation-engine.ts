@@ -311,11 +311,11 @@ function generateRationale(scan: RepositoryScanResult, readme: ReadmeAnalysis): 
   parts.push('- README must be self-contained and work without vault access');
 
   if (!readme.isSelfContained) {
-    parts.push('\n⚠ README currently has dependencies on vault content - needs fixing');
+    parts.push('\n[!] README currently has dependencies on vault content - needs fixing');
   }
 
   if (readme.healthScore < 70) {
-    parts.push(`\n⚠ README health score: ${readme.healthScore}/100 - improvements recommended`);
+    parts.push(`\n[!] README health score: ${readme.healthScore}/100 - improvements recommended`);
   }
 
   return parts.join('\n');

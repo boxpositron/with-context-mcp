@@ -30,7 +30,7 @@ server.stdout.on('data', (data) => {
     if (line.trim()) {
       try {
         const response = JSON.parse(line);
-        console.log('✓ Response:', JSON.stringify(response, null, 2));
+        console.log('[OK] Response:', JSON.stringify(response, null, 2));
       } catch {
         console.log('  ', line);
       }
@@ -39,12 +39,12 @@ server.stdout.on('data', (data) => {
 });
 
 server.on('error', (error) => {
-  console.error('❌ Server error:', error);
+  console.error('[ERROR] Server error:', error);
   process.exit(1);
 });
 
 async function runTests() {
-  console.log('1️⃣  Initialize');
+  console.log('[1]  Initialize');
   sendRequest({
     jsonrpc: '2.0',
     id: 1,
@@ -57,7 +57,7 @@ async function runTests() {
   });
   await sleep(500);
 
-  console.log('\n2️⃣  Set project context');
+  console.log('\n[2]  Set project context');
   sendRequest({
     jsonrpc: '2.0',
     id: 2,
@@ -69,7 +69,7 @@ async function runTests() {
   });
   await sleep(500);
 
-  console.log('\n3️⃣  List available templates');
+  console.log('\n[3]  List available templates');
   sendRequest({
     jsonrpc: '2.0',
     id: 3,
@@ -81,7 +81,7 @@ async function runTests() {
   });
   await sleep(500);
 
-  console.log('\n4️⃣  Create changelog from template');
+  console.log('\n[4]  Create changelog from template');
   sendRequest({
     jsonrpc: '2.0',
     id: 4,
@@ -100,7 +100,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n5️⃣  Create meeting notes from template');
+  console.log('\n[5]  Create meeting notes from template');
   sendRequest({
     jsonrpc: '2.0',
     id: 5,
@@ -120,7 +120,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n6️⃣  Create API documentation from template');
+  console.log('\n[6]  Create API documentation from template');
   sendRequest({
     jsonrpc: '2.0',
     id: 6,
@@ -140,7 +140,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n7️⃣  Create technical documentation from template');
+  console.log('\n[7]  Create technical documentation from template');
   sendRequest({
     jsonrpc: '2.0',
     id: 7,
@@ -160,7 +160,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n8️⃣  Create project update from template');
+  console.log('\n[8]  Create project update from template');
   sendRequest({
     jsonrpc: '2.0',
     id: 8,
@@ -180,7 +180,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n9️⃣  Read the changelog to verify');
+  console.log('\n[9]  Read the changelog to verify');
   sendRequest({
     jsonrpc: '2.0',
     id: 9,
@@ -192,7 +192,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n🔟 Get metadata for meeting notes');
+  console.log('\n[10] Get metadata for meeting notes');
   sendRequest({
     jsonrpc: '2.0',
     id: 10,
@@ -204,8 +204,8 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n✅ Template tests complete!');
-  console.log('\n📝 Created files in your Obsidian vault:');
+  console.log('\n[OK] Template tests complete!');
+  console.log('\n[EDIT] Created files in your Obsidian vault:');
   console.log('  Development Sessions/template-demo/CHANGELOG.md');
   console.log('  Development Sessions/template-demo/meetings/sprint-planning.md');
   console.log('  Development Sessions/template-demo/docs/api/users-endpoint.md');
@@ -227,7 +227,7 @@ function sleep(ms) {
 setTimeout(runTests, 500);
 
 setTimeout(() => {
-  console.error('\n⏱️  Test timeout!');
+  console.error('\n[TIMEOUT]  Test timeout!');
   server.kill();
   process.exit(1);
 }, 20000);

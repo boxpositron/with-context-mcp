@@ -69,9 +69,15 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             {
               status: 'active',
               config,
-              version: '3.0.0',
+              version: '3.0.4',
               tools: 25,
               custom_commands: 3,
+              features: {
+                filename_slugification: true,
+                path_resolution: 'project-folder-based',
+                ascii_only_output: true,
+                type_safety: 'zero-warnings',
+              },
               note: 'Full auto-tracking requires OpenCode plugin API enhancements. Use session tools manually for now.',
             },
             null,
@@ -83,12 +89,12 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
       // ==================== Write Note Tool ====================
       write_note: tool({
         description:
-          'Write or update a markdown note in the project folder. Supports create, overwrite, and append modes.',
+          'Write or update a markdown note in the project folder. Supports create, overwrite, and append modes. Filenames are automatically slugified (lowercase, spaces/special chars become hyphens). Well-known files like README, CHANGELOG, LICENSE preserve their case.',
         args: {
           path: tool.schema
             .string()
             .describe(
-              'Relative path to the note within the project folder (e.g., "CHANGELOG.md" or "docs/api.md")'
+              'Relative path to the note within the project folder (e.g., "CHANGELOG.md" or "docs/api.md"). Filenames are auto-slugified: "My Notes" becomes "my-notes.md"'
             ),
           content: tool.schema.string().describe('Content to write to the note'),
           mode: tool.schema
@@ -260,7 +266,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
       // ==================== Delete Note Tool ====================
       delete_note: tool({
         description:
-          'Delete a markdown note from the project folder. Requires explicit confirmation.',
+          'Delete a markdown note from the project folder. Requires explicit confirmation. Lists file metadata (size, line count, preview) before deletion for safety verification.',
         args: {
           path: tool.schema.string().describe('Relative path to the note to delete'),
           confirm: tool.schema.boolean().describe('Must be set to true to confirm deletion'),

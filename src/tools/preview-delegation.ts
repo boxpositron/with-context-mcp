@@ -193,7 +193,7 @@ export async function previewDelegation(
       lines.push('');
 
       for (const file of limitedLocalFiles) {
-        lines.push(`  ✓ ${file}`);
+        lines.push(`  [OK] ${file}`);
         if (showReasoning) {
           const r = reasoning.get(file);
           if (r) {
@@ -279,7 +279,7 @@ export async function previewDelegationForFiles(
       const r = reasoning.get(relativePath);
       if (!r) continue;
 
-      const symbol = r.decision === 'vault' ? '→' : '✓';
+      const symbol = r.decision === 'vault' ? '->' : '[OK]';
       const destination = r.decision === 'vault' ? 'VAULT' : 'LOCAL';
 
       lines.push(`${symbol} ${relativePath} → ${destination}`);

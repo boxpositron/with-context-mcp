@@ -30,7 +30,7 @@ server.stdout.on('data', (data) => {
     if (line.trim()) {
       try {
         const response = JSON.parse(line);
-        console.log('✓ Response:', JSON.stringify(response, null, 2));
+        console.log('[OK] Response:', JSON.stringify(response, null, 2));
       } catch {
         console.log('  ', line);
       }
@@ -39,12 +39,12 @@ server.stdout.on('data', (data) => {
 });
 
 server.on('error', (error) => {
-  console.error('❌ Server error:', error);
+  console.error('[ERROR] Server error:', error);
   process.exit(1);
 });
 
 async function runTests() {
-  console.log('1️⃣  Initialize');
+  console.log('[1]  Initialize');
   sendRequest({
     jsonrpc: '2.0',
     id: 1,
@@ -57,7 +57,7 @@ async function runTests() {
   });
   await sleep(500);
 
-  console.log('\n2️⃣  Set project context');
+  console.log('\n[2]  Set project context');
   sendRequest({
     jsonrpc: '2.0',
     id: 2,
@@ -69,7 +69,7 @@ async function runTests() {
   });
   await sleep(500);
 
-  console.log('\n3️⃣  Batch write multiple notes');
+  console.log('\n[3]  Batch write multiple notes');
   sendRequest({
     jsonrpc: '2.0',
     id: 3,
@@ -102,7 +102,7 @@ async function runTests() {
   });
   await sleep(2000);
 
-  console.log('\n4️⃣  Get metadata for API doc');
+  console.log('\n[4]  Get metadata for API doc');
   sendRequest({
     jsonrpc: '2.0',
     id: 4,
@@ -114,7 +114,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n5️⃣  Search for "authentication"');
+  console.log('\n[5]  Search for "authentication"');
   sendRequest({
     jsonrpc: '2.0',
     id: 5,
@@ -129,7 +129,7 @@ async function runTests() {
   });
   await sleep(1500);
 
-  console.log('\n6️⃣  Search for "npm" (case-insensitive)');
+  console.log('\n[6]  Search for "npm" (case-insensitive)');
   sendRequest({
     jsonrpc: '2.0',
     id: 6,
@@ -144,7 +144,7 @@ async function runTests() {
   });
   await sleep(1500);
 
-  console.log('\n7️⃣  Get metadata for README');
+  console.log('\n[7]  Get metadata for README');
   sendRequest({
     jsonrpc: '2.0',
     id: 7,
@@ -156,7 +156,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n8️⃣  Append to README');
+  console.log('\n[8]  Append to README');
   sendRequest({
     jsonrpc: '2.0',
     id: 8,
@@ -173,7 +173,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n9️⃣  Search for "features" (should find updated README)');
+  console.log('\n[9]  Search for "features" (should find updated README)');
   sendRequest({
     jsonrpc: '2.0',
     id: 9,
@@ -185,7 +185,7 @@ async function runTests() {
   });
   await sleep(1500);
 
-  console.log('\n🔟 Get updated metadata for README');
+  console.log('\n[10] Get updated metadata for README');
   sendRequest({
     jsonrpc: '2.0',
     id: 10,
@@ -197,7 +197,7 @@ async function runTests() {
   });
   await sleep(1000);
 
-  console.log('\n✅ Feature D tests complete!');
+  console.log('\n[OK] Feature D tests complete!');
   console.log('\nCheck your Obsidian vault at:');
   console.log('  Development Sessions/feature-d-test/');
 
@@ -216,7 +216,7 @@ function sleep(ms) {
 setTimeout(runTests, 500);
 
 setTimeout(() => {
-  console.error('\n⏱️  Test timeout!');
+  console.error('\n[TIMEOUT]  Test timeout!');
   server.kill();
   process.exit(1);
 }, 25000);

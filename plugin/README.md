@@ -2,9 +2,18 @@
 
 Intelligent note management and session tracking plugin for OpenCode.
 
-> **Version 3.0.0** - Production ready with full session persistence and cross-tool data sharing. Auto-tracking awaits OpenCode plugin API enhancements.
+> **Version 3.0.4** - Production ready with full session persistence, automatic filename slugification, and zero TypeScript warnings. Auto-tracking awaits OpenCode plugin API enhancements.
 
 ## Features
+
+### Current (v3.0.4)
+
+✅ **Automatic Filename Slugification** - Consistent, URL-safe filenames:
+
+- Converts filenames to lowercase (e.g., `"My Notes"` → `"my-notes.md"`)
+- Replaces spaces and special characters with hyphens
+- Preserves case for well-known files (README, CHANGELOG, LICENSE, etc.)
+- Ensures compatibility across all operating systems
 
 ### Current (v3.0.0)
 
@@ -160,9 +169,15 @@ with_context_status();
 // {
 //   "status": "active",
 //   "config": {...},
-//   "version": "3.0.0",
+//   "version": "3.0.4",
 //   "tools": 25,
-//   "custom_commands": 3
+//   "custom_commands": 3,
+//   "features": {
+//     "filename_slugification": true,
+//     "path_resolution": "project-folder-based",
+//     "ascii_only_output": true,
+//     "type_safety": "zero-warnings"
+//   }
 // }
 ```
 
@@ -341,11 +356,11 @@ Commands automatically:
 
 ### Note Operations
 
-- `write_note(path, content, mode?, project_folder?)` - Create, update, or append notes
+- `write_note(path, content, mode?, project_folder?)` - Create, update, or append notes (auto-slugifies filenames)
 - `read_note(path, project_folder?)` - Read note content with metadata
 - `delete_note(path, confirm, project_folder?)` - Delete notes with confirmation
 - `get_note_metadata(path, project_folder?)` - Get word count, tags, headings, frontmatter
-- `batch_write_notes(notes[], project_folder?)` - Write multiple notes at once
+- `batch_write_notes(notes[], project_folder?)` - Write multiple notes at once (auto-slugifies all filenames)
 
 ### Discovery & Search
 
@@ -374,10 +389,17 @@ Commands automatically:
 // Check plugin status
 with_context_status();
 
-// Write a note
+// Write a note (filename auto-slugified)
 write_note({
-  path: 'CHANGELOG.md',
-  content: '# Changelog\n\n## v0.2.0\n- Added 11 tools',
+  path: 'My Project Notes', // Becomes: my-project-notes.md
+  content: '# My Notes\n\nThis is a test.',
+  mode: 'create',
+});
+
+// Well-known files preserve case
+write_note({
+  path: 'README', // Becomes: README.md (case preserved)
+  content: '# Project Name',
   mode: 'create',
 });
 

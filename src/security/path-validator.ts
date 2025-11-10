@@ -1,13 +1,35 @@
 import path from 'path';
 
 /**
+ * Slugify a filename by converting to lowercase and replacing spaces/special chars
+ * Preserves case for common filenames like README, CHANGELOG, LICENSE
+ * @param filename - The filename to slugify (without extension)
+ * @returns Slugified filename
+ */
+function slugifyFilename(filename: string): string {
+  // Preserve case for well-known filenames
+  const preservedFilenames = ['README', 'CHANGELOG', 'LICENSE', 'CONTRIBUTING', 'AUTHORS'];
+  if (preservedFilenames.includes(filename.toUpperCase())) {
+    return filename.toUpperCase();
+  }
+
+  return filename
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/[^a-z0-9\-_]/g, '-') // Replace special chars with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
+
+/**
  * Sanitizes and validates a file path to prevent directory traversal attacks
  * and ensure the path stays within project boundaries.
  *
  * @param inputPath - The user-provided path to sanitize
- * @param projectFolder - The project folder name (kept for validation but not used in path construction)
- * @param basePath - The base directory path (kept for validation but not used in path construction)
- * @returns Sanitized vault-relative path at vault root level (e.g., "note.md" or "docs/api.md")
+ * @param projectFolder - The project folder name (e.g., "with-context-mcp")
+ * @param basePath - The base directory path (e.g., "Projects")
+ * @returns Sanitized vault-relative path (e.g., "Projects/with-context-mcp/note.md")
  * @throws Error if path is invalid or attempts directory traversal
  */
 export function sanitizePath(inputPath: string, projectFolder: string, basePath: string): string {
@@ -61,9 +83,23 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
   // Convert to forward slashes for consistency
   cleanPath = cleanPath.split(path.sep).join('/');
 
-  // Add .md extension if missing
-  if (!cleanPath.toLowerCase().endsWith('.md')) {
-    cleanPath += '.md';
+  // Slugify the filename (but preserve directory structure)
+  const segments = cleanPath.split('/');
+  const filename = segments[segments.length - 1];
+
+  // Check if filename has .md extension
+  const hasExtension = filename.toLowerCase().endsWith('.md');
+  const filenameWithoutExt = hasExtension ? filename.slice(0, -3) : filename;
+
+  // Slugify the filename
+  const slugifiedFilename = slugifyFilename(filenameWithoutExt);
+
+  // Reconstruct path with slugified filename
+  if (segments.length > 1) {
+    segments[segments.length - 1] = slugifiedFilename + '.md';
+    cleanPath = segments.join('/');
+  } else {
+    cleanPath = slugifiedFilename + '.md';
   }
 
   // Final validation: ensure no dangerous patterns in the user input
@@ -82,9 +118,9 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
     }
   }
 
-  // Construct the vault-relative path: just use cleanPath (vault root level)
-  // Files are created at the vault root, not nested under basePath/projectFolder
-  const vaultRelativePath = cleanPath;
+  // Construct the vault-relative path: basePath/projectFolder/cleanPath
+  // This ensures files are organized under their project folder in the vault
+  const vaultRelativePath = `${basePath}/${projectFolder}/${cleanPath}`;
 
   // Additional boundary check: verify the path structure is valid
   // We use path.normalize to check for any remaining traversal attempts

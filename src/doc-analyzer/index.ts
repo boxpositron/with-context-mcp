@@ -11,7 +11,12 @@ export * from './types.js';
 import { scanRepository } from './repo-scanner.js';
 import { analyzeReadme } from './readme-analyzer.js';
 import { generateRecommendations } from './recommendation-engine.js';
-import type { AnalysisReport } from './types.js';
+import type {
+  AnalysisReport,
+  RepositoryScanResult,
+  ReadmeAnalysis,
+  DocumentationRecommendation,
+} from './types.js';
 
 /**
  * Perform complete documentation analysis
@@ -43,7 +48,11 @@ export async function analyzeDocumentation(
 /**
  * Generate analysis summary
  */
-function generateSummary(scan: any, readme: any, recommendation: any): string {
+function generateSummary(
+  scan: RepositoryScanResult,
+  readme: ReadmeAnalysis,
+  recommendation: DocumentationRecommendation
+): string {
   const parts: string[] = [];
 
   parts.push('=== Documentation Analysis ===\n');
@@ -52,14 +61,14 @@ function generateSummary(scan: any, readme: any, recommendation: any): string {
   parts.push(`Total Docs: ${scan.totalFiles} files\n`);
 
   if (readme.exists) {
-    parts.push(`✓ README.md (${readme.lineCount} lines)`);
+    parts.push(`[OK] README.md (${readme.lineCount} lines)`);
     parts.push(`  Health Score: ${readme.healthScore}/100`);
     parts.push(`  Links: ${readme.links.length} total`);
     if (readme.warnings.length > 0) {
-      parts.push(`  ⚠ ${readme.warnings.length} warning(s)`);
+      parts.push(`  [!] ${readme.warnings.length} warning(s)`);
     }
   } else {
-    parts.push('⚠ README.md not found');
+    parts.push('[!] README.md not found');
   }
 
   parts.push('\n=== Recommendations ===\n');

@@ -8,7 +8,13 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 **Currently supports:** Obsidian (via REST API)  
 **Coming soon:** Notion, Apple Notes, and more
 
-## What's New in v3.0.2
+## What's New in v3.0.4
+
+- **Bug Fix**: Fixed broken links in README after documentation sync
+  - Updated references to synced files (CHANGELOG.md, INTELLIGENT_SETUP_GUIDE.md)
+  - Files now correctly point to vault locations after setup
+
+### v3.0.2 Highlights
 
 - **Config System Unification**: Removed `.withcontextignore` in favor of unified `.withcontextconfig.jsonc`
   - All delegation decisions now use the config system
@@ -16,9 +22,19 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
   - Simplified architecture with single source of truth
   - Better conflict resolution and pattern matching
 
-See [CHANGELOG.md](CHANGELOG.md) for complete details.
+See the CHANGELOG for complete details (available in your vault after setup).
 
-### v3.0.1 Highlights
+### Previous Releases
+
+#### v3.0.2
+
+- **Config System Unification**: Removed `.withcontextignore` in favor of unified `.withcontextconfig.jsonc`
+  - All delegation decisions now use the config system
+  - `ingest_notes`, `sync_notes`, `teleport_notes` now use delegation config
+  - Simplified architecture with single source of truth
+  - Better conflict resolution and pattern matching
+
+#### v3.0.1 Highlights
 
 - **Bug Fix**: Fixed path resolution issue with Obsidian Local REST API
   - Changed session storage from `.sessions/` to `sessions/` for proper directory listing
@@ -50,6 +66,11 @@ npm install -g with-context-mcp
 - **Template System**: Professional templates with variable substitution
 - **Batch Operations**: Write multiple notes at once
 - **Metadata Extraction**: Get word count, tags, headings, frontmatter
+- **Intelligent Documentation Setup** ⭐ NEW: 4-phase analysis for optimal doc organization
+  - Analyzes project structure and README health
+  - Recommends LOCAL vs VAULT patterns based on best practices (Diátaxis framework)
+  - Validates README links won't break when files move to vault
+  - Creates intelligent configuration with project-specific patterns
 - **Documentation Delegation**: Control which docs are delegated to vault with `.withcontextconfig.jsonc`
 - **Conflict Resolution**: Handle overlapping patterns with configurable resolution strategies
 - **Configuration Tools**: Setup, validate, and preview delegation decisions
@@ -176,6 +197,8 @@ OpenCode supports custom slash commands that can be created as markdown files in
 This repository includes pre-built OpenCode commands in [`.opencode/command/`](./.opencode/command/):
 
 - **[`setup-notes.md`](./.opencode/command/setup-notes.md)** - Intelligent project setup that creates `.withcontextconfig.jsonc` and configures `AGENTS.md` with documentation delegation guidelines
+- **[`validate-notes-config.md`](./.opencode/command/validate-notes-config.md)** - Validate `.withcontextconfig.jsonc` for syntax errors, schema issues, and semantic problems
+- **[`preview-notes-delegation.md`](./.opencode/command/preview-notes-delegation.md)** - Preview which files will be delegated to vault vs kept local based on configuration patterns
 - **[`sync-notes.md`](./.opencode/command/sync-notes.md)** - Bidirectional sync that moves files between local project and vault based on delegation config (with dry-run preview)
 - **[`ingest-notes.md`](./.opencode/command/ingest-notes.md)** - Copy documentation files from local project to vault based on delegation config (optionally delete local files after)
 - **[`teleport-notes.md`](./.opencode/command/teleport-notes.md)** - Download documentation files from vault to local project based on delegation config (optionally delete vault files after)
@@ -202,27 +225,52 @@ Once installed, use the commands in OpenCode:
 
 ```bash
 # In OpenCode, type the command name:
-/setup-notes              # Setup .withcontextconfig.jsonc and AGENTS.md
-/sync-notes               # Bidirectional sync with dry-run preview
-/ingest-notes             # Copy local docs to vault with preview
-/ingest-notes --delete    # Copy and delete local files after ingestion
-/teleport-notes           # Download docs from vault to local with preview
-/teleport-notes --delete  # Download and delete vault files after teleport
+/setup-notes                    # Setup .withcontextconfig.jsonc and AGENTS.md
+/validate-notes-config          # Validate configuration for errors and warnings
+/preview-notes-delegation       # Preview delegation decisions before syncing
+/sync-notes                     # Bidirectional sync with dry-run preview
+/ingest-notes                   # Copy local docs to vault with preview
+/ingest-notes --delete          # Copy and delete local files after ingestion
+/teleport-notes                 # Download docs from vault to local with preview
+/teleport-notes --delete        # Download and delete vault files after teleport
 ```
 
 **Command Details:**
 
-**`/setup-notes`** - Intelligent Project Setup
+**`/setup-notes`** - Intelligent Documentation Setup ⭐ NEW
 
-- Analyzes your project structure (monorepo, library, web app, etc.)
-- Creates a customized `.withcontextconfig.jsonc` file with patterns appropriate for your project type
-- Updates `AGENTS.md` with documentation delegation guidelines that teach AI agents:
-  - When to use with-context tools vs local filesystem
-  - Which files should be delegated to vault vs kept local
-  - Best practices for documentation management
-  - Common workflows with practical examples
-- Creates example folder structure in vault (optional)
-- Creates a cohesive system where `.withcontextconfig.jsonc` patterns and agent guidelines work together
+Performs a **4-phase intelligent analysis** to set up optimal documentation architecture:
+
+**Phase 1: Repository Analysis**
+
+- Detects project type (MCP server, library, CLI, monorepo, application)
+- Identifies framework (React, Next.js, Express, etc.)
+- Catalogs all documentation files with smart categorization
+
+**Phase 2: README Validation**
+
+- Analyzes README completeness and health (0-100 score)
+- Validates all markdown links (internal and external)
+- **Critical**: Ensures README links won't break when files move to vault
+- Checks for essential sections (badges, quick start, installation, usage)
+
+**Phase 3: Intelligent Recommendations**
+
+- Recommends LOCAL vs VAULT delegation based on:
+  - **Diátaxis framework** (tutorials, guides, reference, explanation)
+  - Project type and actual structure
+  - Best practices for documentation organization
+- **LOCAL**: Essential files (README, CONTRIBUTING, LICENSE, inline docs)
+- **VAULT**: Deep research (detailed guides, architecture, ADRs, explorations)
+
+**Phase 4: Configuration & Setup**
+
+- Creates intelligent `.withcontextconfig.jsonc` based on analysis
+- Suggests vault folder structure (docs/guides, docs/architecture, etc.)
+- Provides actionable next steps and README fixes
+- Optionally creates recommended folder structure in vault
+
+See the Intelligent Setup Guide for complete documentation (available in your vault after setup).
 
 **`/sync-notes`** - Bidirectional Sync
 
@@ -247,6 +295,22 @@ Once installed, use the commands in OpenCode:
 - Downloads files to local project
 - Optional: `--delete` flag to remove vault files after successful download
 - Use this when you need to publish or share docs from vault
+
+**`/validate-notes-config`** - Configuration Validation
+
+- Validates `.withcontextconfig.jsonc` for syntax and structural errors
+- Checks for pattern conflicts between `vault` and `local` arrays
+- Validates against JSON schema
+- Provides detailed error messages, warnings, and best practice suggestions
+- Run this after editing configuration or before syncing files
+
+**`/preview-notes-delegation`** - Preview Delegation Decisions
+
+- Shows which files will be delegated to vault vs kept local
+- Displays categorized file lists with reasoning (why each file was categorized)
+- Supports filtering: `--vault-only`, `--local-only`, `--limit N`
+- Safe to run anytime (no file modifications)
+- Use this to test configuration patterns before running sync operations
 
 ### Configuration for Other AI Coding Agents
 

@@ -14,6 +14,15 @@ import type {
   ProjectType,
 } from './types.js';
 
+interface PackageJson {
+  name?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  bin?: unknown;
+  main?: string;
+  exports?: unknown;
+}
+
 /**
  * Scan a repository for documentation files and project information
  */
@@ -43,7 +52,7 @@ async function identifyProjectType(projectRoot: string): Promise<ProjectInfo> {
 
   let hasPackageJson = false;
   let hasTsConfig = false;
-  let packageJson: any = null;
+  let packageJson: PackageJson | null = null;
 
   try {
     const content = await fs.readFile(packageJsonPath, 'utf-8');
@@ -107,7 +116,7 @@ async function checkMonorepo(projectRoot: string): Promise<boolean> {
  * Determine project type from package.json and structure
  */
 function determineProjectType(
-  packageJson: any,
+  packageJson: PackageJson | null,
   isMonorepo: boolean,
   _projectRoot: string
 ): ProjectType {
@@ -147,7 +156,7 @@ function determineProjectType(
 /**
  * Detect framework from dependencies
  */
-function detectFramework(packageJson: any): string | undefined {
+function detectFramework(packageJson: PackageJson | null): string | undefined {
   if (!packageJson) return undefined;
 
   const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
