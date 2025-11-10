@@ -77,8 +77,8 @@ async function getSessionManager(
       );
     }
 
-    // Load session into manager by resuming it
-    await manager.resumeSession(sessionId);
+    // Load session into manager without changing status
+    await manager.loadSession(sessionId);
 
     // Get the now-loaded session from manager
     const loadedSession = manager.getCurrentSession();

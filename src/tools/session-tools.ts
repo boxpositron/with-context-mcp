@@ -64,8 +64,8 @@ export async function startSession(input: StartSessionInput): Promise<string> {
     sessionState.setActiveSession(project_folder, session.sessionId);
 
     // Calculate paths for reference
-    const basePath = `${config.projectBasePath}/${project_folder}`;
-    const sessionPath = `${basePath}/.sessions/active/${session.sessionId}.json`;
+    // Calculate paths for reference
+    const sessionPath = SessionPaths.getActivePath(project_folder, session.sessionId);
 
     return JSON.stringify(
       {
@@ -146,8 +146,8 @@ export async function pauseSession(input: PauseSessionInput): Promise<string> {
     // Create session manager and load the session
     const manager = new SessionManager(client);
     manager.setProjectFolder(project_folder);
-    // Resume the session to load it into manager, then pause it
-    await manager.resumeSession(sessionId);
+    // Load the session into manager, then pause it
+    await manager.loadSession(sessionId);
     await manager.pauseSession();
 
     return JSON.stringify(
@@ -208,6 +208,15 @@ export async function resumeSession(input: ResumeSessionInput): Promise<string> 
     // Set project context
     sessionState.setProjectContext(project_folder);
 
+    // Get session ID (from input or sessionState)
+    const sessionIdToResume = session_id || sessionState.getActiveSessionId(project_folder);
+    if (!sessionIdToResume) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        'No session ID provided and no active session found'
+      );
+    }
+
     // Initialize Obsidian client
     const client = new ObsidianClient({
       apiUrl: config.obsidianApiUrl,
@@ -220,8 +229,11 @@ export async function resumeSession(input: ResumeSessionInput): Promise<string> 
     const manager = new SessionManager(client);
     manager.setProjectFolder(project_folder);
 
-    // Resume session (cast string to SessionId if provided)
-    const session = await manager.resumeSession(session_id as SessionId | undefined);
+    // Resume session (cast string to SessionId)
+    const session = await manager.resumeSession(sessionIdToResume as SessionId);
+
+    // Update sessionState with resumed session
+    sessionState.setActiveSession(project_folder, session.sessionId);
 
     const duration = getSessionDuration(session);
 
@@ -306,8 +318,8 @@ export async function endSession(input: EndSessionInput): Promise<string> {
     // Create session manager and load the session
     const manager = new SessionManager(client);
     manager.setProjectFolder(project_folder);
-    // Resume the session to load it into manager (works for both active and paused)
-    await manager.resumeSession(sessionId);
+    // Load the session into manager (works for both active and paused)
+    await manager.loadSession(sessionId);
     // Complete session (archives and clears state)
     await manager.completeSession();
 

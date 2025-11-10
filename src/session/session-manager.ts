@@ -249,6 +249,30 @@ export class SessionManager {
   }
 
   /**
+   * Load an existing session without changing its status
+   *
+   * Loads a session from vault into the manager without modifying its state.
+   * Useful for accessing session data when the session is already active.
+   *
+   * @param sessionId - Session ID to load
+   * @returns Loaded session
+   * @throws {SessionManagerError} If session cannot be loaded
+   */
+  async loadSession(sessionId: SessionId): Promise<Session> {
+    if (!this.currentProjectFolder) {
+      throw new SessionManagerError('Cannot load: no project context');
+    }
+
+    const path = SessionPaths.getActivePath(this.currentProjectFolder, sessionId);
+    const session = await this.persistence.readSession(path);
+
+    this.currentSession = session;
+    this.resetInactivityTimer();
+
+    return session;
+  }
+
+  /**
    * Complete the current session
    *
    * Marks session as completed, archives it, and clears active state.
