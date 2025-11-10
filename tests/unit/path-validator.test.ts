@@ -6,14 +6,16 @@ describe('Path Validator', () => {
   const basePath = 'Projects';
 
   describe('sanitizePath', () => {
-    it('should sanitize valid relative paths', () => {
+    it('should sanitize valid relative paths at vault root', () => {
       const result = sanitizePath('docs/api.md', projectFolder, basePath);
-      expect(result).toBe('Projects/test-project/docs/api.md');
+      // Files are now created at vault root level, not nested under basePath/projectFolder
+      expect(result).toBe('docs/api.md');
     });
 
-    it('should handle simple filenames', () => {
+    it('should handle simple filenames at vault root', () => {
       const result = sanitizePath('README.md', projectFolder, basePath);
-      expect(result).toBe('Projects/test-project/README.md');
+      // Files are now created at vault root level
+      expect(result).toBe('README.md');
     });
 
     it('should reject paths with directory traversal', () => {
@@ -30,9 +32,10 @@ describe('Path Validator', () => {
       );
     });
 
-    it('should handle nested directories', () => {
+    it('should handle nested directories at vault root', () => {
       const result = sanitizePath('docs/api/users.md', projectFolder, basePath);
-      expect(result).toBe('Projects/test-project/docs/api/users.md');
+      // Files are now created at vault root level
+      expect(result).toBe('docs/api/users.md');
     });
   });
 });

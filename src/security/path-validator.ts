@@ -5,9 +5,9 @@ import path from 'path';
  * and ensure the path stays within project boundaries.
  *
  * @param inputPath - The user-provided path to sanitize
- * @param projectFolder - The project folder name for validation
- * @param basePath - The base directory path (vault-relative base path)
- * @returns Sanitized vault-relative path (e.g., "Development Sessions/test-project/note.md")
+ * @param projectFolder - The project folder name (kept for validation but not used in path construction)
+ * @param basePath - The base directory path (kept for validation but not used in path construction)
+ * @returns Sanitized vault-relative path at vault root level (e.g., "note.md" or "docs/api.md")
  * @throws Error if path is invalid or attempts directory traversal
  */
 export function sanitizePath(inputPath: string, projectFolder: string, basePath: string): string {
@@ -82,11 +82,9 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
     }
   }
 
-  // Construct the vault-relative path: basePath/projectFolder/cleanPath
-  // This is a relative path that the Obsidian REST API will place in the vault
-  const vaultRelativePath = [basePath, projectFolder, cleanPath]
-    .filter(Boolean) // Remove empty strings
-    .join('/');
+  // Construct the vault-relative path: just use cleanPath (vault root level)
+  // Files are created at the vault root, not nested under basePath/projectFolder
+  const vaultRelativePath = cleanPath;
 
   // Additional boundary check: verify the path structure is valid
   // We use path.normalize to check for any remaining traversal attempts

@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.3] - 2025-11-10
+
+### Fixed
+
+- **Path Resolution**: Fixed vault path construction to create files at vault root level instead of nested under `basePath/projectFolder/`
+  - Previously: `write_note(path="release-notes.md")` created `Projects/with-context-mcp/release-notes.md`
+  - Now: `write_note(path="release-notes.md")` creates `release-notes.md` at vault root
+  - Modified `sanitizePath()` in `src/security/path-validator.ts` to return clean path without prepending basePath/projectFolder
+  - Updated tests to reflect new vault root behavior
+  - Security validations (directory traversal prevention, etc.) remain intact
+
+### Changed
+
+- Updated path validator documentation to reflect vault root level file creation
+- Updated test expectations for vault root paths in `tests/unit/path-validator.test.ts`
+
 ## [3.0.2] - 2025-11-10
 
 ### Changed
