@@ -1012,10 +1012,9 @@ npm install with-context-mcp
 3. **Configure environment variables:**
 
 ```bash
-export OBSIDIAN_VAULT_PATH="$HOME/Documents/Vault"
 export OBSIDIAN_API_URL="https://127.0.0.1:27124"
 export OBSIDIAN_API_KEY="your-api-key-here"
-export OBSIDIAN_VAULT="YourVaultName"
+export OBSIDIAN_VAULT="YourVaultName"  # Vault name only, not path
 export PROJECT_BASE_PATH="Projects"
 ```
 

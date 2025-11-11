@@ -282,15 +282,12 @@ The single-file approach is simpler and doesn't require building - OpenCode hand
 Set environment variables in your shell or `.env` file:
 
 ```bash
-# Required: Path to your Obsidian vault
-export OBSIDIAN_VAULT_PATH="$HOME/Documents/Vault"
-
 # Required: Obsidian Local REST API settings
 export OBSIDIAN_API_URL="https://127.0.0.1:27124"
 export OBSIDIAN_API_KEY="your-api-key-here"
-export OBSIDIAN_VAULT="YourVaultName"
+export OBSIDIAN_VAULT="YourVaultName"  # Vault name only, not path
 
-# Optional: Base path for projects within vault
+# Optional: Base path for projects within vault (default: "Projects")
 export PROJECT_BASE_PATH="Projects"
 ```
 
@@ -534,8 +531,8 @@ npm run lint
 
 **Notes not found?**
 
-- Verify `OBSIDIAN_VAULT_PATH` points to your vault directory
-- Check `OBSIDIAN_VAULT` matches your vault name exactly
+- Check `OBSIDIAN_VAULT` matches your vault name exactly (not a path)
+- Verify the Obsidian Local REST API is running
 - Use `list_notes()` to see what files are available
 
 ## License
