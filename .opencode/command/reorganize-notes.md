@@ -1,7 +1,7 @@
 ---
 description: Reorganize vault with AI-assisted suggestions
 agent: general
-subtask: false
+subtask: true
 ---
 
 # Reorganize Notes
@@ -10,39 +10,53 @@ This command executes a comprehensive vault reorganization based on an intellige
 
 ## Quick Start (Ideal Workflow)
 
-**The simplest and safest way to reorganize your vault:**
+This command generates and executes vault reorganization plans instantly using presets:
 
 ```javascript
-// 1. Generate plan with preset (auto-detects project)
+// Check for preset and execution flags
+const args = '$ARGUMENTS';
+const shouldExecute = args.includes('--execute');
+const presetMatch = args.match(/--preset[=\s](\w+)/);
+const preset = presetMatch ? presetMatch[1] : 'clean';
+const minConfMatch = args.match(/--min-confidence[=\s](0\.\d+)/);
+const minConfidence = minConfMatch ? parseFloat(minConfMatch[1]) : 0.7;
+
+// Generate organization plan with preset
 const planResult = await generate_organization_plan({
-  preset_id: 'clean', // Recommended: moves docs to vault, keeps README/LICENSE local
-  min_confidence: 0.7,
+  preset_id: preset,
+  min_confidence: minConfidence,
 });
 
-// Parse the plan from the JSON result
+// Parse plan from result
 const planData = JSON.parse(planResult);
 const plan = planData.plan;
 
-// 2. Preview (ALWAYS run this first!)
-const preview = await reorganize_notes({
-  plan: plan,
-  dry_run: true, // CRITICAL: Must be true for preview
-});
-
-// Display preview to user - tool returns formatted output
-return preview; // User must review before executing
-
-// 3. STOP HERE - User must explicitly run execute command
-// DO NOT proceed to execution automatically
-
-// 4. Execute (ONLY when user runs separate execute command)
+// Execute reorganization (dry-run by default for safety)
 const result = await reorganize_notes({
   plan: plan,
-  dry_run: false, // Execute for real
+  dry_run: !shouldExecute,
+  update_links: true,
+  create_backup: true,
+  min_confidence: minConfidence,
 });
+
+return result;
 ```
 
-**Important:** Steps 2 and 4 must be separate command invocations. Never execute automatically after preview.
+**Usage:**
+
+- `/reorganize-notes` - Preview with 'clean' preset (dry-run)
+- `/reorganize-notes --execute` - Execute with 'clean' preset
+- `/reorganize-notes --preset minimal` - Preview with 'minimal' preset
+- `/reorganize-notes --preset docs-as-code --execute` - Execute with custom preset
+- `/reorganize-notes --min-confidence 0.9` - Use higher confidence threshold
+
+**Available Presets:**
+
+- `clean` (default) - Moves docs to vault, keeps README/LICENSE local
+- `minimal` - Keep most local, only move ADRs and research
+- `docs-as-code` - Mirrors repository structure in vault
+- `research` - Heavy vault usage with cross-linking
 
 ## What This Command Does
 
@@ -163,111 +177,18 @@ Duration: 3.2 seconds
 
 ## Your Task
 
-When this command is run:
+Execute the reorganization workflow immediately with instant preset-based planning:
 
-**⚠️ CRITICAL SAFETY REQUIREMENTS ⚠️**
+The command generates a plan and executes it in one call, with dry-run by default for safety.
 
-1. **NEVER execute (dry_run: false) in the same command invocation as preview**
-2. **ALWAYS use dry_run: true for preview**
-3. **ALWAYS display preview results and STOP**
-4. **Execution requires a separate command invocation by the user**
+See "Quick Start" section above for the complete implementation.
 
-**CRITICAL: Use the generate_organization_plan + reorganize_notes tools ONLY. Do NOT perform manual operations.**
+**Important Notes:**
 
----
-
-## Two-Phase Workflow
-
-This command operates in TWO PHASES that must be separate invocations:
-
-### PHASE 1: Preview (First Command Run)
-
-**Step 1: Generate Plan**
-
-```javascript
-// Auto-detects project from git context
-const planResult = await generate_organization_plan({
-  preset_id: 'clean', // 'clean', 'minimal', 'docs-as-code', 'research'
-  min_confidence: 0.7,
-  exclude_files: [], // Optional
-});
-
-// Extract plan from result
-const planData = JSON.parse(planResult);
-const plan = planData.plan;
-```
-
-**Available Presets:**
-
-- **clean** (Recommended): Moves docs to vault, keeps README/LICENSE local
-- **minimal**: Keep most local, only move ADRs and research
-- **docs-as-code**: Mirrors repository structure in vault
-- **research**: Heavy vault usage with cross-linking
-
-See [docs/VAULT_PRESETS.md](../../docs/VAULT_PRESETS.md) for details.
-
-**Step 2: Preview Operations (DRY-RUN)**
-
-```javascript
-// Preview what will happen (auto-detects project)
-const preview = await reorganize_notes({
-  plan: plan,
-  dry_run: true, // MUST be true for preview
-  update_links: true,
-  create_backup: true,
-  min_confidence: 0.7,
-});
-
-// Display results and STOP
-return preview;
-```
-
-**Step 3: STOP HERE**
-
-- Display the preview results
-- DO NOT proceed to execution
-- DO NOT ask user for confirmation
-- User must explicitly run the execute command separately
-
----
-
-### PHASE 2: Execute (Separate Command Run)
-
-**User must explicitly invoke this separately after reviewing preview:**
-
-```javascript
-// Same plan as preview (user must provide or regenerate)
-const result = await reorganize_notes({
-  plan: plan, // Same plan from preview
-  dry_run: false, // Execute for real
-  update_links: true,
-  create_backup: true,
-  min_confidence: 0.7,
-});
-
-// Display results
-return result;
-```
-
-**Step 2: Report Results**
-
-The tool returns formatted execution summary - just display it.
-
----
-
-## What NOT to Do
-
-**Do NOT manually**:
-
-- Analyze vault structure (use `generate_organization_plan`)
-- Move or rename files yourself
-- Update links manually
-- Create or modify organization plans by hand
-- Skip the dry-run preview
-- Execute without user confirmation
-- The tools handle EVERYTHING automatically
-
----
+- Always preview first (dry-run mode is the default)
+- Use `--execute` flag to apply changes
+- Backups are created automatically when executing
+- Links are updated automatically to prevent breakage
 
 ## Alternative: Manual Plan (Advanced)
 

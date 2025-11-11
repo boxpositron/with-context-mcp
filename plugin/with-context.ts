@@ -114,7 +114,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
               'Write mode: create (fail if exists), overwrite (replace), or append (add to end). Default: overwrite'
             ),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpWriteNote({
               path: args.path,
@@ -139,7 +139,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
               'Relative path to the note within the project folder (e.g., "CHANGELOG.md" or "docs/api.md")'
             ),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpReadNote({
               path: args.path,
@@ -161,7 +161,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Relative path to a subfolder (defaults to project root)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpListNotes({
               path: args.path,
@@ -189,7 +189,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Maximum number of results to return (default: 10)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpSearchNotes({
               query: args.query,
@@ -217,9 +217,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Project folder to check for .withcontextconfig.jsonc'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
-            const result = await mcpHealthCheck({});
+            const result = await mcpHealthCheck({
+              project_folder: args.project_folder,
+            });
             return JSON.stringify(result, null, 2);
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -237,9 +239,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .string()
             .describe('The project folder name within the vault (e.g., "my-web-app")'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
-            const result = await mcpSetProjectContext({});
+            const result = await mcpSetProjectContext({
+              project_folder: args.project_folder,
+            });
             return result;
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -257,7 +261,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .string()
             .describe('Relative path to the note within the project folder'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpGetNoteMetadata({
               path: args.path,
@@ -278,7 +282,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           path: tool.schema.string().describe('Relative path to the note to delete'),
           confirm: tool.schema.boolean().describe('Must be set to true to confirm deletion'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpDeleteNote({
               path: args.path,
@@ -314,7 +318,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             )
             .describe('Array of notes to write'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpBatchWriteNotes({
               notes: args.notes.map((note) => ({
@@ -363,7 +367,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
               'Variables to substitute in the template (e.g., {"version": "1.0.0", "author": "John"})'
             ),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpCreateFromTemplate({
               template_name: args.template_name,
@@ -398,7 +402,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('If true, skip safety checks when deleting. Use with caution!'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpIngestNotes({
               dry_run: args.dry_run ?? false,
@@ -423,7 +427,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('If true, show what would be synced without actually moving files'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpSyncNotes({
               dry_run: args.dry_run ?? false,
@@ -456,7 +460,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('If true, skip safety checks when deleting. Use with extreme caution!'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpTeleportNotes({
               dry_run: args.dry_run ?? false,
@@ -480,22 +484,27 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .string()
             .optional()
             .describe('Project root directory (defaults to current working directory)'),
-          dry_run: tool.schema
+          force: tool.schema.boolean().optional().describe('If true, overwrite existing config'),
+          create_structure: tool.schema
             .boolean()
             .optional()
-            .describe('If true, show recommendations without creating config'),
-          force: tool.schema.boolean().optional().describe('If true, overwrite existing config'),
+            .describe('If true, create recommended folder structure in vault (default: true)'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Project folder name in vault (required if create_structure is true)'),
           auto_apply: tool.schema
             .boolean()
             .optional()
             .describe('If true, skip confirmation prompts'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpSetupNotes({
               project_root: args.project_root,
-
               force: args.force ?? false,
+              create_structure: args.create_structure ?? true,
+              project_folder: args.project_folder,
               auto_apply: args.auto_apply ?? false,
             });
             return result;
@@ -517,7 +526,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Path to config file (defaults to .withcontextconfig.jsonc)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpValidateConfig({
               project_root: args.project_root,
@@ -560,7 +569,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Preview delegation for specific files only'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpPreviewDelegation({
               project_root: args.project_root,
@@ -593,7 +602,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional message to describe session purpose'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpStartSession({
               project_folder: args.project_folder,
@@ -615,11 +624,15 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           project_folder: tool.schema
             .string()
             .optional()
-            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
+            .describe(
+              'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+            ),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
-            const result = await mcpPauseSession({});
+            const result = await mcpPauseSession({
+              project_folder: args.project_folder,
+            });
             return result;
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -636,13 +649,15 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           project_folder: tool.schema
             .string()
             .optional()
-            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
+            .describe(
+              'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+            ),
           session_id: tool.schema
             .string()
             .optional()
             .describe('Optional session ID to resume (defaults to most recent paused session)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpResumeSession({
               project_folder: args.project_folder,
@@ -664,13 +679,15 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           project_folder: tool.schema
             .string()
             .optional()
-            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
+            .describe(
+              'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+            ),
           message: tool.schema
             .string()
             .optional()
             .describe('Optional completion message or summary'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpEndSession({
               project_folder: args.project_folder,
@@ -694,9 +711,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
-            const result = await mcpGetSessionStatus({});
+            const result = await mcpGetSessionStatus({
+              project_folder: args.project_folder,
+            });
             return result;
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -713,7 +732,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           project_folder: tool.schema
             .string()
             .optional()
-            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
+            .describe(
+              'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+            ),
           type: tool.schema
             .enum(['feature', 'fix', 'refactor', 'docs', 'test', 'chore'])
             .describe('Type of change (conventional commit type)'),
@@ -727,7 +748,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Whether this is a breaking change'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpAddChangelogEntry({
               project_folder: args.project_folder,
@@ -754,9 +775,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
-            const result = await mcpGetSessionChangelog({});
+            const result = await mcpGetSessionChangelog({
+              project_folder: args.project_folder,
+            });
             return result;
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -779,9 +802,10 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Use conventional commit format (default: true)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpGetCommitSuggestion({
+              project_folder: args.project_folder,
               conventional: args.conventional ?? true,
             });
             return result;
@@ -800,14 +824,16 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           project_folder: tool.schema
             .string()
             .optional()
-            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
+            .describe(
+              'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+            ),
           content: tool.schema.string().describe('Todo content/description'),
           priority: tool.schema
             .enum(['high', 'medium', 'low'])
             .optional()
             .describe('Priority level (default: medium)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpAddTodo({
               project_folder: args.project_folder,
@@ -830,7 +856,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           project_folder: tool.schema
             .string()
             .optional()
-            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
+            .describe(
+              'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+            ),
           todo_id: tool.schema.string().describe('Todo ID to update'),
           status: tool.schema
             .enum(['pending', 'in_progress', 'completed', 'cancelled'])
@@ -838,7 +866,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .describe('New status'),
           priority: tool.schema.enum(['high', 'medium', 'low']).optional().describe('New priority'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpUpdateTodo({
               project_folder: args.project_folder,
@@ -877,9 +905,10 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Filter by priority'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpListTodos({
+              project_folder: args.project_folder,
               status: args.status as
                 | 'pending'
                 | 'in_progress'
@@ -928,7 +957,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Maximum number of files to analyze (for limiting large vaults)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpAnalyzeVaultStructure({
               exclude_patterns: args.exclude_patterns,
@@ -1034,7 +1063,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Minimum confidence threshold for executing operations (default: 0.7)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpReorganizeNotes({
               plan: args.plan as unknown as Parameters<typeof mcpReorganizeNotes>[0]['plan'],
@@ -1085,7 +1114,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Maximum file size to analyze in MB (default: 10)'),
         },
-        async execute(_args, _ctx) {
+        async execute(args, _ctx) {
           try {
             const result = await mcpGenerateOrganizationPlan({
               preset_id: args.preset_id,

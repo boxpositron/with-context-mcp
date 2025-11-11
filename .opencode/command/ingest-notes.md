@@ -1,7 +1,7 @@
 ---
 description: Ingest local documentation files to Obsidian vault
 agent: general
-subtask: false
+subtask: true
 ---
 
 # Ingest Notes
@@ -24,53 +24,32 @@ This command copies documentation files from your local project to the Obsidian 
 
 ## Your Task
 
-When this command is run:
-
-**Step 1: Call the ingest_notes tool**
-
-**CRITICAL: Use ONLY the ingest_notes tool. Do NOT perform any manual operations.**
-
-Call the `ingest_notes` tool directly. The tool will:
-
-- Auto-detect project from git context
-- Scan for files with "vault" delegation decision
-- Copy files from local to vault
-- Optionally delete local files after copy
-- Return formatted results
+Execute the ingest_notes tool immediately with dry-run by default for safety:
 
 ```javascript
-// Preview first (recommended)
-const preview = await ingest_notes({
-  dry_run: true, // Preview only
-});
+// Check for flags in arguments
+const args = '$ARGUMENTS';
+const shouldExecute = args.includes('--execute');
+const shouldDelete = args.includes('--delete');
+const forceDelete = args.includes('--force-delete');
 
-// Display preview and STOP
-return preview;
-
-// Execute (separate command invocation)
 const result = await ingest_notes({
-  dry_run: false, // Execute for real
-  delete_local_files: false, // Keep local files (default)
+  dry_run: !shouldExecute,
+  delete_local_files: shouldDelete,
+  force_delete: forceDelete,
 });
 
-// Or with cleanup (if user explicitly requests)
-const result = await ingest_notes({
-  dry_run: false,
-  delete_local_files: true, // Delete after copy
-  force_delete: true, // Force delete even if errors
-});
-
-// Display results
 return result;
 ```
 
-**Step 2: Do NOT manually**:
+**Usage:**
 
-- Scan directories or read files
-- Copy files to vault
-- Delete local files
-- Parse configuration
-- The tool handles ALL of this automatically
+- `/ingest-notes` - Preview what will be copied (safe, dry-run mode)
+- `/ingest-notes --execute` - Copy files to vault (keeps local files)
+- `/ingest-notes --execute --delete` - Copy and delete local files
+- `/ingest-notes --execute --delete --force-delete` - Force delete even on errors
+
+**Important:** Use `--delete` flag only if you want to remove local files after copying!
 
 ## Parameters
 

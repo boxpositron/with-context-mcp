@@ -1,7 +1,7 @@
 ---
 description: Teleport documentation files from Obsidian vault to local project
 agent: general
-subtask: false
+subtask: true
 ---
 
 # Teleport Notes
@@ -24,62 +24,32 @@ This command downloads files from vault to local project:
 
 ## Your Task
 
-When this command is run:
-
-**Step 1: Call the teleport_notes tool**
-
-**CRITICAL: Use ONLY the teleport_notes tool. Do NOT perform any manual operations.**
-
-**Call the teleport_notes tool** with appropriate parameters:
-
-- The tool handles ALL file scanning and downloading automatically
-- Use `dry_run: true` first to preview what will be teleported
-- After user confirms, call with `dry_run: false` to execute
-- Use `delete_from_vault: true` to clean up after download (optional)
-
-**Step 2: Report the results** from the tool:
-
-- Show how many files were teleported
-- List which files were teleported
-- Show where they were placed in the local project
-- Report any errors or skipped files
-- Note whether vault files were deleted
-
-**Step 3: Do NOT manually**:
-
-- Read or scan vault directories
-- Copy files between locations
-- Delete vault files
-- Parse `.withcontextconfig.jsonc`
-- The teleport_notes tool does ALL of this automatically
-
-**Tool Priority:**
-First try to use the WithContext plugin's `teleport_notes` tool. If not available, fallback to the with-context MCP server's `teleport_notes` tool.
-
-**Example usage:**
+Execute the teleport_notes tool immediately with dry-run by default for safety:
 
 ```javascript
-// Preview what will be teleported (always do this first!)
-teleport_notes({
-  project_folder: 'my-project',
-  dry_run: true,
+// Check for flags in arguments
+const args = '$ARGUMENTS';
+const shouldExecute = args.includes('--execute');
+const shouldDelete = args.includes('--delete');
+const forceDelete = args.includes('--force-delete');
+
+const result = await teleport_notes({
+  dry_run: !shouldExecute,
+  delete_from_vault: shouldDelete,
+  force_delete: forceDelete,
 });
 
-// Execute download after user confirms (do NOT delete vault files by default)
-teleport_notes({
-  project_folder: 'my-project',
-  dry_run: false,
-  delete_from_vault: false, // Keep vault files (default)
-});
-
-// Execute with cleanup (only if user explicitly requests)
-teleport_notes({
-  project_folder: 'my-project',
-  dry_run: false,
-  delete_from_vault: true, // Delete vault files after successful copy
-  force_delete: true, // Force deletion even if some files had errors
-});
+return result;
 ```
+
+**Usage:**
+
+- `/teleport-notes` - Preview what will be downloaded (safe, dry-run mode)
+- `/teleport-notes --execute` - Download files from vault (keeps vault files)
+- `/teleport-notes --execute --delete` - Download and delete vault files
+- `/teleport-notes --execute --delete --force-delete` - Force delete even on errors
+
+**Important:** Use `--delete` flag only if you want to remove vault files after downloading!
 
 ## Parameters
 

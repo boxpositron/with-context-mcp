@@ -1,7 +1,7 @@
 ---
 description: Preview which documentation files will be delegated to vault vs local
 agent: general
-subtask: false
+subtask: true
 ---
 
 # Preview Notes Delegation
@@ -29,50 +29,35 @@ First try to use the WithContext plugin's `preview_delegation` tool. If not avai
 
 ## Your Task
 
-When this command is run:
-
-**Step 1: Call the preview_delegation tool**
-
-**CRITICAL: Use ONLY the preview_delegation tool. Do NOT perform any manual operations.**
-
-**Call the preview_delegation tool** with appropriate parameters:
-
-- The tool handles ALL file scanning and delegation decisions automatically
-- Use `show_reasoning: true` to see why each file was categorized
-- Use `limit` to control how many files are shown per category
-- Use `vault_only` or `local_only` to filter results
-
-**Step 2: Present the preview** from the tool:
-
-- Show summary statistics (total files, vault count, local count)
-- List vault files (files that will be delegated to vault)
-- List local files (files that will stay in repository)
-- Show reasoning if requested
-
-**Step 3: Suggest next steps** based on preview results:
-
-- If patterns look correct: Suggest running `/sync-notes` or `/ingest-notes`
-- If patterns need adjustment: Suggest editing `.withcontextconfig.jsonc`
-- If conflicts detected: Suggest running `/validate-notes-config`
-
-**Step 4: Do NOT manually**:
-
-- Read or scan directories for documentation files
-- Determine delegation decisions
-- Parse `.withcontextconfig.jsonc`
-- Categorize files
-- The preview_delegation tool does ALL of this automatically
-
-**Example usage:**
+Execute the preview_delegation tool immediately with options based on user arguments:
 
 ```javascript
-// Basic preview
-preview_delegation({
-  project_root: '/path/to/project', // Use current working directory
-  show_reasoning: true, // Show why each file was categorized
-  limit: 50, // Show up to 50 files per category
+// Parse optional arguments
+const args = '$ARGUMENTS';
+const vaultOnly = args.includes('--vault-only');
+const localOnly = args.includes('--local-only');
+const noReasoning = args.includes('--no-reasoning');
+const limitMatch = args.match(/--limit[=\s](\d+)/);
+const limit = limitMatch ? parseInt(limitMatch[1]) : 100;
+
+const result = await preview_delegation({
+  project_root: process.cwd(),
+  show_reasoning: !noReasoning,
+  limit: limit,
+  vault_only: vaultOnly,
+  local_only: localOnly,
 });
+
+return result;
 ```
+
+**Usage Examples:**
+
+- `/preview-notes-delegation` - Full preview with reasoning
+- `/preview-notes-delegation --vault-only` - Show only vault files
+- `/preview-notes-delegation --local-only` - Show only local files
+- `/preview-notes-delegation --limit 20` - Limit to 20 files per category
+- `/preview-notes-delegation --no-reasoning` - Hide detailed reasoning
 
 ## Optional Parameters
 

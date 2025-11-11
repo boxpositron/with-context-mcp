@@ -151,8 +151,16 @@ export async function analyzeVaultStructure(
         const fullPath = readParsed.path; // Use the full path returned by the tool
 
         // Store rootPath from first successful read for later use
+        // Extract project root (e.g., "Projects/my-project") not the file's directory
         if (!rootPath && fullPath.includes('/')) {
-          rootPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+          // Look for "Projects/project-name" pattern
+          const match = fullPath.match(/^(Projects\/[^/]+)/);
+          if (match) {
+            rootPath = match[1];
+          } else {
+            // Fallback to taking everything before the last slash
+            rootPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+          }
         }
 
         const fileSize = Buffer.byteLength(content, 'utf8');

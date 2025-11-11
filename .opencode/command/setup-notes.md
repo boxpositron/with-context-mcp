@@ -1,7 +1,7 @@
 ---
 description: Intelligently analyze and setup documentation architecture for the project
 agent: general
-subtask: false
+subtask: true
 ---
 
 # Intelligent Documentation Setup
@@ -152,64 +152,31 @@ README changes needed:
 
 ## Your Task
 
-When this command is run:
-
-**Step 1: Call the setup_notes tool**
-
-**CRITICAL: Use ONLY the setup_notes tool. Do NOT perform any manual operations.**
-
-Call the `setup_notes` tool directly. The tool will:
-
-- Auto-detect project from git context
-- Analyze repository structure and documentation
-- Validate README and links
-- Generate intelligent .withcontextconfig.jsonc
-- Optionally create vault folder structure
+Execute the setup_notes tool immediately with options based on user arguments:
 
 ```javascript
+// Parse optional arguments
+const args = '$ARGUMENTS';
+const noStructure = args.includes('--no-structure');
+const force = args.includes('--force');
+
+// Get project folder name from current directory
+const projectFolder = process.cwd().split('/').pop();
+
 const result = await setup_notes({
-  project_folder: 'my-project', // Required for vault folder creation
-  create_structure: true, // Optional: create folders in vault
-  force: false, // Optional: overwrite existing config
+  project_folder: projectFolder,
+  create_structure: !noStructure,
+  force: force,
 });
 
-// Display the formatted results
 return result;
 ```
 
-**Note:** `project_folder` is required for this tool (unlike other tools) because it needs to create vault folder structure.
+**Usage Examples:**
 
-**Step 2: Report the results** from the tool:
-
-- Show the full output from setup_notes
-- The tool provides comprehensive analysis including:
-  - Project type and documentation file count
-  - README health score and warnings
-  - Link validation results
-  - Recommended LOCAL vs VAULT patterns
-  - Generated configuration
-  - Actionable next steps
-
-**Step 3: Do NOT manually**:
-
-- Read files to analyze the project
-- Parse or validate the README
-- Create or edit `.withcontextconfig.jsonc` directly
-- Scan directories for documentation files
-- The setup_notes tool does ALL of this automatically
-
-**Tool Priority:**
-First try to use the WithContext plugin's `setup_notes` tool. If not available, fallback to the with-context MCP server's `setup_notes` tool.
-
-**Example usage:**
-
-```
-setup_notes({
-  project_folder: "my-project",
-  create_structure: true,
-  force: false
-})
-```
+- `/setup-notes` - Full setup with vault folder creation
+- `/setup-notes --no-structure` - Skip creating vault folders
+- `/setup-notes --force` - Overwrite existing configuration
 
 ## Configuration Format (v2.1.0)
 

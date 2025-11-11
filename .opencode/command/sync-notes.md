@@ -1,7 +1,7 @@
 ---
 description: Bidirectionally sync documentation files between local project and Obsidian vault
 agent: general
-subtask: false
+subtask: true
 ---
 
 # Sync Notes
@@ -25,46 +25,26 @@ This command performs bidirectional synchronization:
 
 ## Your Task
 
-When this command is run:
-
-**Step 1: Call the sync_notes tool**
-
-**CRITICAL: Use ONLY the sync_notes tool. Do NOT perform any manual operations.**
-
-Call the `sync_notes` tool directly. The tool will:
-
-- Auto-detect project from git context
-- Scan for files matching .withcontextconfig.jsonc patterns
-- Move files bidirectionally (vault ↔ local)
-- Delete source files after successful copy
-- Return formatted results
+Execute the sync_notes tool immediately with dry-run by default for safety:
 
 ```javascript
-// Preview first (recommended)
-const preview = await sync_notes({
-  dry_run: true, // Preview only
-});
+// Check for --execute flag in arguments
+const args = '$ARGUMENTS';
+const shouldExecute = args.includes('--execute');
 
-// Display preview and STOP - user must run execute separately
-return preview;
-
-// Execute (separate command invocation)
 const result = await sync_notes({
-  dry_run: false, // Execute for real
+  dry_run: !shouldExecute,
 });
 
-// Display results
 return result;
 ```
 
-**Step 2: Do NOT manually**:
+**Usage:**
 
-- Scan directories or read files
-- Move or copy files between locations
-- Delete source files
-- Parse configuration
-- Interpret or format results
-- The tool handles ALL of this automatically
+- `/sync-notes` - Preview changes (safe, dry-run mode)
+- `/sync-notes --execute` - Execute sync for real (moves and deletes files)
+
+**Important:** This is a destructive operation - files are DELETED from source after successful copy. Always preview first!
 
 ## Parameters
 

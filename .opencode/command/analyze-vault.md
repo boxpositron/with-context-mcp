@@ -1,7 +1,7 @@
 ---
 description: Analyze vault structure and organization
 agent: general
-subtask: false
+subtask: true
 ---
 
 # Analyze Vault Structure
@@ -95,69 +95,33 @@ Most Referenced Files:
 
 ## Your Task
 
-When this command is run:
-
-**Step 1: Call the analyze_vault_structure tool**
-
-**CRITICAL: Use ONLY the analyze_vault_structure tool. Do NOT perform any manual operations.**
-
-Call the `analyze_vault_structure` tool directly. The tool will:
-
-- Auto-detect the project from git context
-- Handle all analysis automatically
-- Return formatted results ready to display
+Execute the analyze_vault_structure tool immediately with options based on user arguments:
 
 ```javascript
+// Parse optional arguments
+const args = '$ARGUMENTS';
+const noCategories = args.includes('--no-categories');
+const noOrphans = args.includes('--no-orphans');
+const maxFilesMatch = args.match(/--max-files[=\s](\d+)/);
+const maxFiles = maxFilesMatch ? parseInt(maxFilesMatch[1]) : undefined;
+
 const result = await analyze_vault_structure({
-  exclude_patterns: ['drafts/*', '*.tmp', 'archive/*'], // Optional
-  include_categories: true, // Optional, default: true
-  include_orphans: true, // Optional, default: true
-  max_file_size_mb: 10, // Optional, default: 10
-  max_files: 500, // Optional - limit for large vaults
+  include_categories: !noCategories,
+  include_orphans: !noOrphans,
+  max_file_size_mb: 10,
+  max_files: maxFiles,
+  exclude_patterns: ['drafts/*', '*.tmp', 'archive/*'],
 });
 
-// Display the formatted results to the user
 return result;
 ```
 
-**The tool handles everything:**
+**Usage Examples:**
 
-- Project detection from git context
-- Vault structure scanning
-- Content analysis and metadata extraction
-- Category assignment
-- Orphan detection
-- Link analysis
-- Formatted output generation
-
-**Step 2: Display the results**
-
-Simply return the tool output - it's already formatted for display.
-
-**Step 3: Do NOT manually**:
-
-- Run health checks or wait for user confirmation
-- Read files or scan directories yourself
-- Parse markdown or extract metadata
-- Build statistics or link graphs
-- Format output or interpret results
-- The tool handles ALL of this automatically
-
-**Example usage:**
-
-```javascript
-// Basic analysis (auto-detects project)
-const result = await analyze_vault_structure({});
-
-// Analysis with filters
-const result = await analyze_vault_structure({
-  exclude_patterns: ['drafts/*', '*.tmp', 'archive/*'],
-  include_categories: true,
-  include_orphans: true,
-  max_file_size_mb: 10,
-  max_files: 500,
-});
-```
+- `/analyze-vault` - Full analysis with all features
+- `/analyze-vault --no-categories` - Skip content categorization
+- `/analyze-vault --no-orphans` - Skip orphan detection
+- `/analyze-vault --max-files 500` - Limit to 500 files
 
 ## Analysis Options
 
