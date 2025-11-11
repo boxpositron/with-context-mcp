@@ -27,6 +27,13 @@ import {
   addTodo as mcpAddTodo,
   updateTodo as mcpUpdateTodo,
   listTodos as mcpListTodos,
+  // Configuration tools
+  setupNotes as mcpSetupNotes,
+  validateConfigTool as mcpValidateConfig,
+  previewDelegationTool as mcpPreviewDelegation,
+  // Vault organization tools
+  analyzeVaultStructureHandler as mcpAnalyzeVaultStructure,
+  reorganizeVaultHandler as mcpReorganizeVault,
 } from 'with-context-mcp/tools';
 
 /**
@@ -69,8 +76,8 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             {
               status: 'active',
               config,
-              version: '3.0.4',
-              tools: 25,
+              version: '3.0.5',
+              tools: 30,
               custom_commands: 3,
               features: {
                 filename_slugification: true,
@@ -389,7 +396,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
       // ==================== Ingest Notes Tool ====================
       ingest_notes: tool({
         description:
-          'Ingest local documentation files to Obsidian vault. Scans the current project for documentation files that match .withcontextignore patterns and copies them to the vault.',
+          'Ingest local documentation files to Obsidian vault. Scans the current project for documentation files based on .withcontextconfig.jsonc delegation rules and copies them to the vault.',
         args: {
           project_folder: tool.schema
             .string()
@@ -429,7 +436,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
       // ==================== Sync Notes Tool ====================
       sync_notes: tool({
         description:
-          'Bidirectionally sync documentation files between local project and Obsidian vault. Files matching .withcontextignore patterns will be moved between locations (deleted from source after successful copy).',
+          'Bidirectionally sync documentation files between local project and Obsidian vault. Files are synced based on .withcontextconfig.jsonc delegation rules and moved between locations (deleted from source after successful copy).',
         args: {
           project_folder: tool.schema
             .string()
@@ -485,6 +492,119 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
               dry_run: args.dry_run ?? false,
               delete_from_vault: args.delete_from_vault ?? false,
               force_delete: args.force_delete ?? false,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Setup Notes Tool ====================
+      setup_notes: tool({
+        description:
+          'Intelligent documentation setup for the project. Scans repository structure, analyzes documentation files, and generates smart delegation rules in .withcontextconfig.jsonc. Provides recommendations for vault vs local placement.',
+        args: {
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Override the project folder for this operation'),
+          project_root: tool.schema
+            .string()
+            .optional()
+            .describe('Project root directory (defaults to current working directory)'),
+          dry_run: tool.schema
+            .boolean()
+            .optional()
+            .describe('If true, show recommendations without creating config'),
+          force: tool.schema.boolean().optional().describe('If true, overwrite existing config'),
+          auto_apply: tool.schema
+            .boolean()
+            .optional()
+            .describe('If true, skip confirmation prompts'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpSetupNotes({
+              project_root: args.project_root,
+              project_folder: args.project_folder,
+              force: args.force ?? false,
+              auto_apply: args.auto_apply ?? false,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Validate Config Tool ====================
+      validate_config: tool({
+        description:
+          'Validate .withcontextconfig.jsonc for errors and warnings. Provides detailed feedback on configuration issues including schema validation, pattern conflicts, and best practice recommendations.',
+        args: {
+          project_root: tool.schema.string().describe('Project root directory'),
+          config_path: tool.schema
+            .string()
+            .optional()
+            .describe('Path to config file (defaults to .withcontextconfig.jsonc)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpValidateConfig({
+              project_root: args.project_root,
+              config_path: args.config_path,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Preview Delegation Tool ====================
+      preview_delegation: tool({
+        description:
+          'Preview which files will be delegated to vault vs kept local based on configuration patterns. Useful for testing patterns before syncing. Shows reasoning for decisions and allows filtering.',
+        args: {
+          project_root: tool.schema.string().describe('Project root directory'),
+          config_path: tool.schema
+            .string()
+            .optional()
+            .describe('Path to config file (defaults to .withcontextconfig.jsonc)'),
+          file_patterns: tool.schema
+            .array(tool.schema.string())
+            .optional()
+            .describe('Glob patterns for files to preview (default: ["**/*.md"])'),
+          limit: tool.schema
+            .number()
+            .optional()
+            .describe('Maximum number of files to show per category (default: 100)'),
+          show_reasoning: tool.schema
+            .boolean()
+            .optional()
+            .describe('Show reasoning for each delegation decision (default: false)'),
+          vault_only: tool.schema.boolean().optional().describe('Show only files going to vault'),
+          local_only: tool.schema.boolean().optional().describe('Show only files staying local'),
+          specific_files: tool.schema
+            .array(tool.schema.string())
+            .optional()
+            .describe('Preview delegation for specific files only'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpPreviewDelegation({
+              project_root: args.project_root,
+              config_path: args.config_path,
+              file_patterns: args.file_patterns,
+              limit: args.limit ?? 100,
+              show_reasoning: args.show_reasoning ?? false,
+              vault_only: args.vault_only ?? false,
+              local_only: args.local_only ?? false,
+              specific_files: args.specific_files,
             });
             return result;
           } catch (error) {
@@ -779,6 +899,171 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
                 | 'cancelled'
                 | undefined,
               priority: args.priority as 'high' | 'medium' | 'low' | undefined,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Analyze Vault Structure Tool ====================
+      analyze_vault_structure: tool({
+        description:
+          'Analyze vault structure and content. Scans all markdown files, extracts metadata (headings, frontmatter, links, tags), categorizes files, identifies orphans, and builds comprehensive statistics.',
+        args: {
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Override the project folder for this operation'),
+          exclude_patterns: tool.schema
+            .array(tool.schema.string())
+            .optional()
+            .describe(
+              'Optional: Glob patterns to exclude from analysis (e.g., ["*.tmp", "drafts/*"])'
+            ),
+          include_categories: tool.schema
+            .boolean()
+            .optional()
+            .describe(
+              'Optional: Whether to include category statistics in results (default: true)'
+            ),
+          include_orphans: tool.schema
+            .boolean()
+            .optional()
+            .describe(
+              'Optional: Whether to identify orphan files (no incoming/outgoing links, default: true)'
+            ),
+          max_file_size_mb: tool.schema
+            .number()
+            .optional()
+            .describe('Optional: Maximum file size in MB to analyze (default: 10)'),
+          max_files: tool.schema
+            .number()
+            .optional()
+            .describe('Optional: Maximum number of files to analyze (for limiting large vaults)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpAnalyzeVaultStructure({
+              project_folder: args.project_folder,
+              exclude_patterns: args.exclude_patterns,
+              include_categories: args.include_categories ?? true,
+              include_orphans: args.include_orphans ?? true,
+              max_file_size_mb: args.max_file_size_mb ?? 10,
+              max_files: args.max_files,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Reorganize Vault Tool ====================
+      reorganize_vault: tool({
+        description:
+          'Execute vault reorganization based on an organization plan. Supports move and rename operations with dry-run mode (enabled by default), automatic link updates, rollback on failure, and confidence-based filtering.',
+        args: {
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Override the project folder for this operation'),
+          plan: tool.schema
+            .object({
+              suggestions: tool.schema
+                .array(
+                  tool.schema.object({
+                    type: tool.schema
+                      .enum(['rename', 'move', 'both'])
+                      .describe('Type of reorganization operation'),
+                    currentPath: tool.schema
+                      .string()
+                      .describe('Current file path relative to vault root'),
+                    suggestedPath: tool.schema
+                      .string()
+                      .optional()
+                      .describe('Suggested new path (for move operations)'),
+                    suggestedName: tool.schema
+                      .string()
+                      .optional()
+                      .describe('Suggested new name (for rename operations)'),
+                    reason: tool.schema
+                      .string()
+                      .describe('Human-readable reason for this suggestion'),
+                    confidence: tool.schema.number().describe('Confidence score (0-1)'),
+                    impact: tool.schema
+                      .object({
+                        affectedFiles: tool.schema.number().optional(),
+                        linksToUpdate: tool.schema.number().optional(),
+                        potentialBrokenLinks: tool.schema.array(tool.schema.string()).optional(),
+                        complexity: tool.schema.enum(['low', 'medium', 'high']).optional(),
+                      })
+                      .optional()
+                      .describe('Impact assessment for this operation'),
+                    targetCategory: tool.schema
+                      .string()
+                      .optional()
+                      .describe('Target category after reorganization'),
+                  })
+                )
+                .describe('List of reorganization suggestions'),
+              estimatedImpact: tool.schema
+                .object({
+                  filesToMove: tool.schema.number().optional(),
+                  filesToRename: tool.schema.number().optional(),
+                  linksToUpdate: tool.schema.number().optional(),
+                  filesRequiringLinkUpdates: tool.schema.number().optional(),
+                  estimatedDuration: tool.schema.number().optional(),
+                  hasRiskyOperations: tool.schema.boolean().optional(),
+                })
+                .optional()
+                .describe('Overall estimated impact of executing the plan'),
+              warnings: tool.schema
+                .array(
+                  tool.schema.object({
+                    severity: tool.schema.enum(['info', 'warning', 'error']),
+                    filePath: tool.schema.string().optional(),
+                    message: tool.schema.string(),
+                    suggestion: tool.schema.string().optional(),
+                  })
+                )
+                .optional()
+                .describe('List of warnings about the plan'),
+              summary: tool.schema.string().optional().describe('High-level summary of the plan'),
+              requiresManualReview: tool.schema.boolean().optional(),
+            })
+            .describe('The reorganization plan to execute (from analyze_vault_structure)'),
+          dry_run: tool.schema
+            .boolean()
+            .optional()
+            .describe(
+              'If true, preview operations without making changes (default: true for safety)'
+            ),
+          update_links: tool.schema
+            .boolean()
+            .optional()
+            .describe('If true, automatically update links in other files (default: true)'),
+          create_backup: tool.schema
+            .boolean()
+            .optional()
+            .describe('If true, create backups before executing (default: true for safety)'),
+          min_confidence: tool.schema
+            .number()
+            .optional()
+            .describe('Minimum confidence threshold for executing operations (default: 0.7)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpReorganizeVault({
+              project_folder: args.project_folder,
+              plan: args.plan as unknown as Parameters<typeof mcpReorganizeVault>[0]['plan'],
+              dry_run: args.dry_run ?? true,
+              update_links: args.update_links ?? true,
+              create_backup: args.create_backup ?? true,
+              min_confidence: args.min_confidence ?? 0.7,
             });
             return result;
           } catch (error) {

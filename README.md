@@ -76,6 +76,12 @@ npm install -g with-context-mcp
 - **Configuration Tools**: Setup, validate, and preview delegation decisions
 - **Read Interception**: Automatically read delegated docs from vault with caching
 - **Bidirectional Sync**: Sync documentation between local project and vault using delegation config
+- **Vault Organization** ⭐ NEW: Intelligent vault analysis and automated reorganization
+  - Analyze vault structure, content, and relationships
+  - Automatic categorization and folder statistics
+  - Safe file reorganization with rollback capability
+  - Automatic link updating when files move
+  - Orphan file detection and impact assessment
 
 ## Prerequisites
 
@@ -830,6 +836,13 @@ sync_notes({});
 - `ingest_notes` - Copy documentation files from project to vault (optional delete)
 - `teleport_notes` - Copy documentation files from vault to project (optional delete)
 - `sync_notes` - Bidirectionally sync docs between project and vault (auto-delete from source)
+
+### Vault Organization Tools ⭐ NEW
+
+- `analyze_vault_structure` - Analyze vault content, categorization, and relationships
+- `reorganize_vault` - Execute reorganization plans with automatic link updates and rollback
+
+See [docs/VAULT_ORGANIZATION.md](docs/VAULT_ORGANIZATION.md) for detailed documentation.
 
 ### Configuration Tools
 

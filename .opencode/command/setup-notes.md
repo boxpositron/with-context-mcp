@@ -153,35 +153,42 @@ README changes needed:
 
 When this command is run:
 
-1. **Analyze the repository** using the intelligent documentation analyzer:
-   - Scan for all documentation files
-   - Identify project type and framework
-   - Analyze README completeness and link validity
-   - Generate recommendations based on best practices
+**CRITICAL: Use ONLY the setup_notes tool. Do NOT perform any manual operations.**
 
-2. **Present analysis report** showing:
-   - Project type and documentation file count
-   - README health score and warnings
-   - Link validation results
-   - Recommended LOCAL vs VAULT patterns
-   - Suggested folder structure
+1. **Call the setup_notes tool** with appropriate parameters:
+   - The tool handles ALL analysis, validation, and configuration creation
+   - Pass `project_folder` if you want to create vault folder structure
+   - Use `force: true` to overwrite existing configuration
 
-3. **Validate README integrity**:
-   - Check if README has all internal links valid
-   - **Critical**: Ensure README doesn't link to files that will move to vault
-   - Verify README is self-contained
-   - Identify missing sections (badges, quick start, installation, usage)
+2. **Report the results** from the tool:
+   - Show the full output from setup_notes
+   - The tool provides comprehensive analysis including:
+     - Project type and documentation file count
+     - README health score and warnings
+     - Link validation results
+     - Recommended LOCAL vs VAULT patterns
+     - Generated configuration
+     - Actionable next steps
 
-4. **Create intelligent configuration**:
-   - Generate `.withcontextconfig.jsonc` based on actual project analysis
-   - Include project type and name in comments
-   - Use recommended LOCAL and VAULT patterns from analysis
-   - Follow Diátaxis framework principles
+3. **Do NOT manually**:
+   - Read files to analyze the project
+   - Parse or validate the README
+   - Create or edit `.withcontextconfig.jsonc` directly
+   - Scan directories for documentation files
+   - The setup_notes tool does ALL of this automatically
 
-5. **Provide actionable recommendations**:
-   - List specific README fixes needed
-   - Suggest folder structure for vault
-   - Guide user on next steps
+**Tool Priority:**
+First try to use the WithContext plugin's `setup_notes` tool. If not available, fallback to the with-context MCP server's `setup_notes` tool.
+
+**Example usage:**
+
+```
+setup_notes({
+  project_folder: "my-project",
+  create_structure: true,
+  force: false
+})
+```
 
 ## Configuration Format (v2.1.0)
 
@@ -247,14 +254,24 @@ The intelligent setup follows these frameworks and principles:
 
 When running this command:
 
-1. **Trust the analysis** - The intelligent engine has scanned the repo and knows what it found
-2. **Prioritize README integrity** - Never allow broken links to vault files
-3. **Follow LOCAL vs VAULT principles**:
-   - LOCAL = Must work for someone cloning the repo
-   - VAULT = Deep dives, research, explorations
-4. **Apply recommendations** but allow user customization
-5. **Provide specific, actionable feedback** (not generic suggestions)
-6. **Reference actual files found** in the repository
+1. **ONLY use the setup_notes tool** - Do NOT perform manual analysis or file operations
+2. **Trust the tool's output** - The intelligent engine has scanned the repo and knows what it found
+3. **Present the results clearly** - Show the full tool output to the user
+4. **Do NOT**:
+   - Manually read files to analyze the project
+   - Create configuration files directly
+   - Parse README or validate links manually
+   - Scan directories yourself
+5. **The tool handles everything**:
+   - Repository scanning
+   - README validation
+   - Link integrity checks
+   - Configuration generation
+   - Folder structure creation
+6. **Your role is to**:
+   - Call the tool with appropriate parameters
+   - Present the results to the user
+   - Suggest next steps based on tool output
 
 ## Migration from Legacy Format
 

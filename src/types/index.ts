@@ -229,3 +229,6 @@ export interface ToolContext {
    */
   config: ServerConfig;
 }
+
+// Re-export vault organizer types for external use
+export * from '../vault-organizer/types.js';

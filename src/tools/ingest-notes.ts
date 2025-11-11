@@ -109,6 +109,33 @@ export async function ingestNotes(input: IngestNotesInput): Promise<string> {
   // Get project root (cwd or detected git root)
   const projectRoot = context.cwd || process.cwd();
 
+  // Check if .withcontextconfig.jsonc exists
+  const configPath = path.join(projectRoot, '.withcontextconfig.jsonc');
+  let configExists = false;
+  try {
+    await fs.access(configPath);
+    configExists = true;
+  } catch {
+    // Config doesn't exist
+  }
+
+  if (!configExists) {
+    return JSON.stringify(
+      {
+        success: false,
+        error: 'Configuration file not found',
+        message:
+          'The .withcontextconfig.jsonc file does not exist in your project root.\n\n' +
+          'Please run setup_notes first to create the configuration file with intelligent delegation rules.\n\n' +
+          'Example: setup_notes({ project_folder: "your-project-name" })',
+        config_path: configPath,
+        project_root: projectRoot,
+      },
+      null,
+      2
+    );
+  }
+
   // Load delegation config (.withcontextconfig.jsonc)
   const delegationConfig = await loadDelegationConfigOrDefault(projectRoot);
 

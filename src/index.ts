@@ -77,6 +77,11 @@ import {
   listTodosSchema,
   listTodosToolSchema,
 } from './tools/changelog-todo-tools.js';
+import {
+  analyzeVaultStructureHandler,
+  analyzeVaultStructureSchema,
+} from './tools/analyze-vault-structure.js';
+import { reorganizeVaultHandler, reorganizeVaultSchema } from './tools/reorganize-vault.js';
 
 // Initialize MCP Server
 const server = new Server(
@@ -417,6 +422,139 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     addTodoToolSchema,
     updateTodoToolSchema,
     listTodosToolSchema,
+    {
+      name: 'analyze_vault_structure',
+      description:
+        'Analyze the complete structure of a vault for the current project. Scans all markdown files, extracts metadata, builds folder and category statistics, and identifies orphan files. Useful for understanding vault organization and identifying areas for improvement.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          project_folder: {
+            type: 'string',
+            description: 'Optional: Override the project folder for this operation',
+          },
+          exclude_patterns: {
+            type: 'array',
+            items: { type: 'string' },
+            default: [],
+            description:
+              'Optional: Glob patterns to exclude from analysis (e.g., ["*.tmp", "drafts/*"])',
+          },
+          include_categories: {
+            type: 'boolean',
+            default: true,
+            description: 'Optional: Whether to include category statistics in results',
+          },
+          include_orphans: {
+            type: 'boolean',
+            default: true,
+            description: 'Optional: Whether to identify orphan files (no incoming/outgoing links)',
+          },
+          max_file_size_mb: {
+            type: 'number',
+            default: 10,
+            description: 'Optional: Maximum file size in MB to analyze (default: 10)',
+          },
+          max_files: {
+            type: 'number',
+            description: 'Optional: Maximum number of files to analyze (for limiting large vaults)',
+          },
+        },
+      },
+    },
+    {
+      name: 'reorganize_vault',
+      description:
+        'Execute vault reorganization based on an OrganizationPlan (from analyze_vault_structure). Applies move and rename operations to improve vault organization. SAFETY: Defaults to dry_run=true for safe previewing. Supports automatic link updating, backup creation, and rollback on failure.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          project_folder: {
+            type: 'string',
+            description: 'Optional: Override the project folder for this operation',
+          },
+          plan: {
+            type: 'object',
+            description: 'The reorganization plan to execute (from analyze_vault_structure)',
+            properties: {
+              suggestions: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    type: { type: 'string', enum: ['rename', 'move', 'both'] },
+                    currentPath: { type: 'string' },
+                    suggestedPath: { type: 'string' },
+                    suggestedName: { type: 'string' },
+                    reason: { type: 'string' },
+                    confidence: { type: 'number' },
+                    impact: {
+                      type: 'object',
+                      properties: {
+                        affectedFiles: { type: 'number' },
+                        linksToUpdate: { type: 'number' },
+                        potentialBrokenLinks: { type: 'array', items: { type: 'string' } },
+                        complexity: { type: 'string', enum: ['low', 'medium', 'high'] },
+                      },
+                    },
+                    targetCategory: { type: 'string' },
+                  },
+                  required: ['type', 'currentPath', 'reason', 'confidence'],
+                },
+              },
+              estimatedImpact: {
+                type: 'object',
+                properties: {
+                  filesToMove: { type: 'number' },
+                  filesToRename: { type: 'number' },
+                  linksToUpdate: { type: 'number' },
+                  filesRequiringLinkUpdates: { type: 'number' },
+                  estimatedDuration: { type: 'number' },
+                  hasRiskyOperations: { type: 'boolean' },
+                },
+              },
+              warnings: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    severity: { type: 'string', enum: ['info', 'warning', 'error'] },
+                    filePath: { type: 'string' },
+                    message: { type: 'string' },
+                    suggestion: { type: 'string' },
+                  },
+                },
+              },
+              summary: { type: 'string' },
+              requiresManualReview: { type: 'boolean' },
+            },
+            required: ['suggestions'],
+          },
+          dry_run: {
+            type: 'boolean',
+            default: true,
+            description:
+              'If true, preview operations without making changes (default: true for safety)',
+          },
+          update_links: {
+            type: 'boolean',
+            default: true,
+            description: 'If true, automatically update links in other files (default: true)',
+          },
+          create_backup: {
+            type: 'boolean',
+            default: true,
+            description: 'If true, create backups before executing (default: true)',
+          },
+          min_confidence: {
+            type: 'number',
+            default: 0.7,
+            description: 'Minimum confidence threshold for executing operations (default: 0.7)',
+          },
+        },
+        required: ['plan'],
+      },
+    },
   ],
 }));
 
@@ -636,6 +774,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'list_todos': {
         const input = listTodosSchema.parse(args);
         const result = await listTodos(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'analyze_vault_structure': {
+        const input = analyzeVaultStructureSchema.parse(args);
+        const result = await analyzeVaultStructureHandler(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'reorganize_vault': {
+        const input = reorganizeVaultSchema.parse(args);
+        const result = await reorganizeVaultHandler(input);
         return {
           content: [{ type: 'text', text: result }],
         };

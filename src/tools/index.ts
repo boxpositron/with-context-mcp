@@ -30,6 +30,14 @@ export { teleportNotes, teleportNotesSchema, type TeleportNotesInput } from './t
 export { syncNotes, syncNotesSchema, type SyncNotesInput } from './sync-notes.js';
 export { setupNotes, setupNotesSchema, type SetupNotesArgs } from './setup-notes.js';
 
+// Configuration tools
+export {
+  validateConfigTool,
+  validateConfigToolSchema,
+  previewDelegationTool,
+  previewDelegationToolSchema,
+} from './config-tools.js';
+
 // Session management tools
 export {
   startSession,
@@ -70,3 +78,17 @@ export {
   listTodosSchema,
   type ListTodosInput,
 } from './changelog-todo-tools.js';
+
+// Vault analysis tools
+export {
+  analyzeVaultStructureHandler,
+  analyzeVaultStructureSchema,
+  type AnalyzeVaultStructureInput,
+} from './analyze-vault-structure.js';
+
+// Vault reorganization tools
+export {
+  reorganizeVaultHandler,
+  reorganizeVaultSchema,
+  type ReorganizeVaultInput,
+} from './reorganize-vault.js';
