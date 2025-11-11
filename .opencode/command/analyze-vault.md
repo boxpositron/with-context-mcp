@@ -1,6 +1,7 @@
 ---
 description: Analyze vault structure and organization
 agent: general
+subtask: false
 ---
 
 # Analyze Vault Structure
@@ -96,81 +97,60 @@ Most Referenced Files:
 
 When this command is run:
 
-**Step 0: Health Check (Optional but Recommended)**
-
-Before executing the main task, run a quick health check to ensure everything is configured correctly:
-
-```javascript
-const health = await health_check({});
-
-// If there are issues, show them to the user
-if (health.status !== 'healthy') {
-  console.log('⚠️  Configuration Issues Detected:');
-  console.log(JSON.stringify(health, null, 2));
-  console.log('\nRecommendations:');
-  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
-  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
-  // Wait for user confirmation before proceeding
-}
-```
-
-**What the health check validates:**
-
-- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
-- Obsidian API connection and authentication
-- Vault accessibility
-- Configuration file validity (if exists)
-
-**If health check fails, common fixes:**
-
-- Set missing environment variables
-- Check Obsidian Local REST API is running
-- Verify vault name matches exactly
-- Confirm API key is correct
-
----
-
 **Step 1: Call the analyze_vault_structure tool**
 
 **CRITICAL: Use ONLY the analyze_vault_structure tool. Do NOT perform any manual operations.**
 
-**Call the analyze_vault_structure tool** with appropriate parameters:
+Call the `analyze_vault_structure` tool directly. The tool will:
 
-- The tool handles ALL analysis automatically
-- Use `exclude_patterns` to skip certain files/folders (e.g., `["drafts/*", "*.tmp"]`)
-- Set `include_categories: false` to skip category analysis
-- Set `include_orphans: false` to skip orphan detection
-- Use `max_files` to limit analysis for large vaults
-- Use `max_file_size_mb` to skip very large files
+- Auto-detect the project from git context
+- Handle all analysis automatically
+- Return formatted results ready to display
 
-**Step 2: Report the results** from the tool:
+```javascript
+const result = await analyze_vault_structure({
+  exclude_patterns: ['drafts/*', '*.tmp', 'archive/*'], // Optional
+  include_categories: true, // Optional, default: true
+  include_orphans: true, // Optional, default: true
+  max_file_size_mb: 10, // Optional, default: 10
+  max_files: 500, // Optional - limit for large vaults
+});
 
-- Show the full analysis output
-- Highlight key findings (health score, orphans, recommendations)
-- The tool provides comprehensive structure analysis
+// Display the formatted results to the user
+return result;
+```
+
+**The tool handles everything:**
+
+- Project detection from git context
+- Vault structure scanning
+- Content analysis and metadata extraction
+- Category assignment
+- Orphan detection
+- Link analysis
+- Formatted output generation
+
+**Step 2: Display the results**
+
+Simply return the tool output - it's already formatted for display.
 
 **Step 3: Do NOT manually**:
 
-- Read files to analyze content
-- List directories or scan folders
+- Run health checks or wait for user confirmation
+- Read files or scan directories yourself
 - Parse markdown or extract metadata
-- Build link graphs or statistics
-- The analyze_vault_structure tool does ALL of this automatically
-
-**Tool Priority:**
-First try to use the WithContext plugin's `analyze_vault_structure` tool. If not available, fallback to the with-context MCP server's `analyze_vault_structure` tool.
+- Build statistics or link graphs
+- Format output or interpret results
+- The tool handles ALL of this automatically
 
 **Example usage:**
 
 ```javascript
-// Basic analysis
-analyze_vault_structure({
-  project_folder: 'my-project',
-});
+// Basic analysis (auto-detects project)
+const result = await analyze_vault_structure({});
 
-// Advanced analysis with filters
-analyze_vault_structure({
-  project_folder: 'my-project',
+// Analysis with filters
+const result = await analyze_vault_structure({
   exclude_patterns: ['drafts/*', '*.tmp', 'archive/*'],
   include_categories: true,
   include_orphans: true,

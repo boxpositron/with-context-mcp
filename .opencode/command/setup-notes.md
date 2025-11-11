@@ -1,6 +1,7 @@
 ---
 description: Intelligently analyze and setup documentation architecture for the project
 agent: general
+subtask: false
 ---
 
 # Intelligent Documentation Setup
@@ -153,49 +154,30 @@ README changes needed:
 
 When this command is run:
 
-**Step 0: Health Check (Optional but Recommended)**
-
-Before executing the main task, run a quick health check to ensure everything is configured correctly:
-
-```javascript
-const health = await health_check({});
-
-// If there are issues, show them to the user
-if (health.status !== 'healthy') {
-  console.log('⚠️  Configuration Issues Detected:');
-  console.log(JSON.stringify(health, null, 2));
-  console.log('\nRecommendations:');
-  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
-  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
-  // Wait for user confirmation before proceeding
-}
-```
-
-**What the health check validates:**
-
-- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
-- Obsidian API connection and authentication
-- Vault accessibility
-- Configuration file validity (if exists)
-
-**If health check fails, common fixes:**
-
-- Set missing environment variables
-- Check Obsidian Local REST API is running
-- Verify vault name matches exactly
-- Confirm API key is correct
-
----
-
 **Step 1: Call the setup_notes tool**
 
 **CRITICAL: Use ONLY the setup_notes tool. Do NOT perform any manual operations.**
 
-**Call the setup_notes tool** with appropriate parameters:
+Call the `setup_notes` tool directly. The tool will:
 
-- The tool handles ALL analysis, validation, and configuration creation
-- Pass `project_folder` if you want to create vault folder structure
-- Use `force: true` to overwrite existing configuration
+- Auto-detect project from git context
+- Analyze repository structure and documentation
+- Validate README and links
+- Generate intelligent .withcontextconfig.jsonc
+- Optionally create vault folder structure
+
+```javascript
+const result = await setup_notes({
+  project_folder: 'my-project', // Required for vault folder creation
+  create_structure: true, // Optional: create folders in vault
+  force: false, // Optional: overwrite existing config
+});
+
+// Display the formatted results
+return result;
+```
+
+**Note:** `project_folder` is required for this tool (unlike other tools) because it needs to create vault folder structure.
 
 **Step 2: Report the results** from the tool:
 

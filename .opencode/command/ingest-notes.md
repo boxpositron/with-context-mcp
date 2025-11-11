@@ -1,6 +1,7 @@
 ---
 description: Ingest local documentation files to Obsidian vault
 agent: general
+subtask: false
 ---
 
 # Ingest Notes
@@ -25,93 +26,51 @@ This command copies documentation files from your local project to the Obsidian 
 
 When this command is run:
 
-**Step 0: Health Check (Optional but Recommended)**
-
-Before executing the main task, run a quick health check to ensure everything is configured correctly:
-
-```javascript
-const health = await health_check({});
-
-// If there are issues, show them to the user
-if (health.status !== 'healthy') {
-  console.log('⚠️  Configuration Issues Detected:');
-  console.log(JSON.stringify(health, null, 2));
-  console.log('\nRecommendations:');
-  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
-  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
-  // Wait for user confirmation before proceeding
-}
-```
-
-**What the health check validates:**
-
-- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
-- Obsidian API connection and authentication
-- Vault accessibility
-- Configuration file validity (if exists)
-
-**If health check fails, common fixes:**
-
-- Set missing environment variables
-- Check Obsidian Local REST API is running
-- Verify vault name matches exactly
-- Confirm API key is correct
-
----
-
 **Step 1: Call the ingest_notes tool**
 
 **CRITICAL: Use ONLY the ingest_notes tool. Do NOT perform any manual operations.**
 
-**Call the ingest_notes tool** with appropriate parameters:
+Call the `ingest_notes` tool directly. The tool will:
 
-- The tool handles ALL file scanning and copying automatically
-- Use `dry_run: true` first to preview what will be ingested
-- After user confirms, call with `dry_run: false` to execute
-- Use `delete_local_files: true` to clean up after ingestion (optional)
-
-**Step 2: Report the results** from the tool:
-
-- Show how many files were ingested
-- List which files were ingested
-- Show any errors or skipped files
-- Note whether local files were deleted
-
-**Step 3: Do NOT manually**:
-
-- Read or scan directories for documentation files
-- Copy files between locations
-- Delete local files
-- Parse `.withcontextconfig.jsonc`
-- The ingest_notes tool does ALL of this automatically
-
-**Tool Priority:**
-First try to use the WithContext plugin's `ingest_notes` tool. If not available, fallback to the with-context MCP server's `ingest_notes` tool.
-
-**Example usage:**
+- Auto-detect project from git context
+- Scan for files with "vault" delegation decision
+- Copy files from local to vault
+- Optionally delete local files after copy
+- Return formatted results
 
 ```javascript
-// Preview what will be ingested (always do this first!)
-ingest_notes({
-  project_folder: 'my-project',
-  dry_run: true,
+// Preview first (recommended)
+const preview = await ingest_notes({
+  dry_run: true, // Preview only
 });
 
-// Execute ingestion after user confirms (do NOT delete local files by default)
-ingest_notes({
-  project_folder: 'my-project',
-  dry_run: false,
+// Display preview and STOP
+return preview;
+
+// Execute (separate command invocation)
+const result = await ingest_notes({
+  dry_run: false, // Execute for real
   delete_local_files: false, // Keep local files (default)
 });
 
-// Execute with cleanup (only if user explicitly requests)
-ingest_notes({
-  project_folder: 'my-project',
+// Or with cleanup (if user explicitly requests)
+const result = await ingest_notes({
   dry_run: false,
-  delete_local_files: true, // Delete local files after successful copy
-  force_delete: true, // Force deletion even if some files had errors
+  delete_local_files: true, // Delete after copy
+  force_delete: true, // Force delete even if errors
 });
+
+// Display results
+return result;
 ```
+
+**Step 2: Do NOT manually**:
+
+- Scan directories or read files
+- Copy files to vault
+- Delete local files
+- Parse configuration
+- The tool handles ALL of this automatically
 
 ## Parameters
 

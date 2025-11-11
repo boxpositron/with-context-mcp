@@ -1,6 +1,7 @@
 ---
 description: Teleport documentation files from Obsidian vault to local project
 agent: general
+subtask: false
 ---
 
 # Teleport Notes
@@ -24,40 +25,6 @@ This command downloads files from vault to local project:
 ## Your Task
 
 When this command is run:
-
-**Step 0: Health Check (Optional but Recommended)**
-
-Before executing the main task, run a quick health check to ensure everything is configured correctly:
-
-```javascript
-const health = await health_check({});
-
-// If there are issues, show them to the user
-if (health.status !== 'healthy') {
-  console.log('⚠️  Configuration Issues Detected:');
-  console.log(JSON.stringify(health, null, 2));
-  console.log('\nRecommendations:');
-  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
-  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
-  // Wait for user confirmation before proceeding
-}
-```
-
-**What the health check validates:**
-
-- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
-- Obsidian API connection and authentication
-- Vault accessibility
-- Configuration file validity (if exists)
-
-**If health check fails, common fixes:**
-
-- Set missing environment variables
-- Check Obsidian Local REST API is running
-- Verify vault name matches exactly
-- Confirm API key is correct
-
----
 
 **Step 1: Call the teleport_notes tool**
 

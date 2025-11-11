@@ -1,6 +1,7 @@
 ---
 description: Bidirectionally sync documentation files between local project and Obsidian vault
 agent: general
+subtask: false
 ---
 
 # Sync Notes
@@ -26,86 +27,44 @@ This command performs bidirectional synchronization:
 
 When this command is run:
 
-**Step 0: Health Check (Optional but Recommended)**
-
-Before executing the main task, run a quick health check to ensure everything is configured correctly:
-
-```javascript
-const health = await health_check({});
-
-// If there are issues, show them to the user
-if (health.status !== 'healthy') {
-  console.log('⚠️  Configuration Issues Detected:');
-  console.log(JSON.stringify(health, null, 2));
-  console.log('\nRecommendations:');
-  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
-  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
-  // Wait for user confirmation before proceeding
-}
-```
-
-**What the health check validates:**
-
-- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
-- Obsidian API connection and authentication
-- Vault accessibility
-- Configuration file validity (if exists)
-
-**If health check fails, common fixes:**
-
-- Set missing environment variables
-- Check Obsidian Local REST API is running
-- Verify vault name matches exactly
-- Confirm API key is correct
-
----
-
 **Step 1: Call the sync_notes tool**
 
 **CRITICAL: Use ONLY the sync_notes tool. Do NOT perform any manual operations.**
 
-**Call the sync_notes tool** with appropriate parameters:
+Call the `sync_notes` tool directly. The tool will:
 
-- The tool handles ALL file scanning, moving, and deletion automatically
-- Use `dry_run: true` first to preview what will be synced
-- After user confirms, call with `dry_run: false` to execute
-- The tool automatically deletes source files after successful copy
-
-**Step 2: Report the results** from the tool:
-
-- Show total files synced successfully
-- List files moved from local to vault
-- List files moved from vault to local
-- Show how many files were deleted from source
-- Report any errors or delete failures
-- Warn user that source files were deleted (this is expected behavior)
-
-**Step 3: Do NOT manually**:
-
-- Read or scan directories for documentation files
-- Copy or move files between locations
-- Delete files from source
-- Parse `.withcontextconfig.jsonc`
-- The sync_notes tool does ALL of this automatically
-
-**Tool Priority:**
-First try to use the WithContext plugin's `sync_notes` tool. If not available, fallback to the with-context MCP server's `sync_notes` tool.
-
-**Example usage:**
+- Auto-detect project from git context
+- Scan for files matching .withcontextconfig.jsonc patterns
+- Move files bidirectionally (vault ↔ local)
+- Delete source files after successful copy
+- Return formatted results
 
 ```javascript
-// Preview what will be synced (always do this first!)
-sync_notes({
-  project_folder: 'my-project',
-  dry_run: true,
+// Preview first (recommended)
+const preview = await sync_notes({
+  dry_run: true, // Preview only
 });
 
-// Execute sync after user confirms
-sync_notes({
-  project_folder: 'my-project',
-  dry_run: false,
+// Display preview and STOP - user must run execute separately
+return preview;
+
+// Execute (separate command invocation)
+const result = await sync_notes({
+  dry_run: false, // Execute for real
 });
+
+// Display results
+return result;
 ```
+
+**Step 2: Do NOT manually**:
+
+- Scan directories or read files
+- Move or copy files between locations
+- Delete source files
+- Parse configuration
+- Interpret or format results
+- The tool handles ALL of this automatically
 
 ## Parameters
 

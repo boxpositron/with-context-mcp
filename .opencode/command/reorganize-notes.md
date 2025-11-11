@@ -1,6 +1,7 @@
 ---
 description: Reorganize vault with AI-assisted suggestions
 agent: general
+subtask: false
 ---
 
 # Reorganize Notes
@@ -12,30 +13,36 @@ This command executes a comprehensive vault reorganization based on an intellige
 **The simplest and safest way to reorganize your vault:**
 
 ```javascript
-// 1. Generate plan with preset
-const plan = await generate_organization_plan({
-  project_folder: 'my-project',
+// 1. Generate plan with preset (auto-detects project)
+const planResult = await generate_organization_plan({
   preset_id: 'clean', // Recommended: moves docs to vault, keeps README/LICENSE local
+  min_confidence: 0.7,
 });
 
-// 2. Preview (always first!)
+// Parse the plan from the JSON result
+const planData = JSON.parse(planResult);
+const plan = planData.plan;
+
+// 2. Preview (ALWAYS run this first!)
 const preview = await reorganize_notes({
-  project_folder: 'my-project',
   plan: plan,
-  dry_run: true,
+  dry_run: true, // CRITICAL: Must be true for preview
 });
 
-// 3. Show preview to user → Get confirmation
+// Display preview to user - tool returns formatted output
+return preview; // User must review before executing
 
-// 4. Execute (after user confirms)
+// 3. STOP HERE - User must explicitly run execute command
+// DO NOT proceed to execution automatically
+
+// 4. Execute (ONLY when user runs separate execute command)
 const result = await reorganize_notes({
-  project_folder: 'my-project',
   plan: plan,
-  dry_run: false,
+  dry_run: false, // Execute for real
 });
 ```
 
-**That's it!** The system handles analysis, planning, link updates, and backups automatically.
+**Important:** Steps 2 and 4 must be separate command invocations. Never execute automatically after preview.
 
 ## What This Command Does
 
@@ -160,65 +167,34 @@ When this command is run:
 
 **⚠️ CRITICAL SAFETY REQUIREMENTS ⚠️**
 
-1. **NEVER execute without user confirmation!**
-2. **ALWAYS preview with dry_run: true first**
-3. **ALWAYS show preview results before executing**
-4. **ONLY execute after explicit user approval**
+1. **NEVER execute (dry_run: false) in the same command invocation as preview**
+2. **ALWAYS use dry_run: true for preview**
+3. **ALWAYS display preview results and STOP**
+4. **Execution requires a separate command invocation by the user**
 
 **CRITICAL: Use the generate_organization_plan + reorganize_notes tools ONLY. Do NOT perform manual operations.**
 
 ---
 
-**Step 0: Health Check (Optional but Recommended)**
+## Two-Phase Workflow
 
-Before executing the main task, run a quick health check to ensure everything is configured correctly:
+This command operates in TWO PHASES that must be separate invocations:
 
-```javascript
-const health = await health_check({});
+### PHASE 1: Preview (First Command Run)
 
-// If there are issues, show them to the user
-if (health.status !== 'healthy') {
-  console.log('⚠️  Configuration Issues Detected:');
-  console.log(JSON.stringify(health, null, 2));
-  console.log('\nRecommendations:');
-  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
-  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
-  // Wait for user confirmation before proceeding
-}
-```
-
-**What the health check validates:**
-
-- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
-- Obsidian API connection and authentication
-- Vault accessibility
-- Configuration file validity (if exists)
-
-**If health check fails, common fixes:**
-
-- Set missing environment variables
-- Check Obsidian Local REST API is running
-- Verify vault name matches exactly
-- Confirm API key is correct
-
----
-
-## Recommended Workflow (Ideal)
-
-This is the simplest and safest approach:
-
-### Step 1: Generate Plan with Preset
-
-Call `generate_organization_plan` to create a smart reorganization plan:
+**Step 1: Generate Plan**
 
 ```javascript
-// Generate plan using preset (recommended)
-const plan = await generate_organization_plan({
-  project_folder: 'my-project',
-  preset_id: 'clean', // Choose: 'clean', 'minimal', 'docs-as-code', 'research'
+// Auto-detects project from git context
+const planResult = await generate_organization_plan({
+  preset_id: 'clean', // 'clean', 'minimal', 'docs-as-code', 'research'
   min_confidence: 0.7,
-  exclude_files: [], // Optional: files to skip
+  exclude_files: [], // Optional
 });
+
+// Extract plan from result
+const planData = JSON.parse(planResult);
+const plan = planData.plan;
 ```
 
 **Available Presets:**
@@ -230,67 +206,52 @@ const plan = await generate_organization_plan({
 
 See [docs/VAULT_PRESETS.md](../../docs/VAULT_PRESETS.md) for details.
 
-### Step 2: Preview the Plan (DRY-RUN - REQUIRED!)
-
-**ALWAYS preview first! NEVER skip this step!**
+**Step 2: Preview Operations (DRY-RUN)**
 
 ```javascript
-// Preview what will happen (dry-run)
+// Preview what will happen (auto-detects project)
 const preview = await reorganize_notes({
-  project_folder: 'my-project',
   plan: plan,
-  dry_run: true, // CRITICAL: Always true for preview!
+  dry_run: true, // MUST be true for preview
   update_links: true,
   create_backup: true,
+  min_confidence: 0.7,
 });
+
+// Display results and STOP
+return preview;
 ```
 
-### Step 3: Show Preview to User & Get Confirmation
+**Step 3: STOP HERE**
 
-**Present the preview results and explicitly ask user for confirmation:**
+- Display the preview results
+- DO NOT proceed to execution
+- DO NOT ask user for confirmation
+- User must explicitly run the execute command separately
 
-> "I've previewed the reorganization plan using the **[preset_name]** preset. Here's what will happen:
->
-> **Operations:**
->
-> - Move X files to appropriate folders
-> - Rename Y files for consistency
-> - Update Z links across N files
->
-> **Key Changes:**
-> [Show 3-5 most significant operations]
->
-> **Safety:**
->
-> - ✓ Backups will be created
-> - ✓ Links will be automatically updated
-> - ✓ Rollback available if needed
->
-> **This operation will modify your vault!**
->
-> Do you want to proceed with the reorganization? (yes/no)"
+---
 
-### Step 4: Execute (ONLY After User Confirms "yes")
+### PHASE 2: Execute (Separate Command Run)
+
+**User must explicitly invoke this separately after reviewing preview:**
 
 ```javascript
-// Execute ONLY after user confirms
+// Same plan as preview (user must provide or regenerate)
 const result = await reorganize_notes({
-  project_folder: 'my-project',
-  plan: plan,
+  plan: plan, // Same plan from preview
   dry_run: false, // Execute for real
   update_links: true,
   create_backup: true,
+  min_confidence: 0.7,
 });
+
+// Display results
+return result;
 ```
 
-### Step 5: Report Results
+**Step 2: Report Results**
 
-Show the execution summary including:
-
-- Operations completed successfully
-- Links updated
-- Any failures or warnings
-- Suggest running `/analyze-vault` to verify improvements
+The tool returns formatted execution summary - just display it.
 
 ---
 
