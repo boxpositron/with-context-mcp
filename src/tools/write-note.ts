@@ -20,19 +20,15 @@ export const writeNoteSchema = z.object({
     .enum(['create', 'overwrite', 'append'])
     .default('overwrite')
     .describe('Write mode: create (fail if exists), overwrite (replace), or append (add to end)'),
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
 });
 
 export type WriteNoteInput = z.infer<typeof writeNoteSchema>;
 
 export async function writeNote(input: WriteNoteInput): Promise<string> {
-  const { path, content, mode, project_folder } = input;
+  const { path, content, mode } = input;
 
-  // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  // Get project context (automatically detected from session/git)
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Sanitize and validate path
   const sanitizedPath = sanitizePath(path, context.projectFolder, context.basePath);

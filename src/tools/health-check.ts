@@ -15,12 +15,7 @@ import { validateConfigSemantic } from '../config/config-validator.js';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
-export const healthCheckSchema = z.object({
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Project folder to check for .withcontextconfig.jsonc'),
-});
+export const healthCheckSchema = z.object({});
 
 export type HealthCheckInput = z.infer<typeof healthCheckSchema>;
 
@@ -332,8 +327,8 @@ function generateSummary(result: HealthCheckResult): string {
 /**
  * Perform comprehensive health check
  */
-export async function healthCheck(input: HealthCheckInput): Promise<HealthCheckResult> {
-  const { project_folder } = input;
+export async function healthCheck(_input: HealthCheckInput): Promise<HealthCheckResult> {
+  const project_folder = undefined;
 
   // Run all checks in parallel for speed
   const [environmentCheck, obsidianApiCheck, configurationCheck] = await Promise.all([

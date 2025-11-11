@@ -78,16 +78,17 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             {
               status: 'active',
               config,
-              version: '3.0.5',
+              version: '3.0.6',
               tools: 30,
               custom_commands: 3,
               features: {
                 filename_slugification: true,
-                path_resolution: 'project-folder-based',
+                path_resolution: 'auto-detect-from-git',
                 ascii_only_output: true,
                 type_safety: 'zero-warnings',
+                project_folder_optional: '26 tools auto-detect project',
               },
-              note: 'Full auto-tracking requires OpenCode plugin API enhancements. Use session tools manually for now.',
+              note: 'Most tools auto-detect project from git context. Session lifecycle tools still require explicit project_folder.',
             },
             null,
             2
@@ -112,18 +113,13 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .describe(
               'Write mode: create (fail if exists), overwrite (replace), or append (add to end). Default: overwrite'
             ),
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpWriteNote({
               path: args.path,
               content: args.content,
               mode: args.mode || 'overwrite',
-              project_folder: args.project_folder,
             });
             return result;
           } catch (error) {
@@ -142,16 +138,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .describe(
               'Relative path to the note within the project folder (e.g., "CHANGELOG.md" or "docs/api.md")'
             ),
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpReadNote({
               path: args.path,
-              project_folder: args.project_folder,
             });
             return result;
           } catch (error) {
@@ -169,16 +160,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .string()
             .optional()
             .describe('Optional: Relative path to a subfolder (defaults to project root)'),
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpListNotes({
               path: args.path,
-              project_folder: args.project_folder,
             });
             return result;
           } catch (error) {
@@ -194,10 +180,6 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           'Search for notes by content within the project folder. Returns matching files with snippets showing context around matches.',
         args: {
           query: tool.schema.string().describe('Search query text to find in note contents'),
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
           case_sensitive: tool.schema
             .boolean()
             .optional()
@@ -207,11 +189,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Maximum number of results to return (default: 10)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpSearchNotes({
               query: args.query,
-              project_folder: args.project_folder,
+
               case_sensitive: args.case_sensitive ?? false,
               limit: args.limit ?? 10,
             });
@@ -235,11 +217,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Project folder to check for .withcontextconfig.jsonc'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
-            const result = await mcpHealthCheck({
-              project_folder: args.project_folder,
-            });
+            const result = await mcpHealthCheck({});
             return JSON.stringify(result, null, 2);
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -257,11 +237,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .string()
             .describe('The project folder name within the vault (e.g., "my-web-app")'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
-            const result = await mcpSetProjectContext({
-              project_folder: args.project_folder,
-            });
+            const result = await mcpSetProjectContext({});
             return result;
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -278,16 +256,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
           path: tool.schema
             .string()
             .describe('Relative path to the note within the project folder'),
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpGetNoteMetadata({
               path: args.path,
-              project_folder: args.project_folder,
             });
             return result;
           } catch (error) {
@@ -304,17 +277,12 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         args: {
           path: tool.schema.string().describe('Relative path to the note to delete'),
           confirm: tool.schema.boolean().describe('Must be set to true to confirm deletion'),
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpDeleteNote({
               path: args.path,
               confirm: args.confirm,
-              project_folder: args.project_folder,
             });
             return result;
           } catch (error) {
@@ -345,12 +313,8 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
               })
             )
             .describe('Array of notes to write'),
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpBatchWriteNotes({
               notes: args.notes.map((note) => ({
@@ -358,7 +322,6 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
                 content: note.content,
                 mode: (note.mode || 'overwrite') as 'create' | 'overwrite' | 'append',
               })),
-              project_folder: args.project_folder,
             });
             return result;
           } catch (error) {
@@ -399,18 +362,13 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .describe(
               'Variables to substitute in the template (e.g., {"version": "1.0.0", "author": "John"})'
             ),
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpCreateFromTemplate({
               template_name: args.template_name,
               filename: args.filename,
               variables: args.variables,
-              project_folder: args.project_folder,
             });
             return result;
           } catch (error) {
@@ -425,10 +383,6 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Ingest local documentation files to Obsidian vault. Scans the current project for documentation files based on .withcontextconfig.jsonc delegation rules and copies them to the vault.',
         args: {
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
           dry_run: tool.schema
             .boolean()
             .optional()
@@ -444,10 +398,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('If true, skip safety checks when deleting. Use with caution!'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpIngestNotes({
-              project_folder: args.project_folder,
               dry_run: args.dry_run ?? false,
               delete_local_files: args.delete_local_files ?? false,
               force_delete: args.force_delete ?? false,
@@ -465,19 +418,14 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Bidirectionally sync documentation files between local project and Obsidian vault. Files are synced based on .withcontextconfig.jsonc delegation rules and moved between locations (deleted from source after successful copy).',
         args: {
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
           dry_run: tool.schema
             .boolean()
             .optional()
             .describe('If true, show what would be synced without actually moving files'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpSyncNotes({
-              project_folder: args.project_folder,
               dry_run: args.dry_run ?? false,
             });
             return result;
@@ -493,10 +441,6 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Teleport documentation files from Obsidian vault to local project. Downloads files from the vault back to the local project.',
         args: {
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
           dry_run: tool.schema
             .boolean()
             .optional()
@@ -512,10 +456,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('If true, skip safety checks when deleting. Use with extreme caution!'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpTeleportNotes({
-              project_folder: args.project_folder,
               dry_run: args.dry_run ?? false,
               delete_from_vault: args.delete_from_vault ?? false,
               force_delete: args.force_delete ?? false,
@@ -533,10 +476,6 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Intelligent documentation setup for the project. Scans repository structure, analyzes documentation files, and generates smart delegation rules in .withcontextconfig.jsonc. Provides recommendations for vault vs local placement.',
         args: {
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
           project_root: tool.schema
             .string()
             .optional()
@@ -551,11 +490,11 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('If true, skip confirmation prompts'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpSetupNotes({
               project_root: args.project_root,
-              project_folder: args.project_folder,
+
               force: args.force ?? false,
               auto_apply: args.auto_apply ?? false,
             });
@@ -578,7 +517,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Path to config file (defaults to .withcontextconfig.jsonc)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpValidateConfig({
               project_root: args.project_root,
@@ -621,7 +560,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Preview delegation for specific files only'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpPreviewDelegation({
               project_root: args.project_root,
@@ -654,7 +593,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional message to describe session purpose'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpStartSession({
               project_folder: args.project_folder,
@@ -673,13 +612,14 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Pause the current active session. Saves session state to vault and clears timers. Session can be resumed later with resume_session.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
-            const result = await mcpPauseSession({
-              project_folder: args.project_folder,
-            });
+            const result = await mcpPauseSession({});
             return result;
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -693,13 +633,16 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Resume a paused session. If session_id is provided, loads that specific session from vault. Otherwise, resumes the most recent paused session.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
           session_id: tool.schema
             .string()
             .optional()
             .describe('Optional session ID to resume (defaults to most recent paused session)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpResumeSession({
               project_folder: args.project_folder,
@@ -718,13 +661,16 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Complete and archive the current session. Marks session as completed, saves final state to vault archive, and clears active session. Generates comprehensive summary.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
           message: tool.schema
             .string()
             .optional()
             .describe('Optional completion message or summary'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpEndSession({
               project_folder: args.project_folder,
@@ -743,13 +689,14 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Get current session status and comprehensive details. Returns session information including ID, status, duration, files tracked, todos, changelog entries, git context, and metadata.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
-            const result = await mcpGetSessionStatus({
-              project_folder: args.project_folder,
-            });
+            const result = await mcpGetSessionStatus({});
             return result;
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -763,7 +710,10 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Add a changelog entry to the current session. User provides type and message for semi-automatic tracking. Entry is immediately persisted to session state.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
           type: tool.schema
             .enum(['feature', 'fix', 'refactor', 'docs', 'test', 'chore'])
             .describe('Type of change (conventional commit type)'),
@@ -777,7 +727,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Whether this is a breaking change'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpAddChangelogEntry({
               project_folder: args.project_folder,
@@ -799,13 +749,14 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'View changelog for the current session. Returns all entries grouped by type with file counts and breaking change indicators.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
-            const result = await mcpGetSessionChangelog({
-              project_folder: args.project_folder,
-            });
+            const result = await mcpGetSessionChangelog({});
             return result;
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -819,16 +770,18 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Generate a conventional commit message from session changelog. Analyzes entries to determine primary type and formats message. Includes all changes as bullet points and detects breaking changes.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
           conventional: tool.schema
             .boolean()
             .optional()
             .describe('Use conventional commit format (default: true)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpGetCommitSuggestion({
-              project_folder: args.project_folder,
               conventional: args.conventional ?? true,
             });
             return result;
@@ -844,14 +797,17 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Add a todo to the current session. Todos persist across sessions and are tracked per project. Immediately saved to session state in vault.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
           content: tool.schema.string().describe('Todo content/description'),
           priority: tool.schema
             .enum(['high', 'medium', 'low'])
             .optional()
             .describe('Priority level (default: medium)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpAddTodo({
               project_folder: args.project_folder,
@@ -871,7 +827,10 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Update todo status or priority. Automatically sets completedAt timestamp when marked as completed. Changes are immediately persisted to vault.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
           todo_id: tool.schema.string().describe('Todo ID to update'),
           status: tool.schema
             .enum(['pending', 'in_progress', 'completed', 'cancelled'])
@@ -879,7 +838,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .describe('New status'),
           priority: tool.schema.enum(['high', 'medium', 'low']).optional().describe('New priority'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpUpdateTodo({
               project_folder: args.project_folder,
@@ -905,7 +864,10 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'List todos from current session with optional filters. Returns todos grouped by status with counts and priority indicators. Can filter by status and/or priority.',
         args: {
-          project_folder: tool.schema.string().describe('Project folder name in vault'),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
           status: tool.schema
             .enum(['pending', 'in_progress', 'completed', 'cancelled'])
             .optional()
@@ -915,10 +877,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Filter by priority'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpListTodos({
-              project_folder: args.project_folder,
               status: args.status as
                 | 'pending'
                 | 'in_progress'
@@ -940,10 +901,6 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Analyze vault structure and content. Scans all markdown files, extracts metadata (headings, frontmatter, links, tags), categorizes files, identifies orphans, and builds comprehensive statistics.',
         args: {
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
           exclude_patterns: tool.schema
             .array(tool.schema.string())
             .optional()
@@ -971,10 +928,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Optional: Maximum number of files to analyze (for limiting large vaults)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpAnalyzeVaultStructure({
-              project_folder: args.project_folder,
               exclude_patterns: args.exclude_patterns,
               include_categories: args.include_categories ?? true,
               include_orphans: args.include_orphans ?? true,
@@ -994,10 +950,6 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Execute vault reorganization based on an organization plan. Supports move and rename operations with dry-run mode (enabled by default), automatic link updates, rollback on failure, and confidence-based filtering.',
         args: {
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
           plan: tool.schema
             .object({
               suggestions: tool.schema
@@ -1082,10 +1034,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Minimum confidence threshold for executing operations (default: 0.7)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpReorganizeNotes({
-              project_folder: args.project_folder,
               plan: args.plan as unknown as Parameters<typeof mcpReorganizeNotes>[0]['plan'],
               dry_run: args.dry_run ?? true,
               update_links: args.update_links ?? true,
@@ -1103,10 +1054,6 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         description:
           'Generate an organization plan using a preset strategy. Analyzes vault structure and applies preset rules to create comprehensive reorganization suggestions. Use this BEFORE reorganize_notes.',
         args: {
-          project_folder: tool.schema
-            .string()
-            .optional()
-            .describe('Optional: Override the project folder for this operation'),
           preset_id: tool.schema
             .string()
             .describe(
@@ -1138,10 +1085,9 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             .optional()
             .describe('Maximum file size to analyze in MB (default: 10)'),
         },
-        async execute(args, _ctx) {
+        async execute(_args, _ctx) {
           try {
             const result = await mcpGenerateOrganizationPlan({
-              project_folder: args.project_folder,
               preset_id: args.preset_id,
               min_confidence: args.min_confidence ?? 0.7,
               exclude_files: args.exclude_files,

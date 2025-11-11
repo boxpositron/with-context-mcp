@@ -9,10 +9,6 @@ import { decideDelegation } from '../doc-delegator/delegation-decision.js';
 const DOC_EXTENSIONS = ['.md', '.txt', '.rst', '.adoc'];
 
 export const ingestNotesSchema = z.object({
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
   dry_run: z
     .boolean()
     .default(false)
@@ -101,10 +97,10 @@ async function findDocFiles(
  * Ingest documentation files from local project to Obsidian vault
  */
 export async function ingestNotes(input: IngestNotesInput): Promise<string> {
-  const { project_folder, dry_run, delete_local_files, force_delete: _force_delete } = input;
+  const { dry_run, delete_local_files, force_delete: _force_delete } = input;
 
   // Get project context
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Get project root (cwd or detected git root)
   const projectRoot = context.cwd || process.cwd();

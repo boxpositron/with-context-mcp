@@ -70,10 +70,6 @@ const organizationPlanSchema = z.object({
  */
 export const reorganizeNotesSchema = z
   .object({
-    project_folder: z
-      .string()
-      .optional()
-      .describe('Optional: Override the project folder for this operation'),
     plan: organizationPlanSchema.describe(
       'The reorganization plan to execute (from analyze_vault_structure)'
     ),
@@ -119,10 +115,10 @@ export type ReorganizeNotesInput = z.infer<typeof reorganizeNotesSchema>;
  * @throws Error if reorganization execution fails
  */
 export async function reorganizeNotesHandler(input: ReorganizeNotesInput): Promise<string> {
-  const { project_folder, plan, dry_run, update_links, create_backup, min_confidence } = input;
+  const { plan, dry_run, update_links, create_backup, min_confidence } = input;
 
   // Get project context
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Initialize Obsidian client
   const client = new ObsidianClient({

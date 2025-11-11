@@ -9,10 +9,6 @@ import { decideDelegation } from '../doc-delegator/delegation-decision.js';
 const DOC_EXTENSIONS = ['.md', '.txt', '.rst', '.adoc'];
 
 export const syncNotesSchema = z.object({
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
   dry_run: z
     .boolean()
     .default(false)
@@ -93,10 +89,10 @@ async function findDocFiles(
  * - Files with delegation decision 'local' in vault → moved to local (deleted from vault)
  */
 export async function syncNotes(input: SyncNotesInput): Promise<string> {
-  const { project_folder, dry_run } = input;
+  const { dry_run } = input;
 
   // Get project context
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Get project root (cwd or detected git root)
   const projectRoot = context.cwd || process.cwd();

@@ -7,10 +7,6 @@ import { config, loadDelegationConfigOrDefault } from '../config/index.js';
 import { decideDelegation } from '../doc-delegator/delegation-decision.js';
 
 export const teleportNotesSchema = z.object({
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
   dry_run: z
     .boolean()
     .default(false)
@@ -40,10 +36,10 @@ interface TeleportResult {
  * Teleport documentation files from Obsidian vault to local project
  */
 export async function teleportNotes(input: TeleportNotesInput): Promise<string> {
-  const { project_folder, dry_run, delete_from_vault, force_delete: _force_delete } = input;
+  const { dry_run, delete_from_vault, force_delete: _force_delete } = input;
 
   // Get project context
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Get project root (cwd or detected git root)
   const projectRoot = context.cwd || process.cwd();

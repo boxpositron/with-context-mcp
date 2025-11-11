@@ -27,7 +27,6 @@ describe('reorganizeNotesSchema', () => {
 
   it('should validate a complete plan with all fields', () => {
     const input = {
-      project_folder: 'test-project',
       plan: {
         suggestions: [
           {
@@ -73,7 +72,6 @@ describe('reorganizeNotesSchema', () => {
 
     const result = reorganizeNotesSchema.parse(input);
     expect(result).toBeDefined();
-    expect(result.project_folder).toBe('test-project');
     expect(result.dry_run).toBe(false);
     expect(result.min_confidence).toBe(0.8);
     expect(result.plan.suggestions).toHaveLength(1);

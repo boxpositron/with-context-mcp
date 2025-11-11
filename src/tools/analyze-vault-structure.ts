@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { ObsidianClient } from '../obsidian/index.js';
 import { sessionState } from '../session-state.js';
 import { config } from '../config/index.js';
 import { analyzeVaultStructure } from '../vault-organizer/vault-analyzer.js';
@@ -10,10 +9,6 @@ import type { AnalysisOptions } from '../vault-organizer/types.js';
  */
 export const analyzeVaultStructureSchema = z
   .object({
-    project_folder: z
-      .string()
-      .optional()
-      .describe('Optional: Override the project folder for this operation'),
     exclude_patterns: z
       .array(z.string())
       .optional()
@@ -54,7 +49,6 @@ export async function analyzeVaultStructureHandler(
   input: AnalyzeVaultStructureInput
 ): Promise<string> {
   const {
-    project_folder,
     exclude_patterns = [],
     include_categories = true,
     include_orphans = true,
@@ -62,16 +56,8 @@ export async function analyzeVaultStructureHandler(
     max_files,
   } = input;
 
-  // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
-
-  // Initialize Obsidian client
-  const client = new ObsidianClient({
-    apiUrl: config.obsidianApiUrl,
-    apiKey: config.obsidianApiKey,
-    vault: config.obsidianVault,
-    allowInsecure: config.nodeEnv === 'development',
-  });
+  // Get project context (automatically detected from session/git)
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Build analysis options
   const analysisOptions: AnalysisOptions = {
@@ -82,8 +68,8 @@ export async function analyzeVaultStructureHandler(
     extractKeywords: true,
   };
 
-  // Analyze vault structure
-  const structure = await analyzeVaultStructure(client, context.projectFolder, analysisOptions);
+  // Analyze vault structure (uses our core tools internally)
+  const structure = await analyzeVaultStructure(context.projectFolder, analysisOptions);
 
   // Apply max_files limit if specified
   let files = structure.files;

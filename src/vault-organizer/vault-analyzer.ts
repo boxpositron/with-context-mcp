@@ -6,7 +6,8 @@
  * content parsing, and file categorization.
  */
 
-import { ObsidianClient } from '../obsidian/client.js';
+import { listNotes } from '../tools/list-notes.js';
+import { readNote } from '../tools/read-note.js';
 import {
   VaultStructure,
   VaultFileInfo,
@@ -66,14 +67,12 @@ const STOP_WORDS = new Set([
  * Scans all markdown files in the vault, extracts metadata and content,
  * builds folder and category statistics, and identifies orphan files.
  *
- * @param client - ObsidianClient instance for vault access
- * @param projectFolder - Project folder identifier (used for vault organization)
+ * @param projectFolder - Project folder identifier (not used, kept for API compatibility)
  * @param options - Analysis options to control behavior
  * @returns Complete vault structure with all analyzed files and statistics
  * @throws VaultAnalysisError if analysis fails
  */
 export async function analyzeVaultStructure(
-  client: ObsidianClient,
   projectFolder: string,
   options: AnalysisOptions = {}
 ): Promise<VaultStructure> {
@@ -86,17 +85,23 @@ export async function analyzeVaultStructure(
       extractKeywords: shouldExtractKeywords = true,
     } = options;
 
-    // Get all files in the vault for this project
-    const projectPath = `projects/${projectFolder}`;
+    // Get all files in the vault for this project using our list_notes tool
     let filePaths: string[] = [];
 
     try {
-      filePaths = await client.listNotes(projectPath);
-    } catch (error) {
-      // If project folder doesn't exist, return empty structure
-      if (error instanceof Error && error.message.includes('404')) {
+      const result = await listNotes({ path: '' }); // Empty path = project root
+      const parsed = JSON.parse(result);
+
+      if (!parsed.success) {
+        throw new Error(parsed.error || 'Failed to list notes');
+      }
+
+      filePaths = parsed.files || [];
+      const rootPath = parsed.path;
+
+      if (filePaths.length === 0) {
         return {
-          rootPath: projectPath,
+          rootPath,
           totalFiles: 0,
           totalSize: 0,
           analyzedAt: new Date().toISOString(),
@@ -106,7 +111,19 @@ export async function analyzeVaultStructure(
           orphanFiles: [],
         };
       }
-      throw error;
+    } catch {
+      const rootPath = `Projects/${projectFolder}`;
+      // If project folder doesn't exist, return empty structure
+      return {
+        rootPath,
+        totalFiles: 0,
+        totalSize: 0,
+        analyzedAt: new Date().toISOString(),
+        files: [],
+        folders: {},
+        categories: {},
+        orphanFiles: [],
+      };
     }
 
     // Filter files based on exclude patterns
@@ -117,13 +134,27 @@ export async function analyzeVaultStructure(
     // Analyze each file
     const files: VaultFileInfo[] = [];
     let totalSize = 0;
+    let rootPath = '';
 
     for (const relativePath of filteredPaths) {
       try {
-        const fullPath = `${projectPath}/${relativePath}`;
+        // Read file content using our readNote tool
+        const readResult = await readNote({ path: relativePath });
+        const readParsed = JSON.parse(readResult);
 
-        // Get file content to determine size and extract metadata
-        const content = await client.readNote(fullPath);
+        if (!readParsed.success) {
+          console.warn(`Failed to read file ${relativePath}:`, readParsed.error);
+          continue;
+        }
+
+        const content = readParsed.content;
+        const fullPath = readParsed.path; // Use the full path returned by the tool
+
+        // Store rootPath from first successful read for later use
+        if (!rootPath && fullPath.includes('/')) {
+          rootPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+        }
+
         const fileSize = Buffer.byteLength(content, 'utf8');
 
         // Skip files exceeding max size
@@ -140,7 +171,7 @@ export async function analyzeVaultStructure(
         // Analyze content if enabled
         let contentMetadata: ContentMetadata | undefined;
         if (includeContentAnalysis && extension === 'md') {
-          contentMetadata = await analyzeFileContent(client, fullPath);
+          contentMetadata = await analyzeFileContent(content);
         }
 
         // Extract keywords if enabled
@@ -168,7 +199,7 @@ export async function analyzeVaultStructure(
     }
 
     // Build folder statistics
-    const folders = buildFolderStats(files, projectPath);
+    const folders = buildFolderStats(files, rootPath);
 
     // Build category statistics
     const categories = buildCategoryStats(files);
@@ -177,7 +208,7 @@ export async function analyzeVaultStructure(
     const orphanFiles = detectOrphans ? findOrphanFiles(files) : [];
 
     return {
-      rootPath: projectPath,
+      rootPath: rootPath || `Projects/${projectFolder}`,
       totalFiles: files.length,
       totalSize,
       analyzedAt: new Date().toISOString(),
@@ -201,52 +232,41 @@ export async function analyzeVaultStructure(
  * Extracts structural elements including headings, frontmatter, links,
  * tags, code blocks, and calculates word count.
  *
- * @param client - ObsidianClient instance for vault access
- * @param filePath - Full path to the file in the vault
+ * @param content - File content to analyze
  * @returns Content metadata with all extracted information
- * @throws VaultAnalysisError if content analysis fails
  */
-export async function analyzeFileContent(
-  client: ObsidianClient,
-  filePath: string
-): Promise<ContentMetadata> {
-  try {
-    const content = await client.readNote(filePath);
+export async function analyzeFileContent(content: string): Promise<ContentMetadata> {
+  // Extract headings (lines starting with #)
+  const headings = extractHeadings(content);
 
-    // Extract headings (lines starting with #)
-    const headings = extractHeadings(content);
+  // Extract and parse frontmatter
+  const frontmatter = extractFrontmatter(content);
 
-    // Extract and parse frontmatter
-    const frontmatter = extractFrontmatter(content);
+  // Extract internal links
+  const links = extractLinks(content);
 
-    // Extract internal links
-    const links = extractLinks(content);
+  // Extract tags
+  const tags = extractTags(content, frontmatter);
 
-    // Extract tags
-    const tags = extractTags(content, frontmatter);
+  // Count words (excluding frontmatter and code blocks)
+  const wordCount = countWords(content);
 
-    // Count words (excluding frontmatter and code blocks)
-    const wordCount = countWords(content);
+  // Extract code blocks
+  const codeBlocks = extractCodeBlocks(content);
 
-    // Extract code blocks
-    const codeBlocks = extractCodeBlocks(content);
+  // Note: backlinks would require analyzing other files, which is expensive
+  // For now, we return an empty array and can populate this in a separate pass if needed
+  const backlinks: string[] = [];
 
-    // Note: backlinks would require analyzing other files, which is expensive
-    // For now, we return an empty array and can populate this in a separate pass if needed
-    const backlinks: string[] = [];
-
-    return {
-      headings,
-      frontmatter,
-      wordCount,
-      links,
-      backlinks,
-      codeBlocks,
-      tags,
-    };
-  } catch (error) {
-    throw new VaultAnalysisError(`Failed to analyze file content`, filePath, error);
-  }
+  return {
+    headings,
+    frontmatter,
+    wordCount,
+    links,
+    backlinks,
+    codeBlocks,
+    tags,
+  };
 }
 
 /**

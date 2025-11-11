@@ -9,7 +9,7 @@
  * - Rollback functionality
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { ObsidianClient } from '../../src/obsidian/client.js';
 import { analyzeVaultStructure, categorizeFile } from '../../src/vault-organizer/vault-analyzer.js';
 import {
@@ -24,6 +24,8 @@ import type {
   ReorganizationOperation,
   ExecutionOptions,
 } from '../../src/vault-organizer/types.js';
+import * as listNotesTool from '../../src/tools/list-notes.js';
+import * as readNotesTool from '../../src/tools/read-note.js';
 
 // Mock ObsidianClient for testing
 class MockObsidianClient {
@@ -139,19 +141,47 @@ describe('Vault Organization Integration Tests', () => {
 
   beforeEach(() => {
     mockClient = new MockObsidianClient();
+
+    // Mock the listNotes tool
+    vi.spyOn(listNotesTool, 'listNotes').mockImplementation(async ({ path }) => {
+      const files = await mockClient.listNotes(
+        path ? `projects/test-project/${path}` : 'projects/test-project'
+      );
+      return JSON.stringify({
+        success: true,
+        files: files,
+        path: 'projects/test-project',
+        project_folder: 'test-project',
+      });
+    });
+
+    // Mock the readNote tool
+    vi.spyOn(readNotesTool, 'readNote').mockImplementation(async ({ path }) => {
+      const fullPath = `projects/test-project/${path}`;
+      const content = await mockClient.readNote(fullPath);
+      return JSON.stringify({
+        success: true,
+        content: content,
+        path: fullPath,
+        project_folder: 'test-project',
+      });
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('Vault Analysis Workflow', () => {
     it('should analyze complete vault structure', async () => {
-      const client = mockClient as unknown as ObsidianClient;
-      const structure = await analyzeVaultStructure(client, 'test-project', {
+      const structure = await analyzeVaultStructure('test-project', {
         includeContentAnalysis: true,
         detectOrphans: true,
         extractKeywords: true,
       });
 
       expect(structure).toBeDefined();
-      expect(structure.rootPath).toBe('projects/test-project');
+      expect(structure.rootPath).toContain('test-project');
       expect(structure.totalFiles).toBeGreaterThan(0);
       expect(structure.files).toBeInstanceOf(Array);
       expect(structure.folders).toBeDefined();
@@ -159,8 +189,7 @@ describe('Vault Organization Integration Tests', () => {
     });
 
     it('should extract content metadata from files', async () => {
-      const client = mockClient as unknown as ObsidianClient;
-      const structure = await analyzeVaultStructure(client, 'test-project', {
+      const structure = await analyzeVaultStructure('test-project', {
         includeContentAnalysis: true,
       });
 
@@ -172,8 +201,7 @@ describe('Vault Organization Integration Tests', () => {
     });
 
     it('should categorize files correctly', async () => {
-      const client = mockClient as unknown as ObsidianClient;
-      const structure = await analyzeVaultStructure(client, 'test-project');
+      const structure = await analyzeVaultStructure('test-project');
 
       const readmeFile = structure.files.find((f) => f.name === 'README.md');
       const meetingFile = structure.files.find((f) => f.name === 'meeting-2024-01-15.md');
@@ -183,8 +211,7 @@ describe('Vault Organization Integration Tests', () => {
     });
 
     it('should detect orphan files', async () => {
-      const client = mockClient as unknown as ObsidianClient;
-      const structure = await analyzeVaultStructure(client, 'test-project', {
+      const structure = await analyzeVaultStructure('test-project', {
         detectOrphans: true,
         includeContentAnalysis: true,
       });
@@ -198,8 +225,7 @@ describe('Vault Organization Integration Tests', () => {
     });
 
     it('should build folder statistics', async () => {
-      const client = mockClient as unknown as ObsidianClient;
-      const structure = await analyzeVaultStructure(client, 'test-project');
+      const structure = await analyzeVaultStructure('test-project');
 
       expect(structure.folders).toBeDefined();
       expect(Object.keys(structure.folders).length).toBeGreaterThan(0);
@@ -213,8 +239,7 @@ describe('Vault Organization Integration Tests', () => {
     });
 
     it('should build category statistics', async () => {
-      const client = mockClient as unknown as ObsidianClient;
-      const structure = await analyzeVaultStructure(client, 'test-project');
+      const structure = await analyzeVaultStructure('test-project');
 
       expect(structure.categories).toBeDefined();
       expect(structure.categories['documentation']).toBeDefined();
@@ -222,15 +247,17 @@ describe('Vault Organization Integration Tests', () => {
     });
 
     it('should handle empty vault gracefully', async () => {
-      const emptyClient = new MockObsidianClient();
-      emptyClient.reset();
-      // Clear all files
-      const client = emptyClient as unknown as ObsidianClient;
+      // Override the listNotes mock to return empty results
+      vi.spyOn(listNotesTool, 'listNotes').mockResolvedValue(
+        JSON.stringify({
+          success: true,
+          files: [],
+          path: 'projects/empty-project',
+          project_folder: 'empty-project',
+        })
+      );
 
-      // Mock listNotes to return empty array
-      vi.spyOn(emptyClient, 'listNotes').mockResolvedValue([]);
-
-      const structure = await analyzeVaultStructure(client, 'empty-project');
+      const structure = await analyzeVaultStructure('empty-project');
 
       expect(structure.totalFiles).toBe(0);
       expect(structure.files).toHaveLength(0);

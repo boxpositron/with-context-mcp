@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { ObsidianClient } from '../obsidian/index.js';
 import { sessionState } from '../session-state.js';
 import { config } from '../config/index.js';
 import { analyzeVaultStructure } from '../vault-organizer/vault-analyzer.js';
@@ -23,10 +22,6 @@ const customRuleSchema = z.object({
  */
 export const generateOrganizationPlanSchema = z
   .object({
-    project_folder: z
-      .string()
-      .optional()
-      .describe('Optional: Override the project folder for this operation'),
     preset_id: z
       .string()
       .describe(
@@ -83,7 +78,6 @@ export async function generateOrganizationPlanHandler(
   input: GenerateOrganizationPlanInput
 ): Promise<string> {
   const {
-    project_folder,
     preset_id,
     min_confidence,
     exclude_files = [],
@@ -102,19 +96,11 @@ export async function generateOrganizationPlanHandler(
     );
   }
 
-  // Get project context
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  // Get project context (automatically detected from session/git)
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
-  // Initialize Obsidian client
-  const client = new ObsidianClient({
-    apiUrl: config.obsidianApiUrl,
-    apiKey: config.obsidianApiKey,
-    vault: config.obsidianVault,
-    allowInsecure: config.nodeEnv === 'development',
-  });
-
-  // Analyze vault structure
-  const vaultStructure = await analyzeVaultStructure(client, context.projectFolder, {
+  // Analyze vault structure (uses our core tools internally)
+  const vaultStructure = await analyzeVaultStructure(context.projectFolder, {
     includeContentAnalysis: true,
     excludePatterns: exclude_files,
     maxFileSize: max_file_size_mb * 1024 * 1024, // Convert MB to bytes

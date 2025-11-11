@@ -13,19 +13,15 @@ export const readNoteSchema = z.object({
         'INCORRECT: "/Users/name/file.md", "Users/name/file.md", "C:/path/file.md". ' +
         'Use paths relative to project root only, NOT absolute filesystem paths.'
     ),
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
 });
 
 export type ReadNoteInput = z.infer<typeof readNoteSchema>;
 
 export async function readNote(input: ReadNoteInput): Promise<string> {
-  const { path, project_folder } = input;
+  const { path } = input;
 
-  // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  // Get project context (automatically detected from session/git)
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Sanitize and validate path
   const sanitizedPath = sanitizePath(path, context.projectFolder, context.basePath);

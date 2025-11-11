@@ -28,10 +28,6 @@ export const batchWriteNotesSchema = z.object({
     )
     .min(1)
     .describe('Array of notes to write'),
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
 });
 
 export type BatchWriteNotesInput = z.infer<typeof batchWriteNotesSchema>;
@@ -43,10 +39,10 @@ interface NoteResult {
 }
 
 export async function batchWriteNotes(input: BatchWriteNotesInput): Promise<string> {
-  const { notes, project_folder } = input;
+  const { notes } = input;
 
   // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Initialize Obsidian client
   const client = new ObsidianClient({
