@@ -90,6 +90,8 @@ const CLEAN_PRESET: OrganizationPreset = {
     'CONTRIBUTING.md',
     'contributing.md',
     '.github/**/*',
+    'sessions/**/*', // Session management files (vault-only, never reorganize)
+    '.sessions/**/*', // Legacy session path
   ],
   rules: [
     {
@@ -358,6 +360,11 @@ export function applyPreset(
 
   // Process each file
   for (const file of vaultStructure.files) {
+    // Skip session files (vault-only, never reorganize)
+    if (isSessionFile(file.path)) {
+      continue;
+    }
+
     // Skip if file is essential (should stay local)
     if (isEssentialFile(file.path, preset.essentialFiles)) {
       continue;
@@ -444,6 +451,20 @@ export function applyPreset(
 // ============================================
 // Helper Functions
 // ============================================
+
+/**
+ * Checks if a file is a session management file (always excluded from reorganization)
+ */
+function isSessionFile(filePath: string): boolean {
+  const normalizedPath = filePath.toLowerCase();
+  return (
+    normalizedPath.includes('/sessions/') ||
+    normalizedPath.includes('/.sessions/') ||
+    normalizedPath.startsWith('sessions/') ||
+    normalizedPath.startsWith('.sessions/') ||
+    normalizedPath.match(/\/sess_[a-z0-9_]+\.json\.md$/) !== null
+  );
+}
 
 /**
  * Checks if a file matches essential files patterns

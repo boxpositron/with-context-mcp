@@ -463,3 +463,63 @@ function createMockFileWithBacklinks(path: string, backlinkCount: number): Vault
     },
   };
 }
+
+describe('Session File Exclusion', () => {
+  it('should exclude session files from reorganization', () => {
+    const preset = getPreset('clean')!;
+
+    const vaultStructure: VaultStructure = {
+      rootPath: 'Projects/test-project',
+      totalFiles: 5,
+      totalSize: 5120,
+      files: [
+        createMockFile('docs/guide.md'),
+        createMockFile('sessions/active/sess_abc123_xyz.json.md'), // Should be excluded
+        createMockFile('.sessions/sess_old123.json.md'), // Should be excluded (legacy)
+        createMockFile('docs/sessions/meeting-notes.md'), // NOT a session file
+        createMockFile('README.md'),
+      ],
+      folders: {},
+      categories: {},
+      orphanFiles: [],
+    };
+
+    const plan = applyPreset(preset, vaultStructure);
+
+    // Session files should not appear in suggestions
+    const sessionSuggestions = plan.suggestions.filter(
+      (s) =>
+        s.currentPath.includes('/sessions/') && s.currentPath.match(/sess_[a-z0-9_]+\.json\.md$/)
+    );
+
+    expect(sessionSuggestions.length).toBe(0);
+
+    // Only docs/guide.md and docs/sessions/meeting-notes.md should have suggestions
+    // (README.md is essential, actual session files excluded)
+    expect(plan.suggestions.length).toBeGreaterThan(0);
+    expect(plan.suggestions.length).toBeLessThan(3);
+  });
+
+  it('should exclude session files from all presets', () => {
+    const presets = listPresets();
+    const vaultStructure: VaultStructure = {
+      rootPath: 'Projects/test-project',
+      totalFiles: 2,
+      totalSize: 2048,
+      files: [
+        createMockFile('sessions/active/sess_test_session.json.md'),
+        createMockFile('docs/architecture.md'),
+      ],
+      folders: {},
+      categories: {},
+      orphanFiles: [],
+    };
+
+    presets.forEach((preset) => {
+      const plan = applyPreset(preset, vaultStructure);
+      const sessionSuggestions = plan.suggestions.filter((s) => s.currentPath.includes('/sess_'));
+
+      expect(sessionSuggestions.length).toBe(0);
+    });
+  });
+});
