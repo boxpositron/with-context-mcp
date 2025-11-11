@@ -86,9 +86,16 @@ export {
   type AnalyzeVaultStructureInput,
 } from './analyze-vault-structure.js';
 
-// Vault reorganization tools
+// Notes reorganization tools
 export {
-  reorganizeVaultHandler,
-  reorganizeVaultSchema,
-  type ReorganizeVaultInput,
-} from './reorganize-vault.js';
+  reorganizeNotesHandler,
+  reorganizeNotesSchema,
+  type ReorganizeNotesInput,
+} from './reorganize-notes.js';
+
+// Organization plan generation tools
+export {
+  generateOrganizationPlanHandler,
+  generateOrganizationPlanSchema,
+  type GenerateOrganizationPlanInput,
+} from './generate-organization-plan.js';

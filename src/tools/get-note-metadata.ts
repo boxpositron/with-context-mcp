@@ -5,7 +5,14 @@ import { sessionState } from '../session-state.js';
 import { config } from '../config/index.js';
 
 export const getNoteMetadataSchema = z.object({
-  path: z.string().min(1).describe('Relative path to the note within the project folder'),
+  path: z
+    .string()
+    .min(1)
+    .describe(
+      'Project-relative path to the note. CORRECT: "CHANGELOG.md", "docs/api.md". ' +
+        'INCORRECT: "/Users/name/file.md", "Users/name/file.md", "C:/path/file.md". ' +
+        'Use paths relative to project root only, NOT absolute filesystem paths.'
+    ),
   project_folder: z
     .string()
     .optional()

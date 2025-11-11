@@ -29,3 +29,7 @@ export {
   findAffectedFiles,
   createBackup,
 } from './vault-reorganizer.js';
+
+// Export preset functions
+export { getPreset, listPresets, applyPreset } from './presets.js';
+export type { OrganizationPreset, PresetRule } from './presets.js';

@@ -53,6 +53,84 @@ Intelligent note management and session tracking plugin for OpenCode.
 
 See [PLUGIN_AUTO_TRACKING.md](../docs/PLUGIN_AUTO_TRACKING.md) for full implementation details.
 
+## Auto-Session Management
+
+The plugin includes intelligent auto-session management that can automatically track your development workflow.
+
+### Configuration
+
+Control auto-session behavior with environment variables:
+
+```bash
+# Auto-start session on first file operation (default: true)
+export WITH_CONTEXT_AUTO_START=true
+
+# Auto-track file operations (default: true)
+export WITH_CONTEXT_AUTO_TRACK=true
+
+# Prompt user before auto-starting (default: true)
+export WITH_CONTEXT_PROMPT=true
+```
+
+### Environment Variables
+
+| Variable                  | Default | Description                                         |
+| ------------------------- | ------- | --------------------------------------------------- |
+| `WITH_CONTEXT_AUTO_START` | `true`  | Automatically start session on first file operation |
+| `WITH_CONTEXT_AUTO_TRACK` | `true`  | Track file reads and modifications automatically    |
+| `WITH_CONTEXT_PROMPT`     | `true`  | Show one-time prompt before auto-starting session   |
+
+### Configuration Examples
+
+**Fully Automatic (Recommended):**
+
+```bash
+export WITH_CONTEXT_AUTO_START=true
+export WITH_CONTEXT_AUTO_TRACK=true
+export WITH_CONTEXT_PROMPT=true
+```
+
+**Manual Control:**
+
+```bash
+export WITH_CONTEXT_AUTO_START=false
+export WITH_CONTEXT_AUTO_TRACK=false
+export WITH_CONTEXT_PROMPT=true
+```
+
+**Silent Mode:**
+
+```bash
+export WITH_CONTEXT_AUTO_START=false
+export WITH_CONTEXT_AUTO_TRACK=false
+export WITH_CONTEXT_PROMPT=false
+```
+
+### How It Works
+
+1. **Project Detection** - Automatically detects project folder from git repository or directory name
+2. **Session Check** - Checks for active session on first file operation
+3. **Auto-Start** - Optionally starts session automatically (if enabled)
+4. **Smart Analysis** - Analyzes file changes to suggest changelog types
+
+### Smart File Analysis
+
+The plugin analyzes file paths to suggest appropriate changelog types:
+
+| File Pattern             | Type      | Example                |
+| ------------------------ | --------- | ---------------------- |
+| `*.test.ts`, `*.spec.js` | `test`    | "Add tests for auth"   |
+| `docs/**/*.md`           | `docs`    | "Update documentation" |
+| `*.config.ts`            | `chore`   | "Update configuration" |
+| `*.ts`, `*.js`, `*.py`   | `feature` | "Update auth"          |
+
+### Documentation
+
+For comprehensive documentation, see:
+
+- **[Plugin Auto-Tracking Guide](../docs/PLUGIN_AUTO_TRACKING.md)** - Complete feature documentation
+- **[Test Results](../TEST_RESULTS_PLUGIN_AUTO_SESSION.md)** - Test coverage (58 tests)
+
 ## Quick Start
 
 ### Manual Workflow (Current)

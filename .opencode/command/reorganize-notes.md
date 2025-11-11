@@ -3,9 +3,39 @@ description: Reorganize vault with AI-assisted suggestions
 agent: general
 ---
 
-# Reorganize Vault
+# Reorganize Notes
 
 This command executes a comprehensive vault reorganization based on an intelligent organization plan. It supports moving and renaming files with automatic link updates, dry-run preview, rollback capability, and safety checks.
+
+## Quick Start (Ideal Workflow)
+
+**The simplest and safest way to reorganize your vault:**
+
+```javascript
+// 1. Generate plan with preset
+const plan = await generate_organization_plan({
+  project_folder: 'my-project',
+  preset_id: 'clean', // Recommended: moves docs to vault, keeps README/LICENSE local
+});
+
+// 2. Preview (always first!)
+const preview = await reorganize_notes({
+  project_folder: 'my-project',
+  plan: plan,
+  dry_run: true,
+});
+
+// 3. Show preview to user → Get confirmation
+
+// 4. Execute (after user confirms)
+const result = await reorganize_notes({
+  project_folder: 'my-project',
+  plan: plan,
+  dry_run: false,
+});
+```
+
+**That's it!** The system handles analysis, planning, link updates, and backups automatically.
 
 ## What This Command Does
 
@@ -87,7 +117,7 @@ Risky Operations: 0
 === Next Steps ===
 
 To execute this plan, run:
-  reorganize_vault({ ..., dry_run: false })
+  reorganize_notes({ ..., dry_run: false })
 
 IMPORTANT: Dry-run mode is ENABLED by default for safety!
 ```
@@ -128,23 +158,100 @@ Duration: 3.2 seconds
 
 When this command is run:
 
-**CRITICAL: This is a multi-step workflow. Follow the process carefully.**
+**CRITICAL: This is a multi-step workflow. Follow the IDEAL process below.**
 
-### Step 1: Analyze Current Structure
+## Ideal Workflow (Recommended)
 
-First, call `analyze_vault_structure` to understand the vault:
+### Step 1: Use a Preset (Simplest & Safest)
+
+**This is the recommended approach** - let the system generate a smart plan for you:
 
 ```javascript
-analyze_vault_structure({
+// 1. Generate plan with preset (all-in-one)
+const plan = await generate_organization_plan({
+  project_folder: 'my-project',
+  preset_id: 'clean', // Choose: 'clean', 'minimal', 'docs-as-code', 'research'
+  min_confidence: 0.7,
+  exclude_files: [], // Optional: files to skip
+});
+
+// 2. Preview the plan (dry-run)
+const preview = await reorganize_notes({
+  project_folder: 'my-project',
+  plan: plan,
+  dry_run: true, // Always preview first!
+  update_links: true,
+  create_backup: true,
+});
+
+// 3. Show results to user and get confirmation
+// [Wait for user approval]
+
+// 4. Execute (only after user confirms)
+const result = await reorganize_notes({
+  project_folder: 'my-project',
+  plan: plan,
+  dry_run: false, // Execute changes
+  update_links: true,
+  create_backup: true,
+});
+```
+
+**Available Presets:**
+
+- **clean** (Recommended for most projects): Moves all docs to vault, keeps README.md, AGENTS.md, LICENSE local. Organizes by: docs/, guides/, architecture/, meetings/, planning/, research/
+- **minimal**: Keep most files local, only move ADRs and research notes
+- **docs-as-code**: Mirrors repository structure in vault
+- **research**: Heavy vault usage with rich cross-linking for academic work
+
+See [docs/VAULT_PRESETS.md](../../docs/VAULT_PRESETS.md) for detailed preset documentation.
+
+### Why This is Ideal:
+
+1. ✅ **Automatic Analysis**: `generate_organization_plan` analyzes vault structure internally
+2. ✅ **Smart Suggestions**: Presets contain battle-tested organization rules
+3. ✅ **Safety First**: Always starts with dry-run preview
+4. ✅ **User Control**: Requires explicit confirmation before execution
+5. ✅ **Link Integrity**: Automatically updates all references
+6. ✅ **Rollback Ready**: Can undo if something goes wrong
+
+---
+
+## Alternative Workflow (Manual Analysis)
+
+If you need more control, analyze first then generate plan:
+
+### Step 1: Analyze Current Structure (Optional)
+
+```javascript
+const analysis = await analyze_vault_structure({
   project_folder: 'my-project',
   include_categories: true,
   include_orphans: true,
 });
 ```
 
-### Step 2: Create Organization Plan
+### Step 2: Generate Plan with Preset
 
-Based on the analysis, create a reorganization plan. The plan structure:
+```javascript
+const plan = await generate_organization_plan({
+  project_folder: 'my-project',
+  preset_id: 'clean',
+  min_confidence: 0.7,
+  exclude_files: ['temp.md'], // Skip specific files
+  custom_rules: [], // Optional: add custom rules
+});
+```
+
+### Step 3: Preview & Execute
+
+Same as Ideal Workflow steps 2-4 above.
+
+---
+
+## Advanced: Create Manual Plan
+
+Based on the analysis, create a reorganization plan manually. The plan structure:
 
 ```javascript
 {
@@ -187,40 +294,68 @@ Based on the analysis, create a reorganization plan. The plan structure:
 }
 ```
 
-### Step 3: Preview with Dry-Run
+### Step 3: Preview & Execute
 
-**ALWAYS preview first!** Call with `dry_run: true`:
+**ALWAYS preview first!** Then get user confirmation before executing:
 
 ```javascript
-reorganize_vault({
+// Preview
+const preview = await reorganize_notes({
   project_folder: 'my-project',
-  plan: {
-    /* your plan */
-  },
+  plan: manualPlan,
   dry_run: true, // CRITICAL: Preview first!
+  update_links: true,
+  create_backup: true,
+  min_confidence: 0.7,
+});
+
+// Show preview to user, get confirmation
+
+// Execute (only after user confirms)
+const result = await reorganize_notes({
+  project_folder: 'my-project',
+  plan: manualPlan,
+  dry_run: false,
   update_links: true,
   create_backup: true,
   min_confidence: 0.7,
 });
 ```
 
-### Step 4: Execute (Only After User Confirms!)
+---
 
-**⚠️ CRITICAL SAFETY WARNING ⚠️**
+## Safety Requirements
 
-**NEVER** execute with `dry_run: false` without explicit user confirmation!
+**⚠️ CRITICAL SAFETY RULES ⚠️**
 
-Show the dry-run results and ask:
+1. **NEVER** execute with `dry_run: false` without explicit user confirmation!
 
-> "I've previewed the reorganization plan. The following operations will be executed:
+2. **ALWAYS** run dry-run preview first
+3. **ALWAYS** show user the preview results including:
+   - Number of operations (moves, renames)
+   - Files that will be affected
+   - Links that will be updated
+   - Any warnings or risks
+4. **ALWAYS** ask user for explicit confirmation:
+
+**User Confirmation Template:**
+
+> "I've previewed the reorganization plan using the **[preset_name]** preset. Here's what will happen:
 >
-> [Show summary of operations]
+> **Operations:**
 >
-> This will:
->
-> - Move X files
-> - Rename Y files
+> - Move X files to appropriate folders
+> - Rename Y files for consistency
 > - Update Z links across N files
+>
+> **Key Changes:**
+> [Show 3-5 most significant operations]
+>
+> **Safety:**
+>
+> - ✓ Backups will be created
+> - ✓ Links will be automatically updated
+> - ✓ Rollback available if needed
 >
 > **This operation will modify your vault!**
 >
@@ -229,7 +364,7 @@ Show the dry-run results and ask:
 Only if user confirms "yes", then execute:
 
 ```javascript
-reorganize_vault({
+reorganize_notes({
   project_folder: 'my-project',
   plan: {
     /* same plan */
@@ -314,33 +449,59 @@ min_confidence: 0.5; // Include medium-confidence operations
 min_confidence: 0.9; // Only very high-confidence operations
 ```
 
+## Best Practices
+
+### ✅ DO:
+
+1. **Use presets** - Start with `generate_organization_plan` and a preset
+2. **Preview first** - Always run with `dry_run: true` before executing
+3. **Get confirmation** - Show user the preview and wait for approval
+4. **Enable backups** - Keep `create_backup: true` (default)
+5. **Update links** - Keep `update_links: true` (default) to maintain integrity
+6. **Start conservative** - Use `min_confidence: 0.8` or higher for first run
+7. **Test incrementally** - Start with a small subset if unsure
+
+### ❌ DON'T:
+
+1. **Don't skip dry-run** - Never execute without previewing first
+2. **Don't ignore warnings** - Review and address all warnings in the plan
+3. **Don't disable backups** - Always keep backups enabled unless very confident
+4. **Don't rush execution** - Give user time to review preview
+5. **Don't skip link updates** - Links will break if you don't update them
+6. **Don't use low confidence** - Avoid `min_confidence < 0.7` unless you've reviewed manually
+
+### Ideal Workflow Summary:
+
+```
+generate_organization_plan (preset)
+  → reorganize_notes (dry_run=true)
+  → SHOW TO USER + GET CONFIRMATION
+  → reorganize_notes (dry_run=false)
+```
+
 ## Example Usage Scenarios
 
-### Scenario 1: Full Reorganization
+### Scenario 1: Quick Reorganization with Preset (RECOMMENDED)
 
 ```javascript
-// Step 1: Analyze
-const analysis = await analyze_vault_structure({
+// Single command generates smart plan
+const plan = await generate_organization_plan({
   project_folder: 'my-project',
+  preset_id: 'clean',
+  min_confidence: 0.8,
 });
 
-// Step 2: Create plan based on analysis
-const plan = {
-  suggestions: [
-    // ... suggestions based on analysis findings
-  ],
-  // ... impact and warnings
-};
-
-// Step 3: Preview
-await reorganize_vault({
+// Preview
+const preview = await reorganize_notes({
   project_folder: 'my-project',
   plan: plan,
   dry_run: true,
 });
 
-// Step 4: Get user confirmation, then execute
-await reorganize_vault({
+// [Show to user, get confirmation]
+
+// Execute
+const result = await reorganize_notes({
   project_folder: 'my-project',
   plan: plan,
   dry_run: false, // Only after user confirms!
@@ -351,7 +512,7 @@ await reorganize_vault({
 
 ```javascript
 // Only execute very high-confidence operations
-await reorganize_vault({
+await reorganize_notes({
   project_folder: 'my-project',
   plan: plan,
   dry_run: false,
@@ -510,4 +671,4 @@ Link updates are the slowest part. Consider:
 
 ---
 
-_The reorganize-vault tool provides safe, intelligent vault reorganization with automatic link updates, dry-run preview, and rollback support to maintain vault integrity._
+_The reorganize-notes tool provides safe, intelligent vault reorganization with automatic link updates, dry-run preview, and rollback support to maintain vault integrity._

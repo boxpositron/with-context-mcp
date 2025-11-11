@@ -81,7 +81,11 @@ import {
   analyzeVaultStructureHandler,
   analyzeVaultStructureSchema,
 } from './tools/analyze-vault-structure.js';
-import { reorganizeVaultHandler, reorganizeVaultSchema } from './tools/reorganize-vault.js';
+import { reorganizeNotesHandler, reorganizeNotesSchema } from './tools/reorganize-notes.js';
+import {
+  generateOrganizationPlanHandler,
+  generateOrganizationPlanSchema,
+} from './tools/generate-organization-plan.js';
 
 // Initialize MCP Server
 const server = new Server(
@@ -463,9 +467,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
-      name: 'reorganize_vault',
+      name: 'reorganize_notes',
       description:
-        'Execute vault reorganization based on an OrganizationPlan (from analyze_vault_structure). Applies move and rename operations to improve vault organization. SAFETY: Defaults to dry_run=true for safe previewing. Supports automatic link updating, backup creation, and rollback on failure.',
+        'Execute notes reorganization based on an OrganizationPlan (from analyze_vault_structure). Applies move and rename operations to improve vault organization. SAFETY: Defaults to dry_run=true for safe previewing. Supports automatic link updating, backup creation, and rollback on failure.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -553,6 +557,57 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           },
         },
         required: ['plan'],
+      },
+    },
+    {
+      name: 'generate_organization_plan',
+      description:
+        'Generate an organization plan using a preset strategy. Analyzes vault structure and applies preset rules to create comprehensive reorganization suggestions. Use this BEFORE reorganize_notes. Available presets: clean (comprehensive), minimal (keep local), docs-as-code (mirror structure), research (heavy vault).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          project_folder: {
+            type: 'string',
+            description: 'Optional: Override the project folder for this operation',
+          },
+          preset_id: {
+            type: 'string',
+            description:
+              'Preset to apply: "clean", "minimal", "docs-as-code", or "research". Use list_presets for details.',
+          },
+          min_confidence: {
+            type: 'number',
+            default: 0.7,
+            description: 'Minimum confidence threshold for including suggestions (default: 0.7)',
+          },
+          exclude_files: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'File patterns to exclude from analysis (glob patterns)',
+          },
+          custom_rules: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                priority: { type: 'number' },
+                pattern: { type: 'string' },
+                targetPath: { type: 'string' },
+                confidence: { type: 'number' },
+                reason: { type: 'string' },
+              },
+              required: ['name', 'priority', 'pattern', 'targetPath', 'confidence', 'reason'],
+            },
+            description: 'Additional custom rules to apply after preset rules',
+          },
+          max_file_size_mb: {
+            type: 'number',
+            default: 10,
+            description: 'Maximum file size to analyze in MB (default: 10)',
+          },
+        },
+        required: ['preset_id'],
       },
     },
   ],
@@ -787,9 +842,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'reorganize_vault': {
-        const input = reorganizeVaultSchema.parse(args);
-        const result = await reorganizeVaultHandler(input);
+      case 'reorganize_notes': {
+        const input = reorganizeNotesSchema.parse(args);
+        const result = await reorganizeNotesHandler(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'generate_organization_plan': {
+        const input = generateOrganizationPlanSchema.parse(args);
+        const result = await generateOrganizationPlanHandler(input);
         return {
           content: [{ type: 'text', text: result }],
         };

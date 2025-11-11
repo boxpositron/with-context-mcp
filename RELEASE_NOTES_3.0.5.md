@@ -15,7 +15,7 @@ Version 3.0.5 introduces a comprehensive vault organization feature that leverag
 - Build comprehensive folder and category statistics
 - Extract keywords and topics from content
 
-#### 2. **Safe Vault Reorganization** (`reorganize_vault`)
+#### 2. **Safe Vault Reorganization** (`reorganize_notes`)
 
 - Execute reorganization plans with move and rename operations
 - Dry-run mode for safe previewing (enabled by default)
@@ -36,7 +36,7 @@ Version 3.0.5 introduces a comprehensive vault organization feature that leverag
 **New MCP Tools:**
 
 - `analyze_vault_structure` - Analyze vault and get structured insights
-- `reorganize_vault` - Execute reorganization plans safely
+- `reorganize_notes` - Execute reorganization plans safely
 
 ### 🔒 Safety Features
 
@@ -75,7 +75,7 @@ Version 3.0.5 introduces a comprehensive vault organization feature that leverag
   - Best practices and safety guidelines
   - Troubleshooting guide
 - `examples/analyze-vault-structure-tool.md` - Analysis tool examples
-- `examples/reorganize-vault-example.md` - Reorganization examples
+- `examples/reorganize-notes-example.md` - Reorganization examples
 - Updated `README.md` with feature overview
 
 ### 🚀 Usage Example
@@ -102,14 +102,14 @@ const plan = {
 };
 
 // 3. Preview with dry-run (safe!)
-const preview = await reorganize_vault({
+const preview = await reorganize_notes({
   project_folder: 'my-project',
   plan: plan,
   dry_run: true, // Default - no changes made
 });
 
 // 4. Execute after review
-const result = await reorganize_vault({
+const result = await reorganize_notes({
   project_folder: 'my-project',
   plan: plan,
   dry_run: false, // Execute changes

@@ -33,7 +33,8 @@ import {
   previewDelegationTool as mcpPreviewDelegation,
   // Vault organization tools
   analyzeVaultStructureHandler as mcpAnalyzeVaultStructure,
-  reorganizeVaultHandler as mcpReorganizeVault,
+  reorganizeNotesHandler as mcpReorganizeNotes,
+  generateOrganizationPlanHandler as mcpGenerateOrganizationPlan,
 } from 'with-context-mcp/tools';
 
 /**
@@ -1057,13 +1058,78 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
         },
         async execute(args, _ctx) {
           try {
-            const result = await mcpReorganizeVault({
+            const result = await mcpReorganizeNotes({
               project_folder: args.project_folder,
-              plan: args.plan as unknown as Parameters<typeof mcpReorganizeVault>[0]['plan'],
+              plan: args.plan as unknown as Parameters<typeof mcpReorganizeNotes>[0]['plan'],
               dry_run: args.dry_run ?? true,
               update_links: args.update_links ?? true,
               create_backup: args.create_backup ?? true,
               min_confidence: args.min_confidence ?? 0.7,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+      generate_organization_plan: tool({
+        description:
+          'Generate an organization plan using a preset strategy. Analyzes vault structure and applies preset rules to create comprehensive reorganization suggestions. Use this BEFORE reorganize_notes.',
+        args: {
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Override the project folder for this operation'),
+          preset_id: tool.schema
+            .string()
+            .describe(
+              'Preset to apply: "clean", "minimal", "docs-as-code", or "research". Use list_presets for details.'
+            ),
+          min_confidence: tool.schema
+            .number()
+            .optional()
+            .describe('Minimum confidence threshold for including suggestions (default: 0.7)'),
+          exclude_files: tool.schema
+            .array(tool.schema.string())
+            .optional()
+            .describe('File patterns to exclude from analysis (glob patterns)'),
+          custom_rules: tool.schema
+            .array(
+              tool.schema.object({
+                name: tool.schema.string(),
+                priority: tool.schema.number(),
+                pattern: tool.schema.string(),
+                targetPath: tool.schema.string(),
+                confidence: tool.schema.number(),
+                reason: tool.schema.string(),
+              })
+            )
+            .optional()
+            .describe('Additional custom rules to apply after preset rules'),
+          max_file_size_mb: tool.schema
+            .number()
+            .optional()
+            .describe('Maximum file size to analyze in MB (default: 10)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpGenerateOrganizationPlan({
+              project_folder: args.project_folder,
+              preset_id: args.preset_id,
+              min_confidence: args.min_confidence ?? 0.7,
+              exclude_files: args.exclude_files,
+              custom_rules: args.custom_rules as
+                | Array<{
+                    name: string;
+                    priority: number;
+                    pattern: string;
+                    targetPath: string;
+                    confidence: number;
+                    reason: string;
+                  }>
+                | undefined,
+              max_file_size_mb: args.max_file_size_mb ?? 10,
             });
             return result;
           } catch (error) {

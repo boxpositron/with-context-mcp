@@ -1,33 +1,33 @@
-# reorganize_vault Tool - Implementation Summary
+# reorganize_notes Tool - Implementation Summary
 
 ## Overview
 
-The `reorganize_vault` MCP tool has been successfully implemented. It executes vault reorganization operations (move, rename, delete) based on an OrganizationPlan with comprehensive safety features and automatic link updating.
+The `reorganize_notes` MCP tool has been successfully implemented. It executes vault reorganization operations (move, rename, delete) based on an OrganizationPlan with comprehensive safety features and automatic link updating.
 
 ## Implementation Details
 
 ### Files Created/Modified
 
-1. **src/tools/reorganize-vault.ts** (NEW)
+1. **src/tools/reorganize-notes.ts** (NEW)
    - Zod schema for input validation
    - Handler function for executing reorganization
    - Comprehensive error handling and safety checks
    - Integration with vault-reorganizer module
 
 2. **src/tools/index.ts** (MODIFIED)
-   - Added export for reorganizeVaultHandler, reorganizeVaultSchema, and type
+   - Added export for reorganizeNotesHandler, reorganizeNotesSchema, and type
 
 3. **src/index.ts** (MODIFIED)
-   - Imported reorganize_vault tool
+   - Imported reorganize_notes tool
    - Registered tool in ListToolsRequestSchema handler
    - Added tool handler in CallToolRequestSchema handler
 
-4. **tests/unit/reorganize-vault.test.ts** (NEW)
+4. **tests/unit/reorganize-notes.test.ts** (NEW)
    - Comprehensive unit tests for schema validation
    - Edge case testing
    - Default value verification
 
-5. **examples/reorganize-vault-example.md** (NEW)
+5. **examples/reorganize-notes-example.md** (NEW)
    - Comprehensive usage examples
    - Safety best practices
    - Response format documentation
@@ -190,7 +190,7 @@ const analysis = await analyzeVaultStructure({
 });
 
 // Step 2: Preview reorganization (dry run)
-const preview = await reorganizeVault({
+const preview = await reorganizeNotes({
   project_folder: 'my-project',
   plan: {
     suggestions: [
@@ -210,7 +210,7 @@ const preview = await reorganizeVault({
 console.log(preview.warnings);
 
 // Step 4: Execute (after review)
-const result = await reorganizeVault({
+const result = await reorganizeNotes({
   project_folder: 'my-project',
   plan: {
     /* same plan */
@@ -237,8 +237,8 @@ The tool is designed to work seamlessly with `analyze_vault_structure`:
 
 1. Use `analyze_vault_structure` to understand current vault organization
 2. Generate reorganization plan (manually or with AI assistance)
-3. Preview plan with `reorganize_vault` (dry_run=true)
-4. Execute plan with `reorganize_vault` (dry_run=false)
+3. Preview plan with `reorganize_notes` (dry_run=true)
+4. Execute plan with `reorganize_notes` (dry_run=false)
 
 ### With Vault Reorganizer Module
 
@@ -270,8 +270,8 @@ The tool handles errors at multiple levels:
 
 ## Documentation
 
-- **Usage Examples**: `examples/reorganize-vault-example.md`
-- **Implementation Summary**: `examples/reorganize-vault-summary.md` (this file)
+- **Usage Examples**: `examples/reorganize-notes-example.md`
+- **Implementation Summary**: `examples/reorganize-notes-summary.md` (this file)
 - **API Documentation**: JSDoc comments in source code
 - **Type Definitions**: Exported TypeScript types
 
@@ -288,7 +288,7 @@ The tool is production-ready and can be used immediately. Future enhancements co
 
 ## Conclusion
 
-The `reorganize_vault` tool successfully implements vault reorganization with:
+The `reorganize_notes` tool successfully implements vault reorganization with:
 
 - ✅ Comprehensive safety features
 - ✅ Automatic link updating

@@ -294,14 +294,14 @@ When running this command:
 Based on the analysis results:
 
 1. **If orphans found**: Review and either link or archive them
-2. **If health score low**: Consider running `/reorganize-vault`
+2. **If health score low**: Consider running `/reorganize-notes`
 3. **If categories mixed**: Move files to appropriate folders
 4. **If broken links**: Fix or remove invalid references
 5. **If naming inconsistent**: Standardize file names
 
 ## Related Commands
 
-- `/reorganize-vault` - Execute reorganization plan based on analysis
+- `/reorganize-notes` - Execute reorganization plan based on analysis
 - `/setup-notes` - Configure documentation architecture
 - `/validate-config` - Validate configuration
 - `/sync-notes` - Sync files between local and vault

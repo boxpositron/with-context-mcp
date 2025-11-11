@@ -10,7 +10,10 @@ export const writeNoteSchema = z.object({
     .string()
     .min(1)
     .describe(
-      'Relative path to the note within the project folder (e.g., "CHANGELOG.md" or "docs/api.md")'
+      'Project-relative path to the note. CORRECT examples: "CHANGELOG.md", "docs/api.md", "guides/tutorial.md". ' +
+        'INCORRECT examples (will be REJECTED): "/Users/name/docs/api.md" (absolute), "Users/name/docs/api.md" (looks absolute), ' +
+        '"C:/Users/name/file.md" (Windows absolute), "home/user/file.md" (Linux absolute). ' +
+        'Always use paths relative to the project root, NOT filesystem paths.'
     ),
   content: z.string().describe('Content to write to the note'),
   mode: z

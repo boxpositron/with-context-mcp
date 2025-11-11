@@ -5,10 +5,12 @@ Intelligent vault organization system with automated content analysis, categoriz
 ## Table of Contents
 
 - [Overview](#overview)
+- [Organization Presets](#organization-presets)
 - [Architecture](#architecture)
 - [API Reference](#api-reference)
   - [analyze_vault_structure](#analyze_vault_structure)
-  - [reorganize_vault](#reorganize_vault)
+  - [generate_organization_plan](#generate_organization_plan)
+  - [reorganize_notes](#reorganize_notes)
 - [Usage Examples](#usage-examples)
 - [Best Practices](#best-practices)
 - [Safety Guidelines](#safety-guidelines)
@@ -16,15 +18,17 @@ Intelligent vault organization system with automated content analysis, categoriz
 
 ## Overview
 
-The Vault Organization feature provides two main MCP tools:
+The Vault Organization feature provides three main MCP tools:
 
 1. **`analyze_vault_structure`** - Analyzes vault content and structure to understand organization
-2. **`reorganize_vault`** - Executes reorganization plans with automatic link updating and rollback
+2. **`generate_organization_plan`** ⭐ NEW - Generates intelligent organization plans using presets
+3. **`reorganize_notes`** - Executes reorganization plans with automatic link updating and rollback
 
 ### Key Features
 
 - **Intelligent Content Analysis**: Extracts headings, frontmatter, links, tags, keywords, and topics
 - **Automatic Categorization**: Groups files by type (documentation, meeting-notes, project-plans, etc.)
+- **Organization Presets** ⭐ NEW: 4 built-in presets (clean, minimal, docs-as-code, research)
 - **Folder Statistics**: Tracks file counts, sizes, and hierarchies
 - **Orphan Detection**: Finds files with no incoming or outgoing links
 - **Safe Reorganization**: Dry-run mode, rollback capability, and link updating
@@ -40,6 +44,65 @@ The Vault Organization feature provides two main MCP tools:
 - Analyze vault structure and health
 - Prepare vaults for sharing or archiving
 
+## Organization Presets
+
+⭐ **NEW in v3.0.5**: Intelligent organization presets provide battle-tested strategies for different documentation workflows.
+
+### What Are Presets?
+
+Presets are pre-configured organization strategies that define:
+
+- Which files stay in your local repository (essential files)
+- How vault files are categorized and organized (rules)
+- Target folder structure in your vault
+
+### Available Presets
+
+| Preset           | Philosophy                       | Best For                                |
+| ---------------- | -------------------------------- | --------------------------------------- |
+| **clean**        | Comprehensive vault organization | Production projects, clean separation   |
+| **minimal**      | Keep most docs local             | Docs-as-code workflows, simple projects |
+| **docs-as-code** | Mirror repo structure            | Developer-friendly, familiar structure  |
+| **research**     | Heavy vault with rich linking    | Research projects, academic work        |
+
+### Quick Example
+
+```javascript
+// Generate organization plan using clean preset
+const plan = await use_tool('generate_organization_plan', {
+  project_folder: 'my-project',
+  preset_id: 'clean',
+  min_confidence: 0.7,
+});
+
+// Preview the plan
+const preview = await use_tool('reorganize_notes', {
+  project_folder: 'my-project',
+  plan: plan.plan,
+  dry_run: true,
+});
+
+// Execute (after reviewing preview)
+const result = await use_tool('reorganize_notes', {
+  project_folder: 'my-project',
+  plan: plan.plan,
+  dry_run: false,
+  update_links: true,
+});
+```
+
+### Learn More
+
+For comprehensive preset documentation including:
+
+- Detailed descriptions of all 4 presets
+- Organization rules and patterns
+- Before/after examples
+- Customization guide
+- Best practices
+
+See **[Vault Presets Documentation](./VAULT_PRESETS.md)**
+
 ## Architecture
 
 ### Text-Based Architecture Diagram
@@ -48,7 +111,7 @@ The Vault Organization feature provides two main MCP tools:
 ┌─────────────────────────────────────────────────────────────────┐
 │                         MCP Tools Layer                         │
 ├─────────────────────────────────┬───────────────────────────────┤
-│  analyze_vault_structure        │  reorganize_vault             │
+│  analyze_vault_structure        │  reorganize_notes             │
 │  - Validates input              │  - Validates plan             │
 │  - Calls analyzer               │  - Calls reorganizer          │
 │  - Formats results              │  - Handles errors             │
@@ -138,7 +201,7 @@ Return VaultStructure
 User Request + OrganizationPlan
     │
     ▼
-reorganize_vault (MCP Tool)
+reorganize_notes (MCP Tool)
     │
     ├─→ Validate plan structure
     │
@@ -183,7 +246,7 @@ src/vault-organizer/
 
 src/tools/
 ├── analyze-vault-structure.ts  # MCP tool wrapper
-└── reorganize-vault.ts         # MCP tool wrapper
+└── reorganize-notes.ts         # MCP tool wrapper
 
 tests/
 ├── unit/
@@ -194,7 +257,7 @@ tests/
 
 examples/
 ├── vault-analyzer-example.ts
-└── reorganize-vault-example.md
+└── reorganize-notes-example.md
 ```
 
 ## API Reference
@@ -281,7 +344,101 @@ console.log(`Found ${result.orphanFiles.length} orphan files`);
 console.log('Categories:', Object.keys(result.categories));
 ```
 
-### reorganize_vault
+### generate_organization_plan
+
+⭐ **NEW in v3.0.5**: Generates intelligent organization plans using preset strategies.
+
+#### Input Schema
+
+```typescript
+{
+  project_folder?: string;       // Optional: Override project context
+  preset_id: string;             // Required: 'clean', 'minimal', 'docs-as-code', 'research'
+  min_confidence?: number;       // Optional: 0-1, default 0.7
+  exclude_files?: string[];      // Optional: Glob patterns to exclude
+  custom_rules?: CustomRule[];   // Optional: Additional rules
+  max_file_size_mb?: number;     // Optional: Max file size, default 10
+}
+```
+
+#### CustomRule Schema
+
+```typescript
+{
+  name: string; // Human-readable name
+  priority: number; // 0-100, higher = processed first
+  pattern: string; // Regex pattern or string to match
+  targetPath: string; // Target path (supports {YEAR} placeholder)
+  confidence: number; // 0-1 confidence score
+  reason: string; // Why this rule exists
+}
+```
+
+#### Output Schema
+
+```typescript
+{
+  success: boolean;
+  preset: {
+    id: string;
+    name: string;
+    description: string;
+  };
+  project_folder: string;
+  vault_analysis: {
+    total_files: number;
+    total_size: string;
+    analyzed_at: string;
+    categories: Array<{
+      name: string;
+      file_count: number;
+      avg_confidence: number;
+    }>;
+    orphan_files: number;
+  };
+  plan: OrganizationPlan;  // See OrganizationPlan structure below
+  next_steps: string[];
+}
+```
+
+#### Available Presets
+
+- **`clean`** - Comprehensive vault organization with minimal local files
+- **`minimal`** - Keep most files local, only move ADRs and research
+- **`docs-as-code`** - Mirror repository structure in vault
+- **`research`** - Heavy vault usage with rich linking
+
+See [Vault Presets Documentation](./VAULT_PRESETS.md) for detailed preset information.
+
+#### Example Usage
+
+```typescript
+// Generate plan using clean preset
+const plan = await generate_organization_plan({
+  project_folder: 'my-web-app',
+  preset_id: 'clean',
+  min_confidence: 0.7,
+  exclude_files: ['*.tmp', '*.log'],
+});
+
+// With custom rules
+const plan = await generate_organization_plan({
+  project_folder: 'my-web-app',
+  preset_id: 'clean',
+  custom_rules: [
+    {
+      name: 'Security Docs',
+      priority: 96,
+      pattern: 'security|auth',
+      targetPath: 'docs/security',
+      confidence: 0.95,
+      reason: 'Security documentation',
+    },
+  ],
+});
+```
+
+### reorganize_notes
 
 Executes a reorganization plan with automatic link updating and rollback capability.
 
@@ -386,7 +543,7 @@ Executes a reorganization plan with automatic link updating and rollback capabil
 
 ```typescript
 // Preview reorganization (dry run)
-const preview = await reorganize_vault({
+const preview = await reorganize_notes({
   project_folder: 'my-web-app',
   plan: organizationPlan,
   dry_run: true,
@@ -396,7 +553,7 @@ console.log('Preview:', preview.summary);
 console.log('Would affect:', preview.operations.length, 'files');
 
 // Execute reorganization with link updates
-const result = await reorganize_vault({
+const result = await reorganize_notes({
   project_folder: 'my-web-app',
   plan: organizationPlan,
   update_links: true,
@@ -505,7 +662,7 @@ const organizationPlan: OrganizationPlan = {
 };
 
 // Step 3: Preview reorganization (dry run)
-const preview = await reorganize_vault({
+const preview = await reorganize_notes({
   project_folder: 'my-web-app',
   plan: organizationPlan,
   dry_run: true,
@@ -516,7 +673,7 @@ console.log(preview.summary);
 console.log('Operations:', preview.operations.length);
 
 // Step 4: Execute reorganization
-const result = await reorganize_vault({
+const result = await reorganize_notes({
   project_folder: 'my-web-app',
   plan: organizationPlan,
   update_links: true,
@@ -571,7 +728,7 @@ console.log('Large files:', largeFiles);
 ```typescript
 try {
   // Execute with strict error handling
-  const result = await reorganize_vault({
+  const result = await reorganize_notes({
     project_folder: 'my-project',
     plan: organizationPlan,
     stop_on_error: true, // Stop and rollback on first error
@@ -655,7 +812,7 @@ try {
 1. **Always run dry-run first** before executing:
 
    ```typescript
-   const preview = await reorganize_vault({
+   const preview = await reorganize_notes({
      project_folder: 'my-project',
      plan: organizationPlan,
      dry_run: true, // Preview changes

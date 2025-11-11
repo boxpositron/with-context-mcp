@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { reorganizeVaultSchema } from '../../src/tools/reorganize-vault.js';
+import { reorganizeNotesSchema } from '../../src/tools/reorganize-notes.js';
 
-describe('reorganizeVaultSchema', () => {
+describe('reorganizeNotesSchema', () => {
   it('should validate a minimal valid plan', () => {
     const input = {
       plan: {
@@ -17,7 +17,7 @@ describe('reorganizeVaultSchema', () => {
       },
     };
 
-    const result = reorganizeVaultSchema.parse(input);
+    const result = reorganizeNotesSchema.parse(input);
     expect(result).toBeDefined();
     expect(result.dry_run).toBe(true); // Default value
     expect(result.update_links).toBe(true); // Default value
@@ -71,7 +71,7 @@ describe('reorganizeVaultSchema', () => {
       min_confidence: 0.8,
     };
 
-    const result = reorganizeVaultSchema.parse(input);
+    const result = reorganizeNotesSchema.parse(input);
     expect(result).toBeDefined();
     expect(result.project_folder).toBe('test-project');
     expect(result.dry_run).toBe(false);
@@ -95,7 +95,7 @@ describe('reorganizeVaultSchema', () => {
       },
     };
 
-    const result = reorganizeVaultSchema.parse(input);
+    const result = reorganizeNotesSchema.parse(input);
     expect(result.plan.suggestions[0].type).toBe('rename');
     expect(result.plan.suggestions[0].suggestedName).toBe('clear-name');
   });
@@ -115,7 +115,7 @@ describe('reorganizeVaultSchema', () => {
       },
     };
 
-    expect(() => reorganizeVaultSchema.parse(input)).toThrow();
+    expect(() => reorganizeNotesSchema.parse(input)).toThrow();
   });
 
   it('should reject invalid min_confidence values', () => {
@@ -134,7 +134,7 @@ describe('reorganizeVaultSchema', () => {
       min_confidence: -0.1, // Invalid: < 0
     };
 
-    expect(() => reorganizeVaultSchema.parse(input)).toThrow();
+    expect(() => reorganizeNotesSchema.parse(input)).toThrow();
   });
 
   it('should reject missing required fields', () => {
@@ -150,7 +150,7 @@ describe('reorganizeVaultSchema', () => {
       },
     };
 
-    expect(() => reorganizeVaultSchema.parse(input)).toThrow();
+    expect(() => reorganizeNotesSchema.parse(input)).toThrow();
   });
 
   it('should reject invalid operation type', () => {
@@ -168,7 +168,7 @@ describe('reorganizeVaultSchema', () => {
       },
     };
 
-    expect(() => reorganizeVaultSchema.parse(input)).toThrow();
+    expect(() => reorganizeNotesSchema.parse(input)).toThrow();
   });
 
   it('should allow empty suggestions array', () => {
@@ -178,7 +178,7 @@ describe('reorganizeVaultSchema', () => {
       },
     };
 
-    const result = reorganizeVaultSchema.parse(input);
+    const result = reorganizeNotesSchema.parse(input);
     expect(result.plan.suggestions).toHaveLength(0);
   });
 
@@ -212,7 +212,7 @@ describe('reorganizeVaultSchema', () => {
       },
     };
 
-    const result = reorganizeVaultSchema.parse(input);
+    const result = reorganizeNotesSchema.parse(input);
     expect(result.plan.suggestions).toHaveLength(3);
     expect(result.plan.suggestions[0].type).toBe('move');
     expect(result.plan.suggestions[1].type).toBe('rename');
@@ -235,7 +235,7 @@ describe('reorganizeVaultSchema', () => {
       },
     };
 
-    const result = reorganizeVaultSchema.parse(input);
+    const result = reorganizeNotesSchema.parse(input);
     const impact = result.plan.suggestions[0].impact;
     expect(impact).toBeDefined();
     expect(impact?.affectedFiles).toBe(0);

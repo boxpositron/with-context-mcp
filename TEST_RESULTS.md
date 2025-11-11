@@ -145,7 +145,7 @@ tests/
 └── unit/
     ├── vault-analyzer.test.ts      (12 tests)
     ├── vault-reorganizer.test.ts   (29 tests)
-    └── reorganize-vault.test.ts    (10 tests)
+    └── reorganize-notes.test.ts    (10 tests)
 ```
 
 ## Recommendations

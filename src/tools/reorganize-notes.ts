@@ -66,9 +66,9 @@ const organizationPlanSchema = z.object({
 });
 
 /**
- * Zod schema for vault reorganization input
+ * Zod schema for notes reorganization input
  */
-export const reorganizeVaultSchema = z
+export const reorganizeNotesSchema = z
   .object({
     project_folder: z
       .string()
@@ -98,10 +98,10 @@ export const reorganizeVaultSchema = z
   })
   .strict();
 
-export type ReorganizeVaultInput = z.infer<typeof reorganizeVaultSchema>;
+export type ReorganizeNotesInput = z.infer<typeof reorganizeNotesSchema>;
 
 /**
- * Executes vault reorganization based on an OrganizationPlan
+ * Executes notes reorganization based on an OrganizationPlan
  *
  * This tool applies suggested reorganization operations (move, rename) to improve
  * vault organization. Supports dry-run mode for safe previewing and includes
@@ -118,7 +118,7 @@ export type ReorganizeVaultInput = z.infer<typeof reorganizeVaultSchema>;
  * @returns Detailed execution result with operations, successes, failures, and warnings
  * @throws Error if reorganization execution fails
  */
-export async function reorganizeVaultHandler(input: ReorganizeVaultInput): Promise<string> {
+export async function reorganizeNotesHandler(input: ReorganizeNotesInput): Promise<string> {
   const { project_folder, plan, dry_run, update_links, create_backup, min_confidence } = input;
 
   // Get project context

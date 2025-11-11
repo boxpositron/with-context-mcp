@@ -9,7 +9,9 @@ export const deleteNoteSchema = z.object({
     .string()
     .min(1)
     .describe(
-      'Relative path to the note within the project folder (e.g., "CHANGELOG.md" or "docs/api.md")'
+      'Project-relative path to the note. CORRECT: "CHANGELOG.md", "docs/api.md". ' +
+        'INCORRECT: "/Users/name/file.md", "Users/name/file.md", "C:/path/file.md". ' +
+        'Use paths relative to project root only, NOT absolute filesystem paths.'
     ),
   confirm: z.boolean().describe('Required: Must be set to true to confirm deletion'),
   project_folder: z

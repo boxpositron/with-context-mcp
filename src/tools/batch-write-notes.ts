@@ -9,7 +9,14 @@ export const batchWriteNotesSchema = z.object({
   notes: z
     .array(
       z.object({
-        path: z.string().min(1).describe('Relative path to the note within the project folder'),
+        path: z
+          .string()
+          .min(1)
+          .describe(
+            'Project-relative path to the note. CORRECT: "CHANGELOG.md", "docs/api.md". ' +
+              'INCORRECT: "/Users/name/file.md", "Users/name/file.md", "C:/path/file.md". ' +
+              'Use paths relative to project root only, NOT absolute filesystem paths.'
+          ),
         content: z.string().describe('Content to write to the note'),
         mode: z
           .enum(['create', 'overwrite', 'append'])
