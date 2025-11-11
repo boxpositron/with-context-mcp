@@ -23,6 +23,7 @@ import { readNote, readNoteSchema } from './tools/read-note.js';
 import { listNotes, listNotesSchema } from './tools/list-notes.js';
 import { deleteNote, deleteNoteSchema } from './tools/delete-note.js';
 import { searchNotes, searchNotesSchema } from './tools/search-notes.js';
+import { healthCheck, healthCheckSchema } from './tools/health-check.js';
 import { batchWriteNotes, batchWriteNotesSchema } from './tools/batch-write-notes.js';
 import { getNoteMetadata, getNoteMetadataSchema } from './tools/get-note-metadata.js';
 import { listTemplatesHandler, listTemplatesSchema } from './tools/list-templates.js';
@@ -235,6 +236,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           },
         },
         required: ['query'],
+      },
+    },
+    {
+      name: 'health_check',
+      description:
+        'Perform a comprehensive health check of the with-context-mcp environment. ' +
+        'Validates environment variables, Obsidian API connection, and configuration. ' +
+        'Returns detailed status and recommendations for fixing any issues. Fast (< 2 seconds).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          project_folder: {
+            type: 'string',
+            description: 'Optional: Project folder to check for .withcontextconfig.jsonc',
+          },
+        },
       },
     },
     {
@@ -663,6 +680,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const result = await searchNotes(input);
         return {
           content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'health_check': {
+        const input = healthCheckSchema.parse(args);
+        const result = await healthCheck(input);
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
         };
       }
 

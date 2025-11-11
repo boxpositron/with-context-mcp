@@ -153,29 +153,68 @@ README changes needed:
 
 When this command is run:
 
+**Step 0: Health Check (Optional but Recommended)**
+
+Before executing the main task, run a quick health check to ensure everything is configured correctly:
+
+```javascript
+const health = await health_check({});
+
+// If there are issues, show them to the user
+if (health.status !== 'healthy') {
+  console.log('⚠️  Configuration Issues Detected:');
+  console.log(JSON.stringify(health, null, 2));
+  console.log('\nRecommendations:');
+  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
+  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
+  // Wait for user confirmation before proceeding
+}
+```
+
+**What the health check validates:**
+
+- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
+- Obsidian API connection and authentication
+- Vault accessibility
+- Configuration file validity (if exists)
+
+**If health check fails, common fixes:**
+
+- Set missing environment variables
+- Check Obsidian Local REST API is running
+- Verify vault name matches exactly
+- Confirm API key is correct
+
+---
+
+**Step 1: Call the setup_notes tool**
+
 **CRITICAL: Use ONLY the setup_notes tool. Do NOT perform any manual operations.**
 
-1. **Call the setup_notes tool** with appropriate parameters:
-   - The tool handles ALL analysis, validation, and configuration creation
-   - Pass `project_folder` if you want to create vault folder structure
-   - Use `force: true` to overwrite existing configuration
+**Call the setup_notes tool** with appropriate parameters:
 
-2. **Report the results** from the tool:
-   - Show the full output from setup_notes
-   - The tool provides comprehensive analysis including:
-     - Project type and documentation file count
-     - README health score and warnings
-     - Link validation results
-     - Recommended LOCAL vs VAULT patterns
-     - Generated configuration
-     - Actionable next steps
+- The tool handles ALL analysis, validation, and configuration creation
+- Pass `project_folder` if you want to create vault folder structure
+- Use `force: true` to overwrite existing configuration
 
-3. **Do NOT manually**:
-   - Read files to analyze the project
-   - Parse or validate the README
-   - Create or edit `.withcontextconfig.jsonc` directly
-   - Scan directories for documentation files
-   - The setup_notes tool does ALL of this automatically
+**Step 2: Report the results** from the tool:
+
+- Show the full output from setup_notes
+- The tool provides comprehensive analysis including:
+  - Project type and documentation file count
+  - README health score and warnings
+  - Link validation results
+  - Recommended LOCAL vs VAULT patterns
+  - Generated configuration
+  - Actionable next steps
+
+**Step 3: Do NOT manually**:
+
+- Read files to analyze the project
+- Parse or validate the README
+- Create or edit `.withcontextconfig.jsonc` directly
+- Scan directories for documentation files
+- The setup_notes tool does ALL of this automatically
 
 **Tool Priority:**
 First try to use the WithContext plugin's `setup_notes` tool. If not available, fallback to the with-context MCP server's `setup_notes` tool.

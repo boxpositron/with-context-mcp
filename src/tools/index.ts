@@ -4,6 +4,7 @@ export { readNote, readNoteSchema, type ReadNoteInput } from './read-note.js';
 export { listNotes, listNotesSchema, type ListNotesInput } from './list-notes.js';
 export { deleteNote, deleteNoteSchema, type DeleteNoteInput } from './delete-note.js';
 export { searchNotes, searchNotesSchema, type SearchNotesInput } from './search-notes.js';
+export { healthCheck, healthCheckSchema, type HealthCheckInput } from './health-check.js';
 export {
   batchWriteNotes,
   batchWriteNotesSchema,

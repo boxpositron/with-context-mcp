@@ -5,6 +5,7 @@ import {
   readNote as mcpReadNote,
   listNotes as mcpListNotes,
   searchNotes as mcpSearchNotes,
+  healthCheck as mcpHealthCheck,
   setProjectContext as mcpSetProjectContext,
   getNoteMetadata as mcpGetNoteMetadata,
   deleteNote as mcpDeleteNote,
@@ -215,6 +216,31 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
               limit: args.limit ?? 10,
             });
             return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Health Check Tool ====================
+      health_check: tool({
+        description:
+          'Perform a comprehensive health check of the with-context-mcp environment. ' +
+          'Validates environment variables, Obsidian API connection, and configuration. ' +
+          'Returns detailed status and recommendations for fixing any issues. Fast (< 2 seconds).',
+        args: {
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder to check for .withcontextconfig.jsonc'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpHealthCheck({
+              project_folder: args.project_folder,
+            });
+            return JSON.stringify(result, null, 2);
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             return JSON.stringify({ success: false, error: message }, null, 2);

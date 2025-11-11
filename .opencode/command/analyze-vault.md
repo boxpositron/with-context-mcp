@@ -96,27 +96,66 @@ Most Referenced Files:
 
 When this command is run:
 
+**Step 0: Health Check (Optional but Recommended)**
+
+Before executing the main task, run a quick health check to ensure everything is configured correctly:
+
+```javascript
+const health = await health_check({});
+
+// If there are issues, show them to the user
+if (health.status !== 'healthy') {
+  console.log('⚠️  Configuration Issues Detected:');
+  console.log(JSON.stringify(health, null, 2));
+  console.log('\nRecommendations:');
+  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
+  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
+  // Wait for user confirmation before proceeding
+}
+```
+
+**What the health check validates:**
+
+- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
+- Obsidian API connection and authentication
+- Vault accessibility
+- Configuration file validity (if exists)
+
+**If health check fails, common fixes:**
+
+- Set missing environment variables
+- Check Obsidian Local REST API is running
+- Verify vault name matches exactly
+- Confirm API key is correct
+
+---
+
+**Step 1: Call the analyze_vault_structure tool**
+
 **CRITICAL: Use ONLY the analyze_vault_structure tool. Do NOT perform any manual operations.**
 
-1. **Call the analyze_vault_structure tool** with appropriate parameters:
-   - The tool handles ALL analysis automatically
-   - Use `exclude_patterns` to skip certain files/folders (e.g., `["drafts/*", "*.tmp"]`)
-   - Set `include_categories: false` to skip category analysis
-   - Set `include_orphans: false` to skip orphan detection
-   - Use `max_files` to limit analysis for large vaults
-   - Use `max_file_size_mb` to skip very large files
+**Call the analyze_vault_structure tool** with appropriate parameters:
 
-2. **Report the results** from the tool:
-   - Show the full analysis output
-   - Highlight key findings (health score, orphans, recommendations)
-   - The tool provides comprehensive structure analysis
+- The tool handles ALL analysis automatically
+- Use `exclude_patterns` to skip certain files/folders (e.g., `["drafts/*", "*.tmp"]`)
+- Set `include_categories: false` to skip category analysis
+- Set `include_orphans: false` to skip orphan detection
+- Use `max_files` to limit analysis for large vaults
+- Use `max_file_size_mb` to skip very large files
 
-3. **Do NOT manually**:
-   - Read files to analyze content
-   - List directories or scan folders
-   - Parse markdown or extract metadata
-   - Build link graphs or statistics
-   - The analyze_vault_structure tool does ALL of this automatically
+**Step 2: Report the results** from the tool:
+
+- Show the full analysis output
+- Highlight key findings (health score, orphans, recommendations)
+- The tool provides comprehensive structure analysis
+
+**Step 3: Do NOT manually**:
+
+- Read files to analyze content
+- List directories or scan folders
+- Parse markdown or extract metadata
+- Build link graphs or statistics
+- The analyze_vault_structure tool does ALL of this automatically
 
 **Tool Priority:**
 First try to use the WithContext plugin's `analyze_vault_structure` tool. If not available, fallback to the with-context MCP server's `analyze_vault_structure` tool.

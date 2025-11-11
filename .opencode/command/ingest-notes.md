@@ -25,26 +25,65 @@ This command copies documentation files from your local project to the Obsidian 
 
 When this command is run:
 
+**Step 0: Health Check (Optional but Recommended)**
+
+Before executing the main task, run a quick health check to ensure everything is configured correctly:
+
+```javascript
+const health = await health_check({});
+
+// If there are issues, show them to the user
+if (health.status !== 'healthy') {
+  console.log('⚠️  Configuration Issues Detected:');
+  console.log(JSON.stringify(health, null, 2));
+  console.log('\nRecommendations:');
+  health.recommendations.forEach((rec) => console.log(`  - ${rec}`));
+  console.log('\n❓ Would you like to continue anyway? (Issues may cause failures)');
+  // Wait for user confirmation before proceeding
+}
+```
+
+**What the health check validates:**
+
+- Environment variables (OBSIDIAN_API_URL, OBSIDIAN_API_KEY, OBSIDIAN_VAULT)
+- Obsidian API connection and authentication
+- Vault accessibility
+- Configuration file validity (if exists)
+
+**If health check fails, common fixes:**
+
+- Set missing environment variables
+- Check Obsidian Local REST API is running
+- Verify vault name matches exactly
+- Confirm API key is correct
+
+---
+
+**Step 1: Call the ingest_notes tool**
+
 **CRITICAL: Use ONLY the ingest_notes tool. Do NOT perform any manual operations.**
 
-1. **Call the ingest_notes tool** with appropriate parameters:
-   - The tool handles ALL file scanning and copying automatically
-   - Use `dry_run: true` first to preview what will be ingested
-   - After user confirms, call with `dry_run: false` to execute
-   - Use `delete_local_files: true` to clean up after ingestion (optional)
+**Call the ingest_notes tool** with appropriate parameters:
 
-2. **Report the results** from the tool:
-   - Show how many files were ingested
-   - List which files were ingested
-   - Show any errors or skipped files
-   - Note whether local files were deleted
+- The tool handles ALL file scanning and copying automatically
+- Use `dry_run: true` first to preview what will be ingested
+- After user confirms, call with `dry_run: false` to execute
+- Use `delete_local_files: true` to clean up after ingestion (optional)
 
-3. **Do NOT manually**:
-   - Read or scan directories for documentation files
-   - Copy files between locations
-   - Delete local files
-   - Parse `.withcontextconfig.jsonc`
-   - The ingest_notes tool does ALL of this automatically
+**Step 2: Report the results** from the tool:
+
+- Show how many files were ingested
+- List which files were ingested
+- Show any errors or skipped files
+- Note whether local files were deleted
+
+**Step 3: Do NOT manually**:
+
+- Read or scan directories for documentation files
+- Copy files between locations
+- Delete local files
+- Parse `.withcontextconfig.jsonc`
+- The ingest_notes tool does ALL of this automatically
 
 **Tool Priority:**
 First try to use the WithContext plugin's `ingest_notes` tool. If not available, fallback to the with-context MCP server's `ingest_notes` tool.
