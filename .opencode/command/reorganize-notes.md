@@ -158,94 +158,125 @@ Duration: 3.2 seconds
 
 When this command is run:
 
-**CRITICAL: This is a multi-step workflow. Follow the IDEAL process below.**
+**⚠️ CRITICAL SAFETY REQUIREMENTS ⚠️**
 
-## Ideal Workflow (Recommended)
+1. **NEVER execute without user confirmation!**
+2. **ALWAYS preview with dry_run: true first**
+3. **ALWAYS show preview results before executing**
+4. **ONLY execute after explicit user approval**
 
-### Step 1: Use a Preset (Simplest & Safest)
+**CRITICAL: Use the generate_organization_plan + reorganize_notes tools ONLY. Do NOT perform manual operations.**
 
-**This is the recommended approach** - let the system generate a smart plan for you:
+## Recommended Workflow (Ideal)
+
+This is the simplest and safest approach:
+
+### Step 1: Generate Plan with Preset
+
+Call `generate_organization_plan` to create a smart reorganization plan:
 
 ```javascript
-// 1. Generate plan with preset (all-in-one)
+// Generate plan using preset (recommended)
 const plan = await generate_organization_plan({
   project_folder: 'my-project',
   preset_id: 'clean', // Choose: 'clean', 'minimal', 'docs-as-code', 'research'
   min_confidence: 0.7,
   exclude_files: [], // Optional: files to skip
 });
-
-// 2. Preview the plan (dry-run)
-const preview = await reorganize_notes({
-  project_folder: 'my-project',
-  plan: plan,
-  dry_run: true, // Always preview first!
-  update_links: true,
-  create_backup: true,
-});
-
-// 3. Show results to user and get confirmation
-// [Wait for user approval]
-
-// 4. Execute (only after user confirms)
-const result = await reorganize_notes({
-  project_folder: 'my-project',
-  plan: plan,
-  dry_run: false, // Execute changes
-  update_links: true,
-  create_backup: true,
-});
 ```
 
 **Available Presets:**
 
-- **clean** (Recommended for most projects): Moves all docs to vault, keeps README.md, AGENTS.md, LICENSE local. Organizes by: docs/, guides/, architecture/, meetings/, planning/, research/
-- **minimal**: Keep most files local, only move ADRs and research notes
+- **clean** (Recommended): Moves docs to vault, keeps README/LICENSE local
+- **minimal**: Keep most local, only move ADRs and research
 - **docs-as-code**: Mirrors repository structure in vault
-- **research**: Heavy vault usage with rich cross-linking for academic work
+- **research**: Heavy vault usage with cross-linking
 
-See [docs/VAULT_PRESETS.md](../../docs/VAULT_PRESETS.md) for detailed preset documentation.
+See [docs/VAULT_PRESETS.md](../../docs/VAULT_PRESETS.md) for details.
 
-### Why This is Ideal:
+### Step 2: Preview the Plan (DRY-RUN - REQUIRED!)
 
-1. ✅ **Automatic Analysis**: `generate_organization_plan` analyzes vault structure internally
-2. ✅ **Smart Suggestions**: Presets contain battle-tested organization rules
-3. ✅ **Safety First**: Always starts with dry-run preview
-4. ✅ **User Control**: Requires explicit confirmation before execution
-5. ✅ **Link Integrity**: Automatically updates all references
-6. ✅ **Rollback Ready**: Can undo if something goes wrong
+**ALWAYS preview first! NEVER skip this step!**
+
+```javascript
+// Preview what will happen (dry-run)
+const preview = await reorganize_notes({
+  project_folder: 'my-project',
+  plan: plan,
+  dry_run: true, // CRITICAL: Always true for preview!
+  update_links: true,
+  create_backup: true,
+});
+```
+
+### Step 3: Show Preview to User & Get Confirmation
+
+**Present the preview results and explicitly ask user for confirmation:**
+
+> "I've previewed the reorganization plan using the **[preset_name]** preset. Here's what will happen:
+>
+> **Operations:**
+>
+> - Move X files to appropriate folders
+> - Rename Y files for consistency
+> - Update Z links across N files
+>
+> **Key Changes:**
+> [Show 3-5 most significant operations]
+>
+> **Safety:**
+>
+> - ✓ Backups will be created
+> - ✓ Links will be automatically updated
+> - ✓ Rollback available if needed
+>
+> **This operation will modify your vault!**
+>
+> Do you want to proceed with the reorganization? (yes/no)"
+
+### Step 4: Execute (ONLY After User Confirms "yes")
+
+```javascript
+// Execute ONLY after user confirms
+const result = await reorganize_notes({
+  project_folder: 'my-project',
+  plan: plan,
+  dry_run: false, // Execute for real
+  update_links: true,
+  create_backup: true,
+});
+```
+
+### Step 5: Report Results
+
+Show the execution summary including:
+
+- Operations completed successfully
+- Links updated
+- Any failures or warnings
+- Suggest running `/analyze-vault` to verify improvements
 
 ---
 
-## Alternative Workflow (Manual Analysis)
+## What NOT to Do
 
-If you need more control, analyze first then generate plan:
+**Do NOT manually**:
 
-### Step 1: Analyze Current Structure (Optional)
+- Analyze vault structure (use `generate_organization_plan`)
+- Move or rename files yourself
+- Update links manually
+- Create or modify organization plans by hand
+- Skip the dry-run preview
+- Execute without user confirmation
+- The tools handle EVERYTHING automatically
 
-```javascript
-const analysis = await analyze_vault_structure({
-  project_folder: 'my-project',
-  include_categories: true,
-  include_orphans: true,
-});
-```
+---
 
-### Step 2: Generate Plan with Preset
+## Alternative: Manual Plan (Advanced)
 
-```javascript
-const plan = await generate_organization_plan({
-  project_folder: 'my-project',
-  preset_id: 'clean',
-  min_confidence: 0.7,
-  exclude_files: ['temp.md'], // Skip specific files
-  custom_rules: [], // Optional: add custom rules
-});
-```
+If you need custom organization beyond presets, you can create a manual plan. See full documentation for plan structure format.
 
-### Step 3: Preview & Execute
-
-Same as Ideal Workflow steps 2-4 above.
+**Still follow the same workflow: Generate → Preview → Confirm → Execute**
 
 ---
 

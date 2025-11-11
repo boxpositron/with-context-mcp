@@ -30,34 +30,42 @@ First try to use the WithContext plugin's `preview_delegation` tool. If not avai
 
 When this command is run:
 
-**Step 1: Call preview_delegation tool**
+**CRITICAL: Use ONLY the preview_delegation tool. Do NOT perform any manual operations.**
 
-Call the tool with appropriate parameters:
+1. **Call the preview_delegation tool** with appropriate parameters:
+   - The tool handles ALL file scanning and delegation decisions automatically
+   - Use `show_reasoning: true` to see why each file was categorized
+   - Use `limit` to control how many files are shown per category
+   - Use `vault_only` or `local_only` to filter results
+
+2. **Present the preview** from the tool:
+   - Show summary statistics (total files, vault count, local count)
+   - List vault files (files that will be delegated to vault)
+   - List local files (files that will stay in repository)
+   - Show reasoning if requested
+
+3. **Suggest next steps** based on preview results:
+   - If patterns look correct: Suggest running `/sync-notes` or `/ingest-notes`
+   - If patterns need adjustment: Suggest editing `.withcontextconfig.jsonc`
+   - If conflicts detected: Suggest running `/validate-notes-config`
+
+4. **Do NOT manually**:
+   - Read or scan directories for documentation files
+   - Determine delegation decisions
+   - Parse `.withcontextconfig.jsonc`
+   - Categorize files
+   - The preview_delegation tool does ALL of this automatically
+
+**Example usage:**
 
 ```javascript
+// Basic preview
 preview_delegation({
   project_root: '/path/to/project', // Use current working directory
   show_reasoning: true, // Show why each file was categorized
   limit: 50, // Show up to 50 files per category
 });
 ```
-
-**Step 2: Present the preview**
-
-Show the formatted preview from the tool, including:
-
-- **Summary statistics** - Total files, vault count, local count
-- **Vault files** - Files that will be delegated to vault
-- **Local files** - Files that will stay in repository
-- **Reasoning** (if requested) - Why each file was categorized
-
-**Step 3: Suggest next steps**
-
-Based on the preview results:
-
-- If patterns look correct: Suggest running `/sync-notes` or `/ingest-notes`
-- If patterns need adjustment: Suggest editing `.withcontextconfig.jsonc`
-- If conflicts detected: Suggest running `/validate-notes-config`
 
 ## Optional Parameters
 

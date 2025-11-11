@@ -34,34 +34,39 @@ First try to use the WithContext plugin's `validate_config` tool. If not availab
 
 When this command is run:
 
-**Step 1: Call validate_config tool**
+**CRITICAL: Use ONLY the validate_config tool. Do NOT perform any manual operations.**
 
-Call the tool with the project root:
+1. **Call the validate_config tool** with the project root:
+   - The tool handles ALL validation checks automatically
+   - Validates syntax, schema, and semantic issues
+   - Checks for pattern conflicts and best practices
+
+2. **Report validation results** from the tool:
+   - Show configuration path and validation status
+   - List all errors (critical issues that must be fixed)
+   - List all warnings (non-critical issues to address)
+   - Show info messages (helpful suggestions)
+
+3. **Provide actionable next steps** based on results:
+   - If **valid with no warnings**: Configuration is ready to use
+   - If **valid with warnings**: List warnings and suggest fixes
+   - If **invalid**: List all errors and how to fix them
+   - Suggest running `/preview-notes-delegation` to test patterns
+
+4. **Do NOT manually**:
+   - Read or parse `.withcontextconfig.jsonc`
+   - Validate JSON syntax
+   - Check for pattern conflicts
+   - Validate against schema
+   - The validate_config tool does ALL of this automatically
+
+**Example usage:**
 
 ```javascript
 validate_config({
   project_root: '/path/to/project', // Use current working directory
 });
 ```
-
-**Step 2: Report validation results**
-
-Present the formatted validation report from the tool, including:
-
-- **Configuration path** - Location of the config file
-- **Validation status** - Valid or invalid
-- **Errors** - Critical issues that must be fixed
-- **Warnings** - Non-critical issues that should be addressed
-- **Info** - Helpful suggestions and best practices
-
-**Step 3: Provide actionable next steps**
-
-Based on the validation results:
-
-- If **valid with no warnings**: Configuration is ready to use
-- If **valid with warnings**: List warnings and suggest fixes
-- If **invalid**: List all errors and how to fix them
-- Suggest running `/preview-notes-delegation` to test patterns
 
 ## Example Output
 
