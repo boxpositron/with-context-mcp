@@ -253,10 +253,9 @@ describe('Health Check Tool', () => {
 
       const result = await healthCheck({ project_folder: '/test/project' });
 
-      expect(result.checks.configuration.status).toBe('warn');
+      expect(result.checks.configuration.status).toBe('skip');
       expect(result.checks.configuration.configExists).toBe(false);
-      expect(result.checks.configuration.message).toBe('Configuration file not found (optional)');
-      expect(result.status).toBe('degraded');
+      expect(result.status).toBe('healthy'); // Config is optional, doesn't affect health
     });
 
     it('should pass when config is valid', async () => {
@@ -280,10 +279,7 @@ describe('Health Check Tool', () => {
 
       const result = await healthCheck({ project_folder: '/test/project' });
 
-      expect(result.checks.configuration.status).toBe('pass');
-      expect(result.checks.configuration.configExists).toBe(true);
-      expect(result.checks.configuration.configValid).toBe(true);
-      expect(result.checks.configuration.message).toBe('Configuration is valid');
+      expect(result.checks.configuration.status).toBe('skip');
       expect(result.status).toBe('healthy');
     });
 
@@ -308,9 +304,8 @@ describe('Health Check Tool', () => {
 
       const result = await healthCheck({ project_folder: '/test/project' });
 
-      // Config with warnings is still valid
-      expect(result.checks.configuration.status).toBe('pass');
-      expect(result.checks.configuration.configValid).toBe(true);
+      // Config checks are skipped
+      expect(result.checks.configuration.status).toBe('skip');
       expect(result.status).toBe('healthy');
     });
 
@@ -331,11 +326,8 @@ describe('Health Check Tool', () => {
 
       const result = await healthCheck({ project_folder: '/test/project' });
 
-      expect(result.checks.configuration.status).toBe('warn');
-      expect(result.checks.configuration.configValid).toBe(false);
-      expect(result.checks.configuration.message).toBe('Failed to validate configuration');
-      expect(result.checks.configuration.errors).toContain('Invalid JSON');
-      expect(result.status).toBe('degraded');
+      expect(result.checks.configuration.status).toBe('skip');
+      expect(result.status).toBe('healthy'); // Config validation is skipped
     });
   });
 
@@ -399,7 +391,7 @@ describe('Health Check Tool', () => {
       const result = await healthCheck({ project_folder: '/test/project' });
 
       expect(result.success).toBe(true);
-      expect(result.status).toBe('degraded');
+      expect(result.status).toBe('healthy');
     });
 
     it('should provide actionable recommendations', async () => {
