@@ -59,9 +59,77 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
 
   // Reject absolute paths (they should be relative to project)
   if (path.isAbsolute(cleanPath)) {
+    // Try to extract a meaningful suggestion
+    let suggestion = 'docs/guide.md';
+    const parts = cleanPath.split(path.sep);
+    if (parts.length > 1) {
+      // Suggest using the last 1-2 parts
+      suggestion = parts.slice(-2).join('/');
+    }
     throw new Error(
-      'Absolute paths are not allowed. Please provide a path relative to the project folder.'
+      `Absolute paths are not allowed. Path must be relative to project folder.\n\n` +
+        `Examples of correct usage:\n` +
+        `  ✓ "docs/api.md"\n` +
+        `  ✓ "README.md"\n` +
+        `  ✓ "guides/tutorial.md"\n\n` +
+        `Your path: "${cleanPath}"\n` +
+        `Suggested fix: Try "${suggestion}" instead.`
     );
+  }
+
+  // Detect paths that look like absolute filesystem paths even without leading slash
+  // Examples: "Users/davidibia/...", "home/user/...", "C:/Users/..."
+  const suspiciousPathPatterns: Array<{ pattern: RegExp; example: string }> = [
+    { pattern: /^Users\//i, example: 'docs/guide.md' },
+    { pattern: /^home\//i, example: 'docs/guide.md' },
+    { pattern: /^[A-Z]:\\/i, example: 'docs/guide.md' },
+    { pattern: /^[A-Z]:\//i, example: 'docs/guide.md' },
+    { pattern: /^mnt\//i, example: 'docs/guide.md' },
+    { pattern: /^opt\//i, example: 'docs/guide.md' },
+    { pattern: /^usr\//i, example: 'docs/guide.md' },
+    { pattern: /^var\//i, example: 'docs/guide.md' },
+    { pattern: /^tmp\//i, example: 'docs/guide.md' },
+    { pattern: /^Library\//i, example: 'docs/guide.md' },
+    { pattern: /^Applications\//i, example: 'docs/guide.md' },
+    { pattern: /^System\//i, example: 'docs/guide.md' },
+    { pattern: /^Volumes\//i, example: 'docs/guide.md' },
+    { pattern: /^Program Files/i, example: 'docs/guide.md' },
+    { pattern: /^Windows\//i, example: 'docs/guide.md' },
+  ];
+
+  for (const { pattern, example } of suspiciousPathPatterns) {
+    if (pattern.test(cleanPath)) {
+      // Extract suggested path from input by removing the problematic prefix
+      let suggestedPath = cleanPath;
+      const match = cleanPath.match(pattern);
+      if (match) {
+        // Try to extract a meaningful relative path
+        const parts = cleanPath.split('/');
+        // Find common project-like directories
+        const projectIndicators = ['Projects', 'repos', 'git', 'code', 'src', 'workspace'];
+        let startIndex = -1;
+        for (let i = 0; i < parts.length; i++) {
+          if (
+            projectIndicators.some((ind) => parts[i]?.toLowerCase().includes(ind.toLowerCase()))
+          ) {
+            startIndex = i + 1; // Start after the project root indicator
+            break;
+          }
+        }
+        if (startIndex > 0 && startIndex < parts.length) {
+          suggestedPath = parts.slice(startIndex).join('/');
+        }
+      }
+
+      throw new Error(
+        `Path appears to be an absolute filesystem path starting with "${cleanPath.split('/')[0]}/". ` +
+          `\n\nUse project-relative paths only, such as:\n` +
+          `  ✓ "${example}" (correct)\n` +
+          `  ✓ "README.md" (correct)\n` +
+          `  ✗ "${cleanPath}" (incorrect - appears absolute)\n\n` +
+          `Suggested fix: Try "${suggestedPath || example}" instead.`
+      );
+    }
   }
 
   // Normalize the path (resolve .., ., remove duplicate slashes)

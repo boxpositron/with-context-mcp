@@ -1,6 +1,7 @@
 ---
 description: Intelligently analyze and setup documentation architecture for the project
 agent: general
+subtask: true
 ---
 
 # Intelligent Documentation Setup
@@ -151,37 +152,31 @@ README changes needed:
 
 ## Your Task
 
-When this command is run:
+Execute the setup_notes tool immediately with options based on user arguments:
 
-1. **Analyze the repository** using the intelligent documentation analyzer:
-   - Scan for all documentation files
-   - Identify project type and framework
-   - Analyze README completeness and link validity
-   - Generate recommendations based on best practices
+```javascript
+// Parse optional arguments
+const args = '$ARGUMENTS';
+const noStructure = args.includes('--no-structure');
+const force = args.includes('--force');
 
-2. **Present analysis report** showing:
-   - Project type and documentation file count
-   - README health score and warnings
-   - Link validation results
-   - Recommended LOCAL vs VAULT patterns
-   - Suggested folder structure
+// Get project folder name from current directory
+const projectFolder = process.cwd().split('/').pop();
 
-3. **Validate README integrity**:
-   - Check if README has all internal links valid
-   - **Critical**: Ensure README doesn't link to files that will move to vault
-   - Verify README is self-contained
-   - Identify missing sections (badges, quick start, installation, usage)
+const result = await setup_notes({
+  project_folder: projectFolder,
+  create_structure: !noStructure,
+  force: force,
+});
 
-4. **Create intelligent configuration**:
-   - Generate `.withcontextconfig.jsonc` based on actual project analysis
-   - Include project type and name in comments
-   - Use recommended LOCAL and VAULT patterns from analysis
-   - Follow Diátaxis framework principles
+return result;
+```
 
-5. **Provide actionable recommendations**:
-   - List specific README fixes needed
-   - Suggest folder structure for vault
-   - Guide user on next steps
+**Usage Examples:**
+
+- `/setup-notes` - Full setup with vault folder creation
+- `/setup-notes --no-structure` - Skip creating vault folders
+- `/setup-notes --force` - Overwrite existing configuration
 
 ## Configuration Format (v2.1.0)
 
@@ -247,14 +242,24 @@ The intelligent setup follows these frameworks and principles:
 
 When running this command:
 
-1. **Trust the analysis** - The intelligent engine has scanned the repo and knows what it found
-2. **Prioritize README integrity** - Never allow broken links to vault files
-3. **Follow LOCAL vs VAULT principles**:
-   - LOCAL = Must work for someone cloning the repo
-   - VAULT = Deep dives, research, explorations
-4. **Apply recommendations** but allow user customization
-5. **Provide specific, actionable feedback** (not generic suggestions)
-6. **Reference actual files found** in the repository
+1. **ONLY use the setup_notes tool** - Do NOT perform manual analysis or file operations
+2. **Trust the tool's output** - The intelligent engine has scanned the repo and knows what it found
+3. **Present the results clearly** - Show the full tool output to the user
+4. **Do NOT**:
+   - Manually read files to analyze the project
+   - Create configuration files directly
+   - Parse README or validate links manually
+   - Scan directories yourself
+5. **The tool handles everything**:
+   - Repository scanning
+   - README validation
+   - Link integrity checks
+   - Configuration generation
+   - Folder structure creation
+6. **Your role is to**:
+   - Call the tool with appropriate parameters
+   - Present the results to the user
+   - Suggest next steps based on tool output
 
 ## Migration from Legacy Format
 

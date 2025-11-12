@@ -1,6 +1,6 @@
 {
   "name": "with-context-plugin",
-  "version": "3.0.0",
+  "version": "3.0.5",
   "description": "Project-scoped note management in your OpenCode sessions with Obsidian integration.",
   "author": "David Ibia <github@boxpositron.dev>",
   "dependencies": {

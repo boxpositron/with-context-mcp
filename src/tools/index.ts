@@ -4,6 +4,7 @@ export { readNote, readNoteSchema, type ReadNoteInput } from './read-note.js';
 export { listNotes, listNotesSchema, type ListNotesInput } from './list-notes.js';
 export { deleteNote, deleteNoteSchema, type DeleteNoteInput } from './delete-note.js';
 export { searchNotes, searchNotesSchema, type SearchNotesInput } from './search-notes.js';
+export { healthCheck, healthCheckSchema, type HealthCheckInput } from './health-check.js';
 export {
   batchWriteNotes,
   batchWriteNotesSchema,
@@ -29,6 +30,14 @@ export { ingestNotes, ingestNotesSchema, type IngestNotesInput } from './ingest-
 export { teleportNotes, teleportNotesSchema, type TeleportNotesInput } from './teleport-notes.js';
 export { syncNotes, syncNotesSchema, type SyncNotesInput } from './sync-notes.js';
 export { setupNotes, setupNotesSchema, type SetupNotesArgs } from './setup-notes.js';
+
+// Configuration tools
+export {
+  validateConfigTool,
+  validateConfigToolSchema,
+  previewDelegationTool,
+  previewDelegationToolSchema,
+} from './config-tools.js';
 
 // Session management tools
 export {
@@ -70,3 +79,24 @@ export {
   listTodosSchema,
   type ListTodosInput,
 } from './changelog-todo-tools.js';
+
+// Vault analysis tools
+export {
+  analyzeVaultStructureHandler,
+  analyzeVaultStructureSchema,
+  type AnalyzeVaultStructureInput,
+} from './analyze-vault-structure.js';
+
+// Notes reorganization tools
+export {
+  reorganizeNotesHandler,
+  reorganizeNotesSchema,
+  type ReorganizeNotesInput,
+} from './reorganize-notes.js';
+
+// Organization plan generation tools
+export {
+  generateOrganizationPlanHandler,
+  generateOrganizationPlanSchema,
+  type GenerateOrganizationPlanInput,
+} from './generate-organization-plan.js';

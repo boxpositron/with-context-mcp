@@ -9,7 +9,14 @@ export const batchWriteNotesSchema = z.object({
   notes: z
     .array(
       z.object({
-        path: z.string().min(1).describe('Relative path to the note within the project folder'),
+        path: z
+          .string()
+          .min(1)
+          .describe(
+            'Project-relative path to the note. CORRECT: "CHANGELOG.md", "docs/api.md". ' +
+              'INCORRECT: "/Users/name/file.md", "Users/name/file.md", "C:/path/file.md". ' +
+              'Use paths relative to project root only, NOT absolute filesystem paths.'
+          ),
         content: z.string().describe('Content to write to the note'),
         mode: z
           .enum(['create', 'overwrite', 'append'])
@@ -21,10 +28,6 @@ export const batchWriteNotesSchema = z.object({
     )
     .min(1)
     .describe('Array of notes to write'),
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
 });
 
 export type BatchWriteNotesInput = z.infer<typeof batchWriteNotesSchema>;
@@ -36,10 +39,10 @@ interface NoteResult {
 }
 
 export async function batchWriteNotes(input: BatchWriteNotesInput): Promise<string> {
-  const { notes, project_folder } = input;
+  const { notes } = input;
 
   // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Initialize Obsidian client
   const client = new ObsidianClient({

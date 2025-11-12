@@ -1,6 +1,7 @@
 ---
 description: Validate .withcontextconfig.jsonc for errors and warnings
 agent: general
+subtask: true
 ---
 
 # Validate Notes Configuration
@@ -32,36 +33,23 @@ First try to use the WithContext plugin's `validate_config` tool. If not availab
 
 ## Your Task
 
-When this command is run:
-
-**Step 1: Call validate_config tool**
-
-Call the tool with the project root:
+Execute the validate_config tool immediately:
 
 ```javascript
-validate_config({
-  project_root: '/path/to/project', // Use current working directory
+const result = await validate_config({
+  project_root: process.cwd(),
 });
+
+return result;
 ```
 
-**Step 2: Report validation results**
+The tool output includes:
 
-Present the formatted validation report from the tool, including:
-
-- **Configuration path** - Location of the config file
-- **Validation status** - Valid or invalid
-- **Errors** - Critical issues that must be fixed
-- **Warnings** - Non-critical issues that should be addressed
-- **Info** - Helpful suggestions and best practices
-
-**Step 3: Provide actionable next steps**
-
-Based on the validation results:
-
-- If **valid with no warnings**: Configuration is ready to use
-- If **valid with warnings**: List warnings and suggest fixes
-- If **invalid**: List all errors and how to fix them
-- Suggest running `/preview-notes-delegation` to test patterns
+- Configuration path and validation status
+- All errors (critical issues that must be fixed)
+- All warnings (non-critical issues to address)
+- Info messages (helpful suggestions)
+- Suggested next steps
 
 ## Example Output
 

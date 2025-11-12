@@ -7,10 +7,6 @@ import { config, loadDelegationConfigOrDefault } from '../config/index.js';
 import { decideDelegation } from '../doc-delegator/delegation-decision.js';
 
 export const teleportNotesSchema = z.object({
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
   dry_run: z
     .boolean()
     .default(false)
@@ -40,13 +36,40 @@ interface TeleportResult {
  * Teleport documentation files from Obsidian vault to local project
  */
 export async function teleportNotes(input: TeleportNotesInput): Promise<string> {
-  const { project_folder, dry_run, delete_from_vault, force_delete: _force_delete } = input;
+  const { dry_run, delete_from_vault, force_delete: _force_delete } = input;
 
   // Get project context
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Get project root (cwd or detected git root)
   const projectRoot = context.cwd || process.cwd();
+
+  // Check if .withcontextconfig.jsonc exists
+  const configPath = path.join(projectRoot, '.withcontextconfig.jsonc');
+  let configExists = false;
+  try {
+    await fs.access(configPath);
+    configExists = true;
+  } catch {
+    // Config doesn't exist
+  }
+
+  if (!configExists) {
+    return JSON.stringify(
+      {
+        success: false,
+        error: 'Configuration file not found',
+        message:
+          'The .withcontextconfig.jsonc file does not exist in your project root.\n\n' +
+          'Please run setup_notes first to create the configuration file with intelligent delegation rules.\n\n' +
+          'Example: setup_notes({ project_folder: "your-project-name" })',
+        config_path: configPath,
+        project_root: projectRoot,
+      },
+      null,
+      2
+    );
+  }
 
   // Load delegation config
   const delegationConfig = await loadDelegationConfigOrDefault(projectRoot);

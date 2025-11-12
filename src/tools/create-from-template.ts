@@ -12,19 +12,15 @@ export const createFromTemplateSchema = z.object({
     .min(1)
     .describe('Filename for the new note (e.g., "CHANGELOG.md" or "docs/meeting.md")'),
   variables: z.record(z.string()).optional().describe('Variables to substitute in the template'),
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
 });
 
 export type CreateFromTemplateInput = z.infer<typeof createFromTemplateSchema>;
 
 export async function createFromTemplateHandler(input: CreateFromTemplateInput): Promise<string> {
-  const { template_name, filename, variables = {}, project_folder } = input;
+  const { template_name, filename, variables = {} } = input;
 
   // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Render the template with provided variables (auto-fills date/time)
   let renderedContent: string;

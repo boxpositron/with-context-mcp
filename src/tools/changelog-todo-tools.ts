@@ -229,7 +229,12 @@ function formatTodos(
  * Input schema for adding changelog entry
  */
 export const addChangelogEntrySchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
   type: z
     .enum(['feature', 'fix', 'refactor', 'docs', 'test', 'chore'])
     .describe('Type of change (conventional commit type)'),
@@ -251,9 +256,16 @@ export type AddChangelogEntryInput = z.infer<typeof addChangelogEntrySchema>;
  * @throws {McpError} If no active session
  */
 export async function addChangelogEntry(input: AddChangelogEntryInput): Promise<string> {
-  const { project_folder, type, message, files = [], breaking = false } = input;
+  let { project_folder } = input;
+  const { type, message, files = [], breaking = false } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Set project context
     sessionState.setProjectContext(project_folder);
 
@@ -308,7 +320,12 @@ export async function addChangelogEntry(input: AddChangelogEntryInput): Promise<
  * Input schema for getting session changelog
  */
 export const getSessionChangelogSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
 });
 
 export type GetSessionChangelogInput = z.infer<typeof getSessionChangelogSchema>;
@@ -324,9 +341,15 @@ export type GetSessionChangelogInput = z.infer<typeof getSessionChangelogSchema>
  * @throws {McpError} If no active session
  */
 export async function getSessionChangelog(input: GetSessionChangelogInput): Promise<string> {
-  const { project_folder } = input;
+  let { project_folder } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Get session manager
     const { session } = await getSessionManager(project_folder);
 
@@ -384,7 +407,12 @@ export async function getSessionChangelog(input: GetSessionChangelogInput): Prom
  * Input schema for getting commit suggestion
  */
 export const getCommitSuggestionSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
   conventional: z
     .boolean()
     .optional()
@@ -405,7 +433,14 @@ export type GetCommitSuggestionInput = z.infer<typeof getCommitSuggestionSchema>
  * @throws {McpError} If no active session or no changelog entries
  */
 export async function getCommitSuggestion(input: GetCommitSuggestionInput): Promise<string> {
-  const { project_folder, conventional = true } = input;
+  let { project_folder } = input;
+  const { conventional = true } = input;
+
+  // Auto-detect project folder if not provided
+  if (!project_folder) {
+    const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+    project_folder = context.projectFolder;
+  }
 
   try {
     // Get session manager
@@ -541,7 +576,12 @@ export async function getCommitSuggestion(input: GetCommitSuggestionInput): Prom
  * Input schema for adding todo
  */
 export const addTodoSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
   content: z.string().min(1).describe('Todo content/description'),
   priority: z
     .enum(['high', 'medium', 'low'])
@@ -563,9 +603,16 @@ export type AddTodoInput = z.infer<typeof addTodoSchema>;
  * @throws {McpError} If no active session
  */
 export async function addTodo(input: AddTodoInput): Promise<string> {
-  const { project_folder, content, priority = 'medium' } = input;
+  let { project_folder } = input;
+  const { content, priority = 'medium' } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Set project context
     sessionState.setProjectContext(project_folder);
 
@@ -625,7 +672,12 @@ export async function addTodo(input: AddTodoInput): Promise<string> {
  * Input schema for updating todo
  */
 export const updateTodoSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
   todo_id: z.string().min(1).describe('Todo ID to update'),
   status: z
     .enum(['pending', 'in_progress', 'completed', 'cancelled'])
@@ -647,9 +699,16 @@ export type UpdateTodoInput = z.infer<typeof updateTodoSchema>;
  * @throws {McpError} If no active session or todo not found
  */
 export async function updateTodo(input: UpdateTodoInput): Promise<string> {
-  const { project_folder, todo_id, status, priority } = input;
+  let { project_folder } = input;
+  const { todo_id, status, priority } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Get session manager
     const { manager, session } = await getSessionManager(project_folder);
 
@@ -710,7 +769,12 @@ export async function updateTodo(input: UpdateTodoInput): Promise<string> {
  * Input schema for listing todos
  */
 export const listTodosSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
   status: z
     .enum(['pending', 'in_progress', 'completed', 'cancelled'])
     .optional()
@@ -731,9 +795,16 @@ export type ListTodosInput = z.infer<typeof listTodosSchema>;
  * @throws {McpError} If no active session
  */
 export async function listTodos(input: ListTodosInput): Promise<string> {
-  const { project_folder, status, priority } = input;
+  let { project_folder } = input;
+  const { status, priority } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Get session manager
     const { session } = await getSessionManager(project_folder);
 

@@ -80,3 +80,16 @@ export class ObsidianConnectionError extends ObsidianApiError {
 }
 
 export type WriteMode = 'create' | 'overwrite' | 'append';
+
+/**
+ * Health check result for Obsidian API connection
+ */
+export interface ObsidianHealthCheck {
+  connected: boolean;
+  authenticated: boolean;
+  vaultAccessible: boolean;
+  vaultName: string;
+  apiUrl: string;
+  error?: string;
+  latencyMs?: number;
+}

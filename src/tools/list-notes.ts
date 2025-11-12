@@ -7,20 +7,18 @@ export const listNotesSchema = z.object({
   path: z
     .string()
     .optional()
-    .describe('Optional: Relative path to a folder within the project (defaults to project root)'),
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
+    .describe(
+      'Optional: Relative path to a folder within the project. Omit, use empty string, "/" or "." for project root. Examples: "docs", "meetings/2024"'
+    ),
 });
 
 export type ListNotesInput = z.infer<typeof listNotesSchema>;
 
 export async function listNotes(input: ListNotesInput): Promise<string> {
-  const { path = '', project_folder } = input;
+  const { path = '' } = input;
 
-  // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  // Get project context (automatically detected from session/git)
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Build the full directory path
   // Format: "basePath/projectFolder/optionalSubPath"
@@ -32,7 +30,10 @@ export async function listNotes(input: ListNotesInput): Promise<string> {
     if (cleanPath.includes('..')) {
       throw new Error('Path traversal is not allowed');
     }
-    fullPath = `${fullPath}/${cleanPath}`;
+    // Only append if cleanPath is not empty and not just '.'
+    if (cleanPath && cleanPath !== '.') {
+      fullPath = `${fullPath}/${cleanPath}`;
+    }
   }
 
   // Initialize Obsidian client

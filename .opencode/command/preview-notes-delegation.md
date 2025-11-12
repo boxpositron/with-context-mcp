@@ -1,6 +1,7 @@
 ---
 description: Preview which documentation files will be delegated to vault vs local
 agent: general
+subtask: true
 ---
 
 # Preview Notes Delegation
@@ -28,36 +29,35 @@ First try to use the WithContext plugin's `preview_delegation` tool. If not avai
 
 ## Your Task
 
-When this command is run:
-
-**Step 1: Call preview_delegation tool**
-
-Call the tool with appropriate parameters:
+Execute the preview_delegation tool immediately with options based on user arguments:
 
 ```javascript
-preview_delegation({
-  project_root: '/path/to/project', // Use current working directory
-  show_reasoning: true, // Show why each file was categorized
-  limit: 50, // Show up to 50 files per category
+// Parse optional arguments
+const args = '$ARGUMENTS';
+const vaultOnly = args.includes('--vault-only');
+const localOnly = args.includes('--local-only');
+const noReasoning = args.includes('--no-reasoning');
+const limitMatch = args.match(/--limit[=\s](\d+)/);
+const limit = limitMatch ? parseInt(limitMatch[1]) : 100;
+
+const result = await preview_delegation({
+  project_root: process.cwd(),
+  show_reasoning: !noReasoning,
+  limit: limit,
+  vault_only: vaultOnly,
+  local_only: localOnly,
 });
+
+return result;
 ```
 
-**Step 2: Present the preview**
+**Usage Examples:**
 
-Show the formatted preview from the tool, including:
-
-- **Summary statistics** - Total files, vault count, local count
-- **Vault files** - Files that will be delegated to vault
-- **Local files** - Files that will stay in repository
-- **Reasoning** (if requested) - Why each file was categorized
-
-**Step 3: Suggest next steps**
-
-Based on the preview results:
-
-- If patterns look correct: Suggest running `/sync-notes` or `/ingest-notes`
-- If patterns need adjustment: Suggest editing `.withcontextconfig.jsonc`
-- If conflicts detected: Suggest running `/validate-notes-config`
+- `/preview-notes-delegation` - Full preview with reasoning
+- `/preview-notes-delegation --vault-only` - Show only vault files
+- `/preview-notes-delegation --local-only` - Show only local files
+- `/preview-notes-delegation --limit 20` - Limit to 20 files per category
+- `/preview-notes-delegation --no-reasoning` - Hide detailed reasoning
 
 ## Optional Parameters
 

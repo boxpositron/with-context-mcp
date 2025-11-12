@@ -13,6 +13,7 @@ import {
   ObsidianNotFoundError,
   ObsidianAuthenticationError,
   ObsidianConnectionError,
+  ObsidianHealthCheck,
   WriteMode,
 } from './types.js';
 import { sessionState } from '../session-state.js';
@@ -299,6 +300,97 @@ export class ObsidianClient {
    */
   getVaultName(): string {
     return this.vault;
+  }
+
+  /**
+   * Test connection to Obsidian API and validate configuration
+   *
+   * This method performs a comprehensive health check of the Obsidian API connection:
+   * - Tests basic connectivity to the API URL
+   * - Validates API key authentication
+   * - Checks vault accessibility
+   * - Measures API latency
+   *
+   * @returns Promise resolving to health check results
+   */
+  async testConnection(): Promise<ObsidianHealthCheck> {
+    const startTime = Date.now();
+    const result: ObsidianHealthCheck = {
+      connected: false,
+      authenticated: false,
+      vaultAccessible: false,
+      vaultName: this.vault,
+      apiUrl: this.client.defaults.baseURL || '',
+    };
+
+    try {
+      // Try to list root directory as a comprehensive connectivity test
+      // This tests: connection, authentication, and vault accessibility in one call
+      const response = await this.client.get('/vault/', {
+        headers: { Accept: 'application/json' },
+        timeout: 5000,
+      });
+
+      const latencyMs = Date.now() - startTime;
+
+      // If we got here, connection and authentication worked
+      result.connected = true;
+      result.authenticated = true;
+      result.latencyMs = latencyMs;
+
+      // Check if we got valid vault data
+      if (response.data && (Array.isArray(response.data.files) || response.status === 200)) {
+        result.vaultAccessible = true;
+      }
+    } catch (error) {
+      const latencyMs = Date.now() - startTime;
+      result.latencyMs = latencyMs;
+
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+
+        // Connection errors
+        if (axiosError.code === 'ECONNREFUSED' || axiosError.code === 'ENOTFOUND') {
+          result.error = `Cannot connect to Obsidian API at ${result.apiUrl}. Ensure the Local REST API plugin is running.`;
+          return result;
+        }
+
+        // Timeout
+        if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ETIMEDOUT') {
+          result.error = `Connection timeout. The API may be slow or unreachable.`;
+          result.connected = true; // Partial connection
+          return result;
+        }
+
+        // HTTP status errors
+        if (axiosError.response) {
+          const status = axiosError.response.status;
+          result.connected = true;
+
+          switch (status) {
+            case 401:
+            case 403:
+              result.error = 'Invalid API key or insufficient permissions';
+              break;
+            case 404:
+              result.authenticated = true;
+              result.error = `Vault '${this.vault}' not found. Check OBSIDIAN_VAULT configuration.`;
+              break;
+            default:
+              result.authenticated = true;
+              result.error = `API error: ${axiosError.message} (Status: ${status})`;
+          }
+          return result;
+        }
+
+        // Other axios errors
+        result.error = axiosError.message;
+      } else {
+        result.error = error instanceof Error ? error.message : 'Unknown error occurred';
+      }
+    }
+
+    return result;
   }
 
   /**

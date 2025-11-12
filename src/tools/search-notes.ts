@@ -5,10 +5,6 @@ import { config } from '../config/index.js';
 
 export const searchNotesSchema = z.object({
   query: z.string().min(1).describe('Search query text to find in note contents'),
-  project_folder: z
-    .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
   case_sensitive: z
     .boolean()
     .optional()
@@ -54,10 +50,10 @@ function getLineNumber(content: string, matchIndex: number): number {
 }
 
 export async function searchNotes(input: SearchNotesInput): Promise<string> {
-  const { query, project_folder, case_sensitive = false, limit = 10 } = input;
+  const { query, case_sensitive = false, limit = 10 } = input;
 
-  // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  // Get project context (automatically detected from session/git)
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Initialize Obsidian client
   const client = new ObsidianClient({

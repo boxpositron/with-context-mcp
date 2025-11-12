@@ -95,7 +95,12 @@ export async function startSession(input: StartSessionInput): Promise<string> {
  * Input schema for pausing a session
  */
 export const pauseSessionSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
 });
 
 export type PauseSessionInput = z.infer<typeof pauseSessionSchema>;
@@ -111,9 +116,15 @@ export type PauseSessionInput = z.infer<typeof pauseSessionSchema>;
  * @throws {McpError} If no active session or invalid state
  */
 export async function pauseSession(input: PauseSessionInput): Promise<string> {
-  const { project_folder } = input;
+  let { project_folder } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Get active session ID from sessionState
     const sessionId = sessionState.getActiveSessionId(project_folder);
     if (!sessionId) {
@@ -181,7 +192,12 @@ export async function pauseSession(input: PauseSessionInput): Promise<string> {
  * Input schema for resuming a session
  */
 export const resumeSessionSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
   session_id: z
     .string()
     .optional()
@@ -202,9 +218,16 @@ export type ResumeSessionInput = z.infer<typeof resumeSessionSchema>;
  * @throws {McpError} If session cannot be resumed or not found
  */
 export async function resumeSession(input: ResumeSessionInput): Promise<string> {
-  const { project_folder, session_id } = input;
+  let { project_folder } = input;
+  const { session_id } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Set project context
     sessionState.setProjectContext(project_folder);
 
@@ -269,7 +292,12 @@ export async function resumeSession(input: ResumeSessionInput): Promise<string> 
  * Input schema for ending a session
  */
 export const endSessionSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
   message: z.string().optional().describe('Optional completion message or summary'),
 });
 
@@ -286,9 +314,16 @@ export type EndSessionInput = z.infer<typeof endSessionSchema>;
  * @throws {McpError} If no active session
  */
 export async function endSession(input: EndSessionInput): Promise<string> {
-  const { project_folder, message } = input;
+  let { project_folder } = input;
+  const { message } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Get active session ID from sessionState
     const sessionId = sessionState.getActiveSessionId(project_folder);
     if (!sessionId) {
@@ -372,7 +407,12 @@ export async function endSession(input: EndSessionInput): Promise<string> {
  * Input schema for getting session status
  */
 export const getSessionStatusSchema = z.object({
-  project_folder: z.string().min(1).describe('Project folder name in vault'),
+  project_folder: z
+    .string()
+    .optional()
+    .describe(
+      'Optional: Project folder name in vault (auto-detects from current context if omitted)'
+    ),
 });
 
 export type GetSessionStatusInput = z.infer<typeof getSessionStatusSchema>;
@@ -392,9 +432,15 @@ export type GetSessionStatusInput = z.infer<typeof getSessionStatusSchema>;
  * @returns Session status or "no active session" message
  */
 export async function getSessionStatus(input: GetSessionStatusInput): Promise<string> {
-  const { project_folder } = input;
+  let { project_folder } = input;
 
   try {
+    // Auto-detect project folder if not provided
+    if (!project_folder) {
+      const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
+      project_folder = context.projectFolder;
+    }
+
     // Get active session ID from sessionState
     const sessionId = sessionState.getActiveSessionId(project_folder);
     if (!sessionId) {

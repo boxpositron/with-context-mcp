@@ -5,11 +5,14 @@ import { sessionState } from '../session-state.js';
 import { config } from '../config/index.js';
 
 export const getNoteMetadataSchema = z.object({
-  path: z.string().min(1).describe('Relative path to the note within the project folder'),
-  project_folder: z
+  path: z
     .string()
-    .optional()
-    .describe('Optional: Override the project folder for this operation'),
+    .min(1)
+    .describe(
+      'Project-relative path to the note. CORRECT: "CHANGELOG.md", "docs/api.md". ' +
+        'INCORRECT: "/Users/name/file.md", "Users/name/file.md", "C:/path/file.md". ' +
+        'Use paths relative to project root only, NOT absolute filesystem paths.'
+    ),
 });
 
 export type GetNoteMetadataInput = z.infer<typeof getNoteMetadataSchema>;
@@ -175,10 +178,10 @@ function countWords(text: string): number {
 }
 
 export async function getNoteMetadata(input: GetNoteMetadataInput): Promise<string> {
-  const { path, project_folder } = input;
+  const { path } = input;
 
   // Get project context (use override if provided, otherwise session/detected)
-  const context = await sessionState.getProjectContext(project_folder, config.projectBasePath);
+  const context = await sessionState.getProjectContext(undefined, config.projectBasePath);
 
   // Sanitize and validate path
   const sanitizedPath = sanitizePath(path, context.projectFolder, context.basePath);

@@ -76,6 +76,89 @@ npm install -g with-context-mcp
 - **Configuration Tools**: Setup, validate, and preview delegation decisions
 - **Read Interception**: Automatically read delegated docs from vault with caching
 - **Bidirectional Sync**: Sync documentation between local project and vault using delegation config
+- **Vault Organization** ⭐ NEW: Intelligent vault analysis and automated reorganization
+  - Analyze vault structure, content, and relationships
+  - **4 Built-in Presets**: clean, minimal, docs-as-code, research
+  - Automatic categorization and folder statistics
+  - Safe file reorganization with rollback capability
+  - Automatic link updating when files move
+  - Orphan file detection and impact assessment
+- **Auto-Session Management** ⭐ NEW: Intelligent session tracking for OpenCode plugin
+  - Automatic project detection from git repository
+  - Auto-start sessions on first file operation
+  - Smart file change analysis with changelog suggestions
+  - Configurable via environment variables
+  - Phase 1 complete, full auto-tracking awaits OpenCode API enhancements
+
+## Auto-Session Management
+
+The OpenCode plugin includes intelligent auto-session management that automatically tracks your development workflow. This feature transforms manual session tracking into a seamless, hands-free experience.
+
+### Key Features
+
+- **Automatic Project Detection** - Detects project folder from git repository or directory name
+- **Auto-Start Sessions** - Optionally starts sessions automatically on first file operation
+- **Smart File Analysis** - Analyzes file changes to suggest appropriate changelog types
+- **Configurable Behavior** - Control auto-start, auto-tracking, and prompts via environment variables
+
+### Configuration
+
+Configure auto-session behavior with environment variables:
+
+```bash
+# Auto-start session on first file operation (default: true)
+export WITH_CONTEXT_AUTO_START=true
+
+# Auto-track file operations (default: true)
+export WITH_CONTEXT_AUTO_TRACK=true
+
+# Prompt user before auto-starting (default: true)
+export WITH_CONTEXT_PROMPT=true
+```
+
+### Current Status
+
+**Phase 1 (Current):** Foundation complete with project detection, configuration, and smart file analysis. Manual session management with auto-detection support.
+
+**Phase 2 (Future):** Full auto-tracking awaits OpenCode plugin API enhancements for lifecycle hooks.
+
+### Documentation
+
+For comprehensive documentation on auto-session management, see:
+
+- **[Plugin Auto-Tracking Guide](docs/PLUGIN_AUTO_TRACKING.md)** - Complete feature documentation
+- **[Plugin README](plugin/README.md)** - Plugin installation and usage
+- **[Test Results](TEST_RESULTS_PLUGIN_AUTO_SESSION.md)** - Test coverage (58 tests)
+
+### Quick Example
+
+```typescript
+// Configuration (all enabled by default)
+export WITH_CONTEXT_AUTO_START=true
+export WITH_CONTEXT_AUTO_TRACK=true
+export WITH_CONTEXT_PROMPT=true
+
+// Manual workflow (current)
+await use_tool('start_session', {
+  project_folder: 'my-project',
+  message: 'Implementing authentication',
+});
+
+// Work on files...
+// Plugin detects project automatically
+
+await use_tool('add_changelog_entry', {
+  project_folder: 'my-project',
+  type: 'feature',
+  message: 'Add JWT authentication',
+  files: ['src/auth.ts'],
+});
+
+// Future: Full auto-tracking (Phase 2)
+// - Automatic session start on first file operation
+// - Automatic file tracking with smart suggestions
+// - Idle status display
+```
 
 ## Prerequisites
 
@@ -831,6 +914,14 @@ sync_notes({});
 - `teleport_notes` - Copy documentation files from vault to project (optional delete)
 - `sync_notes` - Bidirectionally sync docs between project and vault (auto-delete from source)
 
+### Vault Organization Tools ⭐ NEW
+
+- `analyze_vault_structure` - Analyze vault content, categorization, and relationships
+- `generate_organization_plan` - Generate intelligent organization plans using presets (clean, minimal, docs-as-code, research)
+- `reorganize_notes` - Execute reorganization plans with automatic link updates and rollback
+
+See [docs/VAULT_ORGANIZATION.md](docs/VAULT_ORGANIZATION.md) for detailed documentation and [docs/VAULT_PRESETS.md](docs/VAULT_PRESETS.md) for preset guide.
+
 ### Configuration Tools
 
 - `setup_notes` - Setup `.withcontextconfig.jsonc` and create vault folder structure
@@ -921,10 +1012,9 @@ npm install with-context-mcp
 3. **Configure environment variables:**
 
 ```bash
-export OBSIDIAN_VAULT_PATH="$HOME/Documents/Vault"
 export OBSIDIAN_API_URL="https://127.0.0.1:27124"
 export OBSIDIAN_API_KEY="your-api-key-here"
-export OBSIDIAN_VAULT="YourVaultName"
+export OBSIDIAN_VAULT="YourVaultName"  # Vault name only, not path
 export PROJECT_BASE_PATH="Projects"
 ```
 
