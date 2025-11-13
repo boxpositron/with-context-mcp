@@ -50,7 +50,7 @@ Write or update notes with multiple write modes including create, overwrite, app
 - Preserves existing content
 - Adds content after existing text
 
-**`prepend`** ⭐ NEW - Add content to beginning of file
+**`prepend`** (NEW) - Add content to beginning of file
 
 - Use for breaking changes, urgent notices
 - Preserves existing content
@@ -96,7 +96,7 @@ write_note({
 ```javascript
 write_note({
   path: 'CHANGELOG.md',
-  content: '## 🚨 BREAKING CHANGES - v3.0.0\n\n- API restructured\n- Auth flow changed\n\n',
+  content: '## BREAKING CHANGES - v3.0.0\n\n- API restructured\n- Auth flow changed\n\n',
   mode: 'prepend',
 });
 ```
@@ -213,7 +213,7 @@ List files in a directory with optional fuzzy search support.
 | Parameter            | Type    | Required | Default     | Description                             |
 | -------------------- | ------- | -------- | ----------- | --------------------------------------- |
 | `path`               | string  | No       | `''`        | Directory to list (relative to project) |
-| `fuzzy_query`        | string  | No       | -           | ⭐ Fuzzy search query                   |
+| `fuzzy_query`        | string  | No       | -           | Fuzzy search query                      |
 | `limit`              | number  | No       | `50`        | Max results to return                   |
 | `min_score`          | number  | No       | `-10000`    | Minimum match score                     |
 | `include_highlights` | boolean | No       | `true`      | Include match highlights                |

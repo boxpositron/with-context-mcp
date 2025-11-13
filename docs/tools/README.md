@@ -18,7 +18,7 @@ Essential tools for reading, writing, and managing notes in your Obsidian vault.
 - `delete_note` - Delete notes with confirmation
 - `batch_write_notes` - Write multiple notes at once
 
-### [Editing Tools](./editing-tools.md) ⭐ NEW
+### [Editing Tools](./editing-tools.md) (NEW)
 
 Advanced editing tools for targeted updates to note structure and metadata.
 

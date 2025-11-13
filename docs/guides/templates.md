@@ -491,8 +491,8 @@ tags:
 **2. Use descriptive variable names:**
 
 ```markdown
-{{project_name}} # ✅ Good
-{{pn}} # ❌ Bad
+{{project_name}} # Good
+{{pn}} # Bad
 ```
 
 **3. Provide structure with headings:**
@@ -599,7 +599,7 @@ tags:
 **Missing Required Variables:**
 
 ```javascript
-// ❌ Error: Missing required variable 'title'
+// Error: Missing required variable 'title'
 renderTemplate('meeting-notes', {
   date: '2025-11-13',
   // Missing: title, project
@@ -609,7 +609,7 @@ renderTemplate('meeting-notes', {
 **Correct Usage:**
 
 ```javascript
-// ✅ Success
+// Success
 renderTemplate('meeting-notes', {
   title: 'Sprint Planning',
   project: 'My App',
@@ -690,13 +690,13 @@ create_from_template({
 **1. Match template to document type:**
 
 ```javascript
-// ✅ Good - Right template for purpose
+// Good - Right template for purpose
 create_from_template({
   template_name: 'meeting-notes',
   filename: 'meetings/standup.md',
 });
 
-// ❌ Bad - Wrong template
+// Bad - Wrong template
 create_from_template({
   template_name: 'api-doc',
   filename: 'meetings/standup.md',
@@ -706,10 +706,10 @@ create_from_template({
 **2. Use consistent naming:**
 
 ```javascript
-// ✅ Good - Consistent date format
+// Good - Consistent date format
 filename: 'meetings/2025-11-13-standup.md';
 
-// ❌ Bad - Inconsistent
+// Bad - Inconsistent
 filename: 'meetings/nov-13-standup.md';
 ```
 
@@ -718,7 +718,7 @@ filename: 'meetings/nov-13-standup.md';
 **1. Provide all required variables:**
 
 ```javascript
-// ✅ Good
+// Good
 create_from_template({
   template_name: 'technical-doc',
   filename: 'docs/architecture.md',
@@ -734,13 +734,13 @@ create_from_template({
 **2. Use descriptive values:**
 
 ```javascript
-// ✅ Good - Clear and specific
+// Good - Clear and specific
 variables: {
   title: 'User Authentication System Architecture',
   author: 'Security Team',
 }
 
-// ❌ Bad - Vague
+// Bad - Vague
 variables: {
   title: 'Stuff',
   author: 'Me',

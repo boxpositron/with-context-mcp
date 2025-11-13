@@ -42,25 +42,25 @@ tags:
 
 # Daily Note - ${today}
 
-## 🎯 Goals
+## Goals
 
 - [ ] 
 - [ ] 
 - [ ] 
 
-## 📝 Notes
+## Notes
 
 
 
-## ✅ Completed
+## Completed
 
 - 
 
-## 💭 Reflections
+## Reflections
 
 
 
-## 🔗 Links
+## Links
 
 - [[${new Date(Date.now() - 86400000).toISOString().split('T')[0]}|Yesterday]]
 - [[${new Date(Date.now() + 86400000).toISOString().split('T')[0]}|Tomorrow]]
@@ -611,12 +611,12 @@ const result = reorganize_vault({
 
 console.log('\nReorganization Result:');
 if (result.success) {
-  console.log('✓ Success!', result.summary);
+  console.log('Success!', result.summary);
   console.log('  - Operations completed:', result.operations.length);
   console.log('  - Links updated:', result.linksUpdated);
   console.log('  - Files modified:', result.filesModified.length);
 } else {
-  console.error('✗ Failed!');
+  console.error('Failed!');
   console.error('  - Failed operations:', result.failedOperations.length);
   result.failedOperations.forEach((op) => {
     console.error(`    - ${op.operation.sourcePath}: ${op.error}`);

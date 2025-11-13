@@ -64,9 +64,9 @@ Validate environment, configuration, and API connection.
 const health = health_check({});
 
 if (health.success) {
-  console.log('✓ All systems operational');
+  console.log('All systems operational');
 } else {
-  console.error('✗ Health check failed');
+  console.error('Health check failed');
 }
 ```
 
@@ -176,7 +176,7 @@ write_note({ path: 'notes.md', content: '...', mode: 'create' });
 
 ### setup_notes
 
-⭐ **Intelligent documentation setup** with 4-phase analysis.
+**Intelligent documentation setup** with 4-phase analysis.
 
 #### Parameters
 
@@ -332,9 +332,9 @@ const result = validate_config({
 });
 
 if (result.valid) {
-  console.log('✓ Configuration is valid');
+  console.log('Configuration is valid');
 } else {
-  console.error('✗ Configuration has errors');
+  console.error('Configuration has errors');
   result.errors.forEach((e) => console.error(e.message));
 }
 ```
@@ -567,7 +567,7 @@ console.log('Deleted:', result.files_deleted, 'local files');
 
 ### sync_notes
 
-⭐ **Bidirectional sync** between local project and vault.
+**Bidirectional sync** between local project and vault.
 
 #### Parameters
 

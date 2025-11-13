@@ -286,7 +286,7 @@ teleport_notes({});
 teleport_notes({ delete_from_vault: true });
 ```
 
-#### `sync_notes` - Bidirectional Sync ⭐
+#### `sync_notes` - Bidirectional Sync
 
 Synchronize documentation in both directions:
 

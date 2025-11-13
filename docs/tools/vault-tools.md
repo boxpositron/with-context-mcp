@@ -133,7 +133,7 @@ const analysis = analyze_vault_structure({
 
 ## generate_organization_plan
 
-⭐ **NEW in v3.0.5** - Generate intelligent organization plans using preset strategies.
+**NEW in v3.0.5** - Generate intelligent organization plans using preset strategies.
 
 ### Parameters
 
@@ -416,7 +416,7 @@ const result = reorganize_vault({
 
 ## Organization Presets
 
-⭐ **NEW in v3.0.5** - Four battle-tested organization strategies.
+**NEW in v3.0.5** - Four battle-tested organization strategies.
 
 ### Clean Preset
 
@@ -591,11 +591,11 @@ const result = reorganize_vault({
 });
 
 if (result.success) {
-  console.log('✓ Success!', result.summary);
+  console.log('Success!', result.summary);
   console.log('  - Operations:', result.operations.length);
   console.log('  - Links updated:', result.linksUpdated);
 } else {
-  console.error('✗ Failed!');
+  console.error('Failed!');
   console.error('  - Failed operations:', result.failedOperations.length);
 }
 ```

@@ -21,14 +21,14 @@ Intelligent vault organization system with automated content analysis, categoriz
 The Vault Organization feature provides three main MCP tools:
 
 1. **`analyze_vault_structure`** - Analyzes vault content and structure to understand organization
-2. **`generate_organization_plan`** ⭐ NEW - Generates intelligent organization plans using presets
+2. **`generate_organization_plan`** (NEW) - Generates intelligent organization plans using presets
 3. **`reorganize_notes`** - Executes reorganization plans with automatic link updating and rollback
 
 ### Key Features
 
 - **Intelligent Content Analysis**: Extracts headings, frontmatter, links, tags, keywords, and topics
 - **Automatic Categorization**: Groups files by type (documentation, meeting-notes, project-plans, etc.)
-- **Organization Presets** ⭐ NEW: 4 built-in presets (clean, minimal, docs-as-code, research)
+- **Organization Presets** (NEW): 4 built-in presets (clean, minimal, docs-as-code, research)
 - **Folder Statistics**: Tracks file counts, sizes, and hierarchies
 - **Orphan Detection**: Finds files with no incoming or outgoing links
 - **Safe Reorganization**: Dry-run mode, rollback capability, and link updating
@@ -46,7 +46,7 @@ The Vault Organization feature provides three main MCP tools:
 
 ## Organization Presets
 
-⭐ **NEW in v3.0.5**: Intelligent organization presets provide battle-tested strategies for different documentation workflows.
+**NEW in v3.0.5**: Intelligent organization presets provide battle-tested strategies for different documentation workflows.
 
 ### What Are Presets?
 
@@ -346,7 +346,7 @@ console.log('Categories:', Object.keys(result.categories));
 
 ### generate_organization_plan
 
-⭐ **NEW in v3.0.5**: Generates intelligent organization plans using preset strategies.
+**NEW in v3.0.5**: Generates intelligent organization plans using preset strategies.
 
 #### Input Schema
 
@@ -684,7 +684,7 @@ const result = await reorganize_notes({
 
 console.log('\nReorganization Result:');
 if (result.success) {
-  console.log('✓ Success!', result.summary);
+  console.log('Success!', result.summary);
   console.log('  - Operations completed:', result.operations.length);
   console.log('  - Links updated:', result.linksUpdated);
   console.log('  - Files modified:', result.filesModified.length);

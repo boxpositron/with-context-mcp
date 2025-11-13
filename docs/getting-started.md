@@ -148,7 +148,7 @@ Use the with-context MCP server to create a CHANGELOG.md for this project
 **Verify server is loaded:**
 
 ```
-✓ Loaded MCP server: with-context
+Loaded MCP server: with-context
 ```
 
 #### OpenCode Custom Commands

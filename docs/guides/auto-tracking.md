@@ -20,7 +20,7 @@ Auto-session management transforms the manual session workflow into an automated
 
 ## Features
 
-### ✅ Phase 1: Foundation (Current - v3.0.5)
+### Phase 1: Foundation (Current - v3.0.5)
 
 **Manual Session Management with Auto-Detection:**
 
@@ -54,7 +54,7 @@ await use_tool('add_changelog_entry', {
 });
 ```
 
-### ⏳ Phase 2: Auto-Tracking (Awaiting OpenCode API)
+### Phase 2: Auto-Tracking (Awaiting OpenCode API)
 
 **Automatic File Operation Tracking:**
 
@@ -207,7 +207,7 @@ execute: {
         if (autoStartEnabled) {
           await autoStartSession(projectFolder);
         } else {
-          console.log('💡 Tip: Start a session to track changes');
+          console.log('Tip: Start a session to track changes');
         }
       }
     }
@@ -227,7 +227,7 @@ execute: {
         // Smart suggestion
         const suggestion = analyzeFileChange(filePath);
         if (suggestion) {
-          console.log(`💡 Suggestion: ${suggestion.type} - ${suggestion.message}`);
+          console.log(`Suggestion: ${suggestion.type} - ${suggestion.message}`);
         }
       }
     }
@@ -260,7 +260,7 @@ async function trackFileOperation(filePath: string, operation: 'read' | 'modify'
       // Smart suggestion
       const suggestion = analyzeFileChange(filePath);
       if (suggestion) {
-        console.log(`💡 Suggestion: ${suggestion.type} - ${suggestion.message}`);
+        console.log(`Suggestion: ${suggestion.type} - ${suggestion.message}`);
       }
     }
   }, 500);
@@ -336,7 +336,7 @@ event: async ({ event }) => {
     ).length;
 
     console.log(
-      `📊 Session: ${duration} | ` +
+      `Session: ${duration} | ` +
         `${filesModified} modified | ${filesRead} read | ` +
         `${changelogCount} changelog | ${todosActive} active todos`
     );
@@ -399,19 +399,19 @@ await use_tool('end_session', {
 // 1. Start working (OpenCode detects first file operation)
 // Plugin automatically:
 // - Detects project folder: "my-project"
-// - Prompts: "💡 Start a session for 'my-project'?"
+// - Prompts: "Start a session for 'my-project'?"
 // - Auto-starts session
 
 // 2. Work on code...
 // Plugin automatically:
 // - Tracks file reads: ['src/auth.ts', 'src/types.ts']
 // - Tracks file modifications: ['src/auth.ts', 'src/middleware.ts']
-// - Suggests: "💡 feature - Update auth"
-// - Suggests: "💡 feature - Update middleware"
+// - Suggests: "feature - Update auth"
+// - Suggests: "feature - Update middleware"
 
 // 3. Idle period
 // Plugin displays:
-// "📊 Session: 45m | 2 modified | 5 read | 0 changelog | 0 active todos"
+// "Session: 45m | 2 modified | 5 read | 0 changelog | 0 active todos"
 
 // 4. Continue working...
 // Plugin continues tracking automatically
@@ -681,23 +681,23 @@ export WITH_CONTEXT_PROMPT=true
 
 // Plugin automatically:
 // 1. Detects project: "my-app"
-// 2. Prompts: "💡 Start a session for 'my-app'?"
+// 2. Prompts: "Start a session for 'my-app'?"
 // 3. Starts session
 // 4. Tracks read: ['src/auth.ts']
 
 // User edits file: edit('src/auth.ts')
 // Plugin automatically:
 // 1. Tracks modification: ['src/auth.ts']
-// 2. Suggests: "💡 feature - Update auth"
+// 2. Suggests: "feature - Update auth"
 
 // User adds tests: write('src/auth.test.ts')
 // Plugin automatically:
 // 1. Tracks modification: ['src/auth.test.ts']
-// 2. Suggests: "💡 test - Add tests for auth"
+// 2. Suggests: "test - Add tests for auth"
 
 // Idle period (30 seconds)
 // Plugin displays:
-// "📊 Session: 15m | 2 modified | 1 read | 0 changelog | 0 active todos"
+// "Session: 15m | 2 modified | 1 read | 0 changelog | 0 active todos"
 ```
 
 ### Example 2: Manual Control
@@ -712,7 +712,7 @@ export WITH_CONTEXT_PROMPT=true
 // First file operation: read('src/auth.ts')
 
 // Plugin prompts:
-// "💡 Tip: Start a session for 'my-app' to track changes"
+// "Tip: Start a session for 'my-app' to track changes"
 
 // User manually starts session
 await use_tool('start_session', {
@@ -760,7 +760,7 @@ await use_tool('end_session', {
 
 ### When to Use Auto-Session
 
-✅ **Recommended for:**
+**Recommended for:**
 
 - Active development sessions
 - Feature implementation
@@ -768,7 +768,7 @@ await use_tool('end_session', {
 - Refactoring work
 - Projects with frequent commits
 
-❌ **Not recommended for:**
+**Not recommended for:**
 
 - Quick file edits
 - Read-only exploration
@@ -818,7 +818,7 @@ export WITH_CONTEXT_PROMPT=false
 
 ## Implementation Status
 
-### Phase 1: Foundation ✅ (Current)
+### Phase 1: Foundation (Current)
 
 - [x] Project folder detection
 - [x] Environment variable configuration
@@ -827,7 +827,7 @@ export WITH_CONTEXT_PROMPT=false
 - [x] Session persistence
 - [x] Comprehensive test coverage (58 tests)
 
-### Phase 2: Auto-Tracking ⏳ (Awaiting OpenCode API)
+### Phase 2: Auto-Tracking (Awaiting OpenCode API)
 
 - [ ] Before hook for file operations
 - [ ] After hook for file operations
@@ -836,7 +836,7 @@ export WITH_CONTEXT_PROMPT=false
 - [ ] Idle status display
 - [ ] Session lifecycle events
 
-### Phase 3: Intelligence 🔮 (Future)
+### Phase 3: Intelligence (Future)
 
 - [ ] AI-powered change categorization
 - [ ] Context-aware suggestions

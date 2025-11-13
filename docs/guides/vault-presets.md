@@ -41,11 +41,11 @@ Each preset embodies a specific documentation philosophy and workflow, from mini
 
 **With Presets:**
 
-- ✅ Instant, intelligent organization
-- ✅ Battle-tested folder structures
-- ✅ Consistent categorization rules
-- ✅ Optimized for specific workflows
-- ✅ Easy to customize and extend
+- Instant, intelligent organization
+- Battle-tested folder structures
+- Consistent categorization rules
+- Optimized for specific workflows
+- Easy to customize and extend
 
 ### How Presets Work
 
@@ -255,7 +255,7 @@ Check the results:
 
 ```javascript
 if (result.success) {
-  console.log('✓ Reorganization complete!');
+  console.log('Reorganization complete!');
   console.log(`  Moved: ${result.summary.completed} files`);
   console.log(`  Updated: ${result.summary.links_updated} links`);
 } else {
@@ -857,7 +857,7 @@ const result = await use_tool('reorganize_notes', {
   create_backup: true,
 });
 
-console.log('Result:', result.success ? '✓ Success' : '✗ Failed');
+console.log('Result:', result.success ? 'Success' : 'Failed');
 ```
 
 ### Example 2: Minimal Preset for Docs-as-Code Workflow
@@ -959,31 +959,31 @@ const plan = await use_tool('generate_organization_plan', {
 
 **Use Clean when:**
 
-- ✅ Building a production application
-- ✅ You want clear separation between code and docs
-- ✅ Team needs well-organized documentation
-- ✅ You value discoverability
+- Building a production application
+- You want clear separation between code and docs
+- Team needs well-organized documentation
+- You value discoverability
 
 **Use Minimal when:**
 
-- ✅ Following docs-as-code philosophy
-- ✅ Documentation should live with code
-- ✅ Simple project with few doc types
-- ✅ You prefer local-first approach
+- Following docs-as-code philosophy
+- Documentation should live with code
+- Simple project with few doc types
+- You prefer local-first approach
 
 **Use Docs-as-Code when:**
 
-- ✅ Migrating from local-only docs
-- ✅ Developers need familiar structure
-- ✅ You don't want reorganization
-- ✅ Repository structure is already good
+- Migrating from local-only docs
+- Developers need familiar structure
+- You don't want reorganization
+- Repository structure is already good
 
 **Use Research when:**
 
-- ✅ Doing research or academic work
-- ✅ Need extensive cross-referencing
-- ✅ Documentation is primary output
-- ✅ You want to leverage Obsidian's features
+- Doing research or academic work
+- Need extensive cross-referencing
+- Documentation is primary output
+- You want to leverage Obsidian's features
 
 ### Workflow Best Practices
 

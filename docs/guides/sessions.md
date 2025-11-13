@@ -52,7 +52,7 @@ Sessions are time-bound work periods that track your development activity. Think
 
 ## When to Use Sessions
 
-### ✅ Use Sessions For:
+### Use Sessions For:
 
 **Feature Development:**
 
@@ -98,7 +98,7 @@ start_session({
 
 Keep track of all documentation changes in one place.
 
-### ❌ Don't Use Sessions For:
+### Don't Use Sessions For:
 
 - **Quick file edits** - Not worth the overhead
 - **Read-only exploration** - No changes to track
@@ -592,13 +592,13 @@ const urgent = list_todos({
 **1. Start sessions for focused work:**
 
 ```javascript
-// ✅ Good - Clear purpose
+// Good - Clear purpose
 start_session({
   project_folder: 'my-app',
   message: 'Implementing user authentication',
 });
 
-// ❌ Bad - Vague purpose
+// Bad - Vague purpose
 start_session({
   project_folder: 'my-app',
   message: 'Working on stuff',
@@ -625,12 +625,12 @@ resume_session({});
 **3. End sessions when complete:**
 
 ```javascript
-// ✅ Good - Descriptive summary
+// Good - Descriptive summary
 end_session({
   message: 'Authentication feature completed with tests',
 });
 
-// ❌ Bad - No context
+// Bad - No context
 end_session({});
 ```
 
@@ -666,14 +666,14 @@ add_changelog_entry({
 **2. Use specific, descriptive messages:**
 
 ```javascript
-// ✅ Good - Specific and clear
+// Good - Specific and clear
 add_changelog_entry({
   type: 'feature',
   message: 'Add JWT authentication with refresh tokens',
   files: ['src/auth.ts', 'src/tokens.ts'],
 });
 
-// ❌ Bad - Vague
+// Bad - Vague
 add_changelog_entry({
   type: 'feature',
   message: 'Add stuff',
@@ -695,14 +695,14 @@ add_changelog_entry({
 **4. Group related changes:**
 
 ```javascript
-// ✅ Good - One entry per logical change
+// Good - One entry per logical change
 add_changelog_entry({
   type: 'feature',
   message: 'Add user authentication',
   files: ['src/auth.ts', 'src/middleware/auth.ts', 'tests/auth.test.ts'],
 });
 
-// ❌ Bad - Too granular
+// Bad - Too granular
 add_changelog_entry({
   type: 'feature',
   message: 'Add auth.ts',

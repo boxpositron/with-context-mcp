@@ -163,4 +163,4 @@ Contributions welcome! Fork the repository, create a feature branch, add tests, 
 
 ---
 
-**Made for AI coding agents and the humans who work with them** ❤️
+**Made for AI coding agents and the humans who work with them**
