@@ -83,40 +83,29 @@ Once configured, your AI coding agent can:
 
 **You don't need to learn the tools.** Your AI agent will use them automatically when it needs to document something, track a change, or organize notes.
 
-## Example: What It Looks Like
+## Example Workflow
 
 When your AI agent works on a feature, it might:
 
 1. Start a session: `start_session({ project_folder: 'my-app' })`
 2. Create API docs: `write_note({ path: 'docs/api.md', content: '...' })`
-3. Track the change: `add_changelog_entry({ type: 'feature', message: 'Add user API' })`
+3. Track changes: `add_changelog_entry({ type: 'feature', message: 'Add user API' })`
 4. Add a todo: `add_todo({ content: 'Write integration tests' })`
-5. Update frontmatter: `update_frontmatter({ path: 'docs/api.md', frontmatter: { status: 'draft' } })`
+5. Update metadata: `update_frontmatter({ path: 'docs/api.md', frontmatter: { status: 'draft' } })`
 
 Your vault automatically stays organized in:
 
 ```
-MyVault/
-└── Projects/
-    └── my-app/
-        ├── docs/
-        │   └── api.md
-        └── CHANGELOG.md
+MyVault/Projects/my-app/
+├── docs/api.md
+└── CHANGELOG.md
 ```
 
 ## Documentation
 
-### For Setup
+**Setup:** [Installation & Setup](docs/getting-started.md) • [Configuration](docs/configuration.md)
 
-- **[Installation & Setup](docs/getting-started.md)** - Complete setup for all AI clients
-- **[Configuration](docs/configuration.md)** - Environment variables and config files
-
-### For Reference
-
-- **[All Tools](docs/tools/)** - Complete reference for all 33 tools
-- **[Common Workflows](docs/examples/common-workflows.md)** - Real-world usage examples
-- **[Session Management](docs/guides/sessions.md)** - How sessions work
-- **[Vault Organization](docs/guides/vault-organization.md)** - Keeping your vault organized
+**Reference:** [All Tools](docs/tools/) • [Common Workflows](docs/examples/common-workflows.md) • [Sessions](docs/guides/sessions.md) • [Vault Organization](docs/guides/vault-organization.md)
 
 ## What's New in v3.0.6
 
@@ -125,75 +114,52 @@ MyVault/
 - **Fuzzy Finding** - Quick file search with match highlighting
 - **replace_section** - Edit specific markdown sections by heading
 
-See [CHANGELOG.md](CHANGELOG.md) for complete release history.
+[Full changelog →](CHANGELOG.md)
 
-## Available Tools (33)
+## Available Tools
 
-Your AI agent has access to these tools:
+Your AI agent has access to **33 tools** across 6 categories:
 
-**Core:** write_note, read_note, list_notes, search_notes, delete_note, batch_write_notes, get_note_metadata
+| Category         | Tools                                                                  |
+| ---------------- | ---------------------------------------------------------------------- |
+| **Core**         | write, read, list, search, delete, batch_write, get_metadata           |
+| **Editing**      | update_frontmatter, replace_section                                    |
+| **Sessions**     | start, pause, resume, end, status, changelog, todos, commit_suggestion |
+| **Organization** | analyze_structure, generate_plan, reorganize                           |
+| **Config**       | setup, validate, preview, ingest, teleport, sync                       |
+| **Templates**    | list_templates, create_from_template                                   |
 
-**Editing:** update_frontmatter, replace_section
-
-**Sessions:** start_session, pause_session, resume_session, end_session, get_session_status, add_changelog_entry, get_session_changelog, get_commit_suggestion, add_todo, update_todo, list_todos
-
-**Organization:** analyze_vault_structure, generate_organization_plan, reorganize_notes
-
-**Configuration:** setup_notes, validate_config, preview_delegation, ingest_notes, teleport_notes, sync_notes
-
-**Templates:** list_templates, create_from_template
-
-**Utilities:** set_project_context, health_check
-
-[See detailed tool documentation →](docs/tools/)
-
-## Security
-
-- **Project Scoping** - All operations restricted to configured project folders
-- **Path Validation** - Prevents directory traversal attacks
-- **HTTPS** - Secure connection to Obsidian Local REST API
-- **API Key Authentication** - Required for all operations
+[Detailed tool documentation →](docs/tools/)
 
 ## Troubleshooting
 
 **Connection Issues?**
-
-- Ensure Obsidian is running
-- Verify Local REST API plugin is enabled
-- Check `OBSIDIAN_API_URL` matches plugin port (default: 27124)
+Ensure Obsidian is running, Local REST API plugin is enabled, and `OBSIDIAN_API_URL` matches the plugin port (default: 27124)
 
 **Authentication Failed?**
-
-- Verify `OBSIDIAN_API_KEY` from plugin settings
-- Check for extra spaces in the API key
+Verify `OBSIDIAN_API_KEY` from plugin settings and check for extra spaces
 
 **Path Errors?**
+Use relative paths only (no `../` or absolute paths) - all paths are relative to your project folder
 
-- Use relative paths only (no `../` or absolute paths)
-- All paths are relative to your project folder
+[More help →](docs/getting-started.md#troubleshooting)
 
-[More troubleshooting help →](docs/getting-started.md#troubleshooting)
+## Security
+
+- **Project Scoping** - Operations restricted to configured project folders
+- **Path Validation** - Prevents directory traversal attacks
+- **HTTPS** - Secure connection to Obsidian Local REST API
+- **API Key Authentication** - Required for all operations
 
 ## Contributing
 
-Contributions welcome! Please:
+Contributions welcome! Fork the repository, create a feature branch, add tests, and submit a pull request.
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new features
-4. Submit a pull request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-[MIT](LICENSE)
+[Contributing guidelines →](CONTRIBUTING.md)
 
 ## Links
 
-- **npm:** [with-context-mcp](https://www.npmjs.com/package/with-context-mcp)
-- **GitHub:** [boxpositron/with-context-mcp](https://github.com/boxpositron/with-context-mcp)
-- **Issues:** [Report bugs or request features](https://github.com/boxpositron/with-context-mcp/issues)
+**npm:** [with-context-mcp](https://www.npmjs.com/package/with-context-mcp) • **GitHub:** [boxpositron/with-context-mcp](https://github.com/boxpositron/with-context-mcp) • **Issues:** [Report bugs or request features](https://github.com/boxpositron/with-context-mcp/issues)
 
 ---
 
