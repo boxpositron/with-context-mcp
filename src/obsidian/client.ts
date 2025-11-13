@@ -125,20 +125,20 @@ export class ObsidianClient {
    * Write a note to the vault
    *
    * IMPORTANT: This method enforces read-before-write for existing files.
-   * For 'overwrite' and 'append' modes, the file must be read first (via readNote)
+   * For 'overwrite', 'append', and 'prepend' modes, the file must be read first (via readNote)
    * before writing is allowed. This ensures the caller has the current state.
    * Only 'create' mode can write without a prior read (for new files only).
    *
    * @param path - Relative path within the vault (e.g., 'daily/2024-01-01' or 'notes/example.md')
    * @param content - Markdown content to write
-   * @param mode - Write mode: 'create' (POST), 'overwrite' (PUT), or 'append' (PUT with Content-Insertion-Position header)
+   * @param mode - Write mode: 'create' (POST), 'overwrite' (PUT), 'append' (PUT with Content-Insertion-Position: end), or 'prepend' (PUT with Content-Insertion-Position: beginning)
    * @returns Promise resolving when write is complete
    */
   async writeNote(path: string, content: string, mode: WriteMode = 'overwrite'): Promise<void> {
     const vaultPath = this.buildVaultPath(path);
 
     // Enforce read-before-write for existing files
-    if (mode === 'overwrite' || mode === 'append') {
+    if (mode === 'overwrite' || mode === 'append' || mode === 'prepend') {
       const fileExists = await this.noteExists(path);
 
       if (fileExists) {
@@ -174,6 +174,17 @@ export class ObsidianClient {
           headers: {
             'Content-Type': 'text/markdown',
             'Content-Insertion-Position': 'end',
+          },
+        });
+        break;
+
+      case 'prepend':
+        // Use PUT with Content-Insertion-Position header for prepend
+        // This adds content to the beginning of the file
+        await this.client.put(vaultPath, content, {
+          headers: {
+            'Content-Type': 'text/markdown',
+            'Content-Insertion-Position': 'beginning',
           },
         });
         break;

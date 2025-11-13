@@ -17,9 +17,11 @@ export const writeNoteSchema = z.object({
     ),
   content: z.string().describe('Content to write to the note'),
   mode: z
-    .enum(['create', 'overwrite', 'append'])
+    .enum(['create', 'overwrite', 'append', 'prepend'])
     .default('overwrite')
-    .describe('Write mode: create (fail if exists), overwrite (replace), or append (add to end)'),
+    .describe(
+      'Write mode: create (fail if exists), overwrite (replace), append (add to end), or prepend (add to beginning)'
+    ),
 });
 
 export type WriteNoteInput = z.infer<typeof writeNoteSchema>;
@@ -68,7 +70,7 @@ export async function writeNote(input: WriteNoteInput): Promise<string> {
       path: sanitizedPath,
       mode,
       project_folder: context.projectFolder,
-      message: `Note ${mode === 'create' ? 'created' : mode === 'append' ? 'appended to' : 'updated'} successfully`,
+      message: `Note ${mode === 'create' ? 'created' : mode === 'append' ? 'appended to' : mode === 'prepend' ? 'prepended to' : 'updated'} successfully`,
     },
     null,
     2

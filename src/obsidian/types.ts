@@ -79,7 +79,7 @@ export class ObsidianConnectionError extends ObsidianApiError {
   }
 }
 
-export type WriteMode = 'create' | 'overwrite' | 'append';
+export type WriteMode = 'create' | 'overwrite' | 'append' | 'prepend';
 
 /**
  * Health check result for Obsidian API connection

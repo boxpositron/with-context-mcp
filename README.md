@@ -8,7 +8,14 @@ MCP server for project-scoped note management. Allows AI coding agents to write 
 **Currently supports:** Obsidian (via REST API)  
 **Coming soon:** Notion, Apple Notes, and more
 
-## What's New in v3.0.4
+## What's New in v3.0.6
+
+- **Prepend Mode for write_note** - Add content to the beginning of notes
+- **update_frontmatter Tool** - Edit YAML frontmatter with merge/replace modes
+- **Fuzzy Finding in list_notes** - Search files by name with match highlighting
+- **replace_section Tool** - Targeted section editing with three replacement modes
+
+### v3.0.4 Highlights
 
 - **Bug Fix**: Fixed broken links in README after documentation sync
   - Updated references to synced files (CHANGELOG.md, INTELLIGENT_SETUP_GUIDE.md)
@@ -62,7 +69,10 @@ npm install -g with-context-mcp
 - **Project-Scoped Access**: Each project gets its own folder within your vault
 - **Session Context**: Set project once, use across multiple operations
 - **Security**: Path validation prevents directory traversal attacks
-- **Multiple Write Modes**: Create, overwrite, or append to notes
+- **Multiple Write Modes**: Create, overwrite, append, or prepend to notes
+- **Frontmatter Management**: Edit YAML frontmatter with merge/replace modes
+- **Section Editing**: Replace specific sections by heading with three modes
+- **Fuzzy Search**: Find files quickly with intelligent matching and highlighting
 - **Template System**: Professional templates with variable substitution
 - **Batch Operations**: Write multiple notes at once
 - **Metadata Extraction**: Get word count, tags, headings, frontmatter
@@ -598,11 +608,18 @@ set_project_context({
 ### Writing Notes
 
 ```javascript
-// Write a changelog
+// Write a changelog (append to end)
 write_note({
   path: 'CHANGELOG.md',
   content: '## 2024-01-15\n- Added user auth\n- Fixed bug #123',
   mode: 'append',
+});
+
+// Add breaking news to top of file (prepend)
+write_note({
+  path: 'CHANGELOG.md',
+  content: '## 🚨 BREAKING CHANGES\n- API v1 deprecated\n\n',
+  mode: 'prepend',
 });
 
 // Create API documentation
@@ -618,6 +635,141 @@ write_note({
   content: '# Project Docs',
   mode: 'overwrite',
   project_folder: 'other-project',
+});
+```
+
+### Editing Frontmatter
+
+```javascript
+// Add tags to existing note (merge mode - preserves other fields)
+update_frontmatter({
+  path: 'docs/api.md',
+  frontmatter: {
+    tags: ['api', 'documentation'],
+    updated: '2025-11-13',
+  },
+  mode: 'merge',
+});
+
+// Replace entire frontmatter (replace mode - removes other fields)
+update_frontmatter({
+  path: 'docs/api.md',
+  frontmatter: {
+    title: 'New Title',
+    status: 'draft',
+  },
+  mode: 'replace',
+});
+
+// Create frontmatter in note without any
+update_frontmatter({
+  path: 'docs/new-note.md',
+  frontmatter: {
+    title: 'My Note',
+    tags: ['dev', 'mcp'],
+  },
+  mode: 'merge',
+});
+```
+
+### Replacing Sections
+
+```javascript
+// Replace section content only (preserves heading)
+replace_section({
+  path: 'README.md',
+  heading: 'Installation',
+  content: "npm install my-package\n\nThat's it!",
+  mode: 'content-only', // default
+});
+
+// Replace both heading and content
+replace_section({
+  path: 'docs/guide.md',
+  heading: 'Old Section',
+  content: '## New Section\n\nCompletely new content here.',
+  mode: 'full',
+});
+
+// Replace only heading text (preserves content)
+replace_section({
+  path: 'docs/api.md',
+  heading: 'Users',
+  content: '## User Management',
+  mode: 'heading-only',
+});
+
+// Disambiguate duplicate headings by level
+replace_section({
+  path: 'README.md',
+  heading: 'Examples',
+  content: 'Updated examples...',
+  level: 2, // Only match ## Examples, not ### Examples
+});
+
+// Disambiguate by index (0-based)
+replace_section({
+  path: 'CHANGELOG.md',
+  heading: 'Fixed',
+  content: '- Bug fix details',
+  index: 1, // Second occurrence
+});
+
+// Preview changes before applying
+replace_section({
+  path: 'README.md',
+  heading: 'Installation',
+  content: 'New installation steps',
+  preview: true, // Returns before/after comparison
+});
+
+// Create section if not found
+replace_section({
+  path: 'docs/api.md',
+  heading: 'New Section',
+  content: 'Content for new section',
+  createIfMissing: true, // Only works with content-only mode
+});
+```
+
+### Fuzzy Finding Files
+
+```javascript
+// Simple fuzzy search
+list_notes({
+  path: 'docs',
+  fuzzy_query: 'api',
+  // Returns files matching "api" with highlights
+});
+
+// Advanced fuzzy search with options
+list_notes({
+  path: 'docs',
+  fuzzy_query: 'user auth',
+  limit: 10, // Max results (default: 50)
+  min_score: -5000, // Minimum match score (default: -10000)
+  include_highlights: true, // Show match highlights (default: true)
+});
+
+// Fuzzy search returns enhanced results:
+// {
+//   "files": [
+//     {
+//       "path": "docs/api/users.md",
+//       "highlight": "docs/api/<b>user</b>s.md",
+//       "score": 12
+//     }
+//   ],
+//   "total_matches": 15,
+//   "limited": true,
+//   "query": "user auth",
+//   "search_time_ms": 23
+// }
+
+// Regular listing (no fuzzy search)
+list_notes({
+  path: 'docs',
+  // Returns simple string array: ["file1.md", "file2.md"]
 });
 ```
 
@@ -898,9 +1050,11 @@ sync_notes({});
 ### Core Tools
 
 - `set_project_context` - Set the project folder for this session
-- `write_note` - Write/update notes (create/overwrite/append modes)
+- `write_note` - Write/update notes (create/overwrite/append/prepend modes)
+- `update_frontmatter` - Edit YAML frontmatter (merge/replace modes)
+- `replace_section` - Replace markdown sections by heading (content-only/full/heading-only modes)
 - `read_note` - Read note content
-- `list_notes` - List files in a folder
+- `list_notes` - List files in a folder with optional fuzzy search
 - `search_notes` - Search note content
 - `delete_note` - Delete notes (requires confirmation)
 - `batch_write_notes` - Write multiple notes at once
@@ -927,6 +1081,674 @@ See [docs/VAULT_ORGANIZATION.md](docs/VAULT_ORGANIZATION.md) for detailed docume
 - `setup_notes` - Setup `.withcontextconfig.jsonc` and create vault folder structure
 - `validate_config` - Validate configuration file against schema
 - `preview_delegation` - Preview which files will be delegated based on current config
+
+## Tool Documentation
+
+### write_note - Prepend Mode
+
+The `write_note` tool now supports **prepend mode** for adding content to the beginning of files.
+
+#### Modes
+
+- **`create`** - Create new file (fails if exists)
+- **`overwrite`** - Replace entire file content
+- **`append`** - Add content to end of file
+- **`prepend`** ⭐ NEW - Add content to beginning of file
+
+#### Prepend Use Cases
+
+- Add breaking changes to top of CHANGELOG
+- Insert urgent notices at beginning of documentation
+- Prepend headers or warnings to existing content
+- Add new entries to top of chronological logs
+
+#### Examples
+
+```javascript
+// Add breaking news to top of changelog
+write_note({
+  path: 'CHANGELOG.md',
+  content:
+    '## 🚨 BREAKING CHANGES - v3.0.0\n\n- API endpoints restructured\n- Auth flow changed\n\n',
+  mode: 'prepend',
+});
+
+// Add warning banner to documentation
+write_note({
+  path: 'docs/api.md',
+  content: '> ⚠️ **DEPRECATED**: This API version will be sunset on 2025-12-31\n\n',
+  mode: 'prepend',
+});
+
+// Prepend to file with frontmatter (content added after frontmatter)
+write_note({
+  path: 'notes/meeting.md',
+  content: '## Latest Update\n\nDecision made to proceed with option B.\n\n',
+  mode: 'prepend',
+});
+```
+
+#### Read-Before-Write
+
+Like other write modes, prepend enforces read-before-write for existing files to ensure you have the current state before modifying.
+
+---
+
+### update_frontmatter
+
+Edit YAML frontmatter in markdown notes with merge or replace modes.
+
+#### Parameters
+
+| Parameter        | Type                     | Required | Description                       |
+| ---------------- | ------------------------ | -------- | --------------------------------- |
+| `path`           | string                   | Yes      | Project-relative path to the note |
+| `frontmatter`    | object                   | Yes      | Frontmatter fields to update      |
+| `mode`           | `'merge'` \| `'replace'` | Yes      | Update mode                       |
+| `project_folder` | string                   | No       | Optional project context override |
+
+#### Modes
+
+**`merge`** (Recommended)
+
+- Adds new fields to existing frontmatter
+- Updates existing fields with new values
+- Preserves other fields not mentioned
+- Creates frontmatter if note doesn't have any
+
+**`replace`**
+
+- Replaces entire frontmatter block
+- Removes all existing fields
+- Only includes fields you specify
+- Use when you want complete control
+
+#### Examples
+
+**Add tags to existing note (merge mode):**
+
+```javascript
+update_frontmatter({
+  path: 'docs/api.md',
+  frontmatter: {
+    tags: ['api', 'documentation'],
+  },
+  mode: 'merge',
+});
+
+// Before:
+// ---
+// title: API Documentation
+// author: John Doe
+// ---
+
+// After:
+// ---
+// title: 'API Documentation'
+// author: 'John Doe'
+// tags:
+//   - api
+//   - documentation
+// ---
+```
+
+**Update existing field (merge mode):**
+
+```javascript
+update_frontmatter({
+  path: 'docs/api.md',
+  frontmatter: {
+    version: '2.0.0',
+    updated: '2025-11-13',
+  },
+  mode: 'merge',
+});
+
+// Before:
+// ---
+// title: API Documentation
+// version: 1.0.0
+// ---
+
+// After:
+// ---
+// title: 'API Documentation'
+// version: '2.0.0'
+// updated: '2025-11-13'
+// ---
+```
+
+**Replace entire frontmatter (replace mode):**
+
+```javascript
+update_frontmatter({
+  path: 'docs/api.md',
+  frontmatter: {
+    title: 'New Title',
+    status: 'draft',
+  },
+  mode: 'replace',
+});
+
+// Before:
+// ---
+// title: Old Title
+// author: John Doe
+// version: 1.0.0
+// tags:
+//   - old
+//   - tags
+// ---
+
+// After:
+// ---
+// title: 'New Title'
+// status: 'draft'
+// ---
+```
+
+**Create frontmatter in note without any:**
+
+```javascript
+update_frontmatter({
+  path: 'docs/new-note.md',
+  frontmatter: {
+    title: 'My Note',
+    tags: ['dev', 'mcp'],
+  },
+  mode: 'merge',
+});
+
+// Before:
+// # My Note
+//
+// This note has no frontmatter yet.
+
+// After:
+// ---
+// title: 'My Note'
+// tags:
+//   - dev
+//   - mcp
+// ---
+//
+// # My Note
+//
+// This note has no frontmatter yet.
+```
+
+#### Supported Field Types
+
+- **Strings**: Automatically quoted and escaped
+- **Numbers**: Preserved as numeric values
+- **Booleans**: `true` / `false`
+- **Arrays**: Formatted with proper YAML indentation
+
+#### Common Use Cases
+
+- Add or update tags for organization
+- Track version numbers and update dates
+- Set status flags (draft, published, archived)
+- Add metadata (author, category, priority)
+- Update timestamps (created, modified, reviewed)
+
+#### Related Tools
+
+- `get_note_metadata` - Read existing frontmatter
+- `write_note` - Write entire note content
+- `read_note` - Read note for inspection
+
+See [docs/UPDATE_FRONTMATTER.md](docs/UPDATE_FRONTMATTER.md) for complete documentation.
+
+---
+
+### list_notes - Fuzzy Finding
+
+The `list_notes` tool now supports **fuzzy search** for quickly finding files by name.
+
+#### Parameters
+
+| Parameter            | Type    | Default  | Description                             |
+| -------------------- | ------- | -------- | --------------------------------------- |
+| `path`               | string  | `''`     | Directory to list (relative to project) |
+| `fuzzy_query`        | string  | -        | ⭐ NEW: Fuzzy search query              |
+| `limit`              | number  | `50`     | ⭐ NEW: Max results to return           |
+| `min_score`          | number  | `-10000` | ⭐ NEW: Minimum match score             |
+| `include_highlights` | boolean | `true`   | ⭐ NEW: Include match highlights        |
+| `project_folder`     | string  | -        | Optional project context override       |
+
+#### Fuzzy Search Features
+
+**Intelligent Matching:**
+
+- Case-insensitive search
+- Partial matches supported
+- Multi-word queries
+- Filename matches prioritized over path matches (1.5x score boost)
+
+**Match Highlighting:**
+
+- Matched characters wrapped in `<b>` tags
+- Example: `docs/api/<b>user</b>s.md` for query "user"
+- Can be disabled with `include_highlights: false`
+
+**Performance:**
+
+- Fast search even with 1000+ files
+- Results sorted by relevance (score)
+- Includes `search_time_ms` metric
+
+#### Examples
+
+**Simple fuzzy search:**
+
+```javascript
+list_notes({
+  path: 'docs',
+  fuzzy_query: 'api',
+});
+
+// Returns:
+// {
+//   "files": [
+//     {
+//       "path": "docs/api/users.md",
+//       "highlight": "docs/<b>api</b>/users.md",
+//       "score": 15
+//     },
+//     {
+//       "path": "docs/guides/api-guide.md",
+//       "highlight": "docs/guides/<b>api</b>-guide.md",
+//       "score": 12
+//     }
+//   ],
+//   "total_matches": 2,
+//   "limited": false,
+//   "query": "api",
+//   "search_time_ms": 5
+// }
+```
+
+**Multi-word query:**
+
+```javascript
+list_notes({
+  path: 'docs',
+  fuzzy_query: 'user auth',
+  limit: 5,
+});
+
+// Matches files containing both "user" and "auth"
+```
+
+**Filter by score threshold:**
+
+```javascript
+list_notes({
+  path: 'docs',
+  fuzzy_query: 'install',
+  min_score: -5000, // Only high-quality matches
+});
+```
+
+**Without highlights:**
+
+```javascript
+list_notes({
+  path: 'docs',
+  fuzzy_query: 'config',
+  include_highlights: false,
+});
+
+// Returns:
+// {
+//   "files": [
+//     {
+//       "path": "docs/config.md",
+//       "score": 20
+//     }
+//   ],
+//   ...
+// }
+```
+
+**Regular listing (no fuzzy search):**
+
+```javascript
+list_notes({
+  path: 'docs',
+});
+
+// Returns simple string array:
+// {
+//   "files": ["api.md", "guide.md", "setup.md"],
+//   "count": 3,
+//   "path": "docs"
+// }
+```
+
+#### Response Format
+
+**With fuzzy search:**
+
+```json
+{
+  "files": [
+    {
+      "path": "docs/api/users.md",
+      "highlight": "docs/api/<b>user</b>s.md",
+      "score": 15
+    }
+  ],
+  "total_matches": 10,
+  "limited": true,
+  "query": "user",
+  "search_time_ms": 12,
+  "path": "docs",
+  "project_folder": "my-project"
+}
+```
+
+**Without fuzzy search:**
+
+```json
+{
+  "files": ["file1.md", "file2.md"],
+  "count": 2,
+  "path": "docs",
+  "project_folder": "my-project"
+}
+```
+
+#### Use Cases
+
+- Quickly find API documentation by name
+- Search for specific guide or tutorial
+- Locate configuration files
+- Find notes by partial filename
+- Filter large directories efficiently
+
+#### Performance Notes
+
+- Optimized for vaults with 1000+ files
+- Search typically completes in <50ms
+- Results limited to 50 by default (configurable)
+- Filename matches ranked higher than path matches
+
+---
+
+### replace_section
+
+Replace specific sections in markdown notes by heading. Supports three replacement modes and automatic disambiguation.
+
+#### Parameters
+
+| Parameter         | Type                                             | Default          | Description                              |
+| ----------------- | ------------------------------------------------ | ---------------- | ---------------------------------------- |
+| `path`            | string                                           | -                | Project-relative path to the note        |
+| `heading`         | string                                           | -                | Heading text to find (without # symbols) |
+| `content`         | string                                           | -                | New content for the section              |
+| `mode`            | `'content-only'` \| `'full'` \| `'heading-only'` | `'content-only'` | Replacement mode                         |
+| `level`           | number (1-6)                                     | -                | Optional heading level filter            |
+| `index`           | number                                           | -                | Optional occurrence index (0-based)      |
+| `preview`         | boolean                                          | `false`          | Preview changes without applying         |
+| `createIfMissing` | boolean                                          | `false`          | Create section if not found              |
+| `project_folder`  | string                                           | -                | Optional project context override        |
+
+#### Modes
+
+**`content-only`** (Default)
+
+- Replaces only the section content
+- Preserves the heading line
+- Preserves nested subsections (when `level` is specified)
+- Most common use case
+
+**`full`**
+
+- Replaces both heading and content
+- Removes entire section including heading
+- New content should include the heading
+- Use for complete section rewrites
+
+**`heading-only`**
+
+- Replaces only the heading text
+- Preserves all section content
+- Use for renaming sections
+
+#### Section Boundaries
+
+Sections are determined by heading hierarchy:
+
+- A section includes the heading and all content until the next same/higher level heading
+- Nested headings (lower in hierarchy) are included in the section
+- Example: `## Section` includes all content until the next `##` or `#` heading
+
+#### Examples
+
+**Replace section content (default mode):**
+
+```javascript
+replace_section({
+  path: 'README.md',
+  heading: 'Installation',
+  content: "npm install my-package\n\nThat's it!",
+  mode: 'content-only', // default, can be omitted
+});
+
+// Before:
+// ## Installation
+// Old installation steps here...
+//
+// After:
+// ## Installation
+// npm install my-package
+//
+// That's it!
+```
+
+**Replace both heading and content:**
+
+```javascript
+replace_section({
+  path: 'docs/guide.md',
+  heading: 'Old Section',
+  content: '## New Section Title\n\nCompletely new content here.',
+  mode: 'full',
+});
+
+// Before:
+// ## Old Section
+// Old content...
+//
+// After:
+// ## New Section Title
+// Completely new content here.
+```
+
+**Replace only heading (rename section):**
+
+```javascript
+replace_section({
+  path: 'docs/api.md',
+  heading: 'Users',
+  content: '## User Management',
+  mode: 'heading-only',
+});
+
+// Before:
+// ## Users
+// User API endpoints...
+//
+// After:
+// ## User Management
+// User API endpoints...
+```
+
+**Disambiguate by heading level:**
+
+```javascript
+replace_section({
+  path: 'README.md',
+  heading: 'Examples',
+  content: 'Updated examples...',
+  level: 2, // Only match ## Examples, not ### Examples
+});
+```
+
+**Disambiguate by index:**
+
+```javascript
+replace_section({
+  path: 'CHANGELOG.md',
+  heading: 'Fixed',
+  content: '- Bug fix details',
+  index: 1, // Second occurrence (0-based)
+});
+```
+
+**Preview changes before applying:**
+
+```javascript
+replace_section({
+  path: 'README.md',
+  heading: 'Installation',
+  content: 'New installation steps',
+  preview: true,
+});
+
+// Returns before/after comparison without modifying file:
+// {
+//   "success": true,
+//   "preview": true,
+//   "before": "## Installation\nOld steps...",
+//   "after": "## Installation\nNew installation steps",
+//   "message": "Preview: Would replace content-only of section \"Installation\""
+// }
+```
+
+**Create section if not found:**
+
+```javascript
+replace_section({
+  path: 'docs/api.md',
+  heading: 'Authentication',
+  content: 'Details about authentication...',
+  createIfMissing: true, // Only works with content-only mode
+  level: 2, // Creates ## Authentication
+});
+
+// If "Authentication" section doesn't exist, creates it at end of file
+```
+
+#### Handling Duplicate Headings
+
+If multiple headings match your query, the tool will return an error with details:
+
+```json
+{
+  "success": false,
+  "error": "Ambiguous heading",
+  "message": "Multiple headings found matching \"Examples\". Specify 'index' or 'level' to disambiguate.",
+  "matches": 3,
+  "details": "  0: Level 2 - \"## Examples\" at line 45\n  1: Level 3 - \"### Examples\" at line 120\n  2: Level 2 - \"## Examples\" at line 200"
+}
+```
+
+**Solutions:**
+
+1. Use `level` parameter to filter by heading level
+2. Use `index` parameter to select specific occurrence (0-based)
+3. Combine both for precise targeting
+
+#### Edge Cases
+
+**Empty content:**
+
+```javascript
+replace_section({
+  path: 'README.md',
+  heading: 'Deprecated',
+  content: '', // Removes section content, keeps heading
+  mode: 'content-only',
+});
+```
+
+**Section with nested headings:**
+
+```javascript
+// When level is NOT specified: replaces all content including nested sections
+// When level IS specified: preserves nested subsections
+
+replace_section({
+  path: 'docs/guide.md',
+  heading: 'API',
+  content: 'New API overview',
+  level: 2, // Preserves ### subsections under ## API
+});
+```
+
+**Section not found:**
+
+```javascript
+// Without createIfMissing:
+// Returns error: "Heading not found"
+
+// With createIfMissing:
+// Creates new section at end of file (content-only mode only)
+```
+
+#### Response Format
+
+**Success:**
+
+```json
+{
+  "success": true,
+  "action": "replace",
+  "path": "README.md",
+  "heading": "Installation",
+  "level": 2,
+  "mode": "content-only",
+  "section": {
+    "line": 45,
+    "contentLines": 12
+  },
+  "project_folder": "my-project",
+  "message": "Section \"Installation\" content-only replaced successfully"
+}
+```
+
+**Preview:**
+
+```json
+{
+  "success": true,
+  "preview": true,
+  "action": "replace",
+  "before": "## Installation\nOld content...",
+  "after": "## Installation\nNew content...",
+  "message": "Preview: Would replace content-only of section \"Installation\""
+}
+```
+
+#### Use Cases
+
+- Update installation instructions in README
+- Replace API endpoint documentation
+- Update changelog sections
+- Rename sections while preserving content
+- Rewrite entire sections with new structure
+- Add new sections to existing documents
+- Update examples in documentation
+
+#### Related Tools
+
+- `write_note` - Write entire note content
+- `update_frontmatter` - Edit YAML frontmatter
+- `read_note` - Read note for inspection
+- `get_note_metadata` - Get headings and structure
 
 ## Folder Structure
 
