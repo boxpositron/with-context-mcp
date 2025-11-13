@@ -5,7 +5,7 @@
 /**
  * Write mode for documentation updates
  */
-export type WriteMode = 'append' | 'overwrite' | 'create';
+export type WriteMode = 'append' | 'overwrite' | 'create' | 'prepend';
 
 /**
  * Project context information

@@ -16,6 +16,16 @@ export {
   type GetNoteMetadataInput,
 } from './get-note-metadata.js';
 export {
+  updateFrontmatter,
+  updateFrontmatterSchema,
+  type UpdateFrontmatterInput,
+} from './update-frontmatter.js';
+export {
+  replaceSection,
+  replaceSectionSchema,
+  type ReplaceSectionInput,
+} from './replace-section.js';
+export {
   listTemplatesHandler,
   listTemplatesSchema,
   type ListTemplatesInput,

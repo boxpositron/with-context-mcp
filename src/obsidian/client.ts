@@ -125,20 +125,20 @@ export class ObsidianClient {
    * Write a note to the vault
    *
    * IMPORTANT: This method enforces read-before-write for existing files.
-   * For 'overwrite' and 'append' modes, the file must be read first (via readNote)
+   * For 'overwrite', 'append', and 'prepend' modes, the file must be read first (via readNote)
    * before writing is allowed. This ensures the caller has the current state.
    * Only 'create' mode can write without a prior read (for new files only).
    *
    * @param path - Relative path within the vault (e.g., 'daily/2024-01-01' or 'notes/example.md')
    * @param content - Markdown content to write
-   * @param mode - Write mode: 'create' (POST), 'overwrite' (PUT), or 'append' (PUT with Content-Insertion-Position header)
+   * @param mode - Write mode: 'create' (POST), 'overwrite' (PUT), 'append' (PUT with Content-Insertion-Position: end), or 'prepend' (PUT with Content-Insertion-Position: beginning)
    * @returns Promise resolving when write is complete
    */
   async writeNote(path: string, content: string, mode: WriteMode = 'overwrite'): Promise<void> {
     const vaultPath = this.buildVaultPath(path);
 
     // Enforce read-before-write for existing files
-    if (mode === 'overwrite' || mode === 'append') {
+    if (mode === 'overwrite' || mode === 'append' || mode === 'prepend') {
       const fileExists = await this.noteExists(path);
 
       if (fileExists) {
@@ -168,14 +168,29 @@ export class ObsidianClient {
         break;
 
       case 'append':
-        // Use PUT with Content-Insertion-Position header for append
-        // This is the correct way to append in Obsidian Local REST API
-        await this.client.put(vaultPath, content, {
-          headers: {
-            'Content-Type': 'text/markdown',
-            'Content-Insertion-Position': 'end',
-          },
-        });
+        // Manual append: read existing content, append new content, write back
+        // The Obsidian Local REST API does not support native whole-file append
+        // so we use the manual read-modify-write approach (industry standard)
+        {
+          const existingContent = await this.fetchNoteContent(path);
+          const combinedContent = existingContent + content;
+          await this.client.put(vaultPath, combinedContent, {
+            headers: { 'Content-Type': 'text/markdown' },
+          });
+        }
+        break;
+
+      case 'prepend':
+        // Manual prepend: read existing content, prepend new content, write back
+        // The Obsidian Local REST API does not support native whole-file prepend
+        // so we use the manual read-modify-write approach (industry standard)
+        {
+          const existingContent = await this.fetchNoteContent(path);
+          const combinedContent = content + existingContent;
+          await this.client.put(vaultPath, combinedContent, {
+            headers: { 'Content-Type': 'text/markdown' },
+          });
+        }
         break;
 
       default:

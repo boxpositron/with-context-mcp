@@ -26,6 +26,8 @@ import { searchNotes, searchNotesSchema } from './tools/search-notes.js';
 import { healthCheck, healthCheckSchema } from './tools/health-check.js';
 import { batchWriteNotes, batchWriteNotesSchema } from './tools/batch-write-notes.js';
 import { getNoteMetadata, getNoteMetadataSchema } from './tools/get-note-metadata.js';
+import { updateFrontmatter, updateFrontmatterSchema } from './tools/update-frontmatter.js';
+import { replaceSection, replaceSectionSchema } from './tools/replace-section.js';
 import { listTemplatesHandler, listTemplatesSchema } from './tools/list-templates.js';
 import {
   createFromTemplateHandler,
@@ -311,6 +313,92 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           },
         },
         required: ['path'],
+      },
+    },
+    {
+      name: 'update_frontmatter',
+      description:
+        'Update YAML frontmatter in a markdown note. Supports merge (add/update fields while preserving others) and replace (overwrite entire frontmatter) modes. Automatically creates frontmatter if it does not exist.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Relative path to the note within the project folder',
+          },
+          frontmatter: {
+            type: 'object',
+            description:
+              'Frontmatter fields to update as key-value pairs (e.g., {"title": "My Note", "tags": ["dev", "mcp"]})',
+          },
+          mode: {
+            type: 'string',
+            enum: ['merge', 'replace'],
+            description:
+              'Update mode: "merge" to add/update fields (preserving others), "replace" to overwrite entire frontmatter',
+          },
+          project_folder: {
+            type: 'string',
+            description: 'Optional: Override the project folder for this operation',
+          },
+        },
+        required: ['path', 'frontmatter', 'mode'],
+      },
+    },
+    {
+      name: 'replace_section',
+      description:
+        'Replace a section in a markdown note by heading. Supports three modes: content-only (replace section content, preserve heading), full (replace both heading and content), heading-only (replace heading text, preserve content). Can create section if missing (content-only mode). Includes preview mode to see changes before applying.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Relative path to the note within the project folder',
+          },
+          heading: {
+            type: 'string',
+            description:
+              'Heading text to find (without # symbols, e.g., "Installation" not "## Installation")',
+          },
+          content: {
+            type: 'string',
+            description: 'New content for the section',
+          },
+          mode: {
+            type: 'string',
+            enum: ['content-only', 'full', 'heading-only'],
+            default: 'content-only',
+            description:
+              'Replace mode: "content-only" (default, replace section content only), "full" (replace both heading and content), "heading-only" (replace heading text only)',
+          },
+          level: {
+            type: 'number',
+            description:
+              'Optional: Filter by heading level (1-6). Use to disambiguate duplicate headings.',
+          },
+          index: {
+            type: 'number',
+            description:
+              'Optional: Which occurrence to replace if duplicates exist (0-based). Use to disambiguate.',
+          },
+          preview: {
+            type: 'boolean',
+            default: false,
+            description: 'Preview changes without applying them. Returns before/after comparison.',
+          },
+          createIfMissing: {
+            type: 'boolean',
+            default: false,
+            description:
+              'Create section at end of file if not found. Only applies to content-only mode.',
+          },
+          project_folder: {
+            type: 'string',
+            description: 'Optional: Override the project folder for this operation',
+          },
+        },
+        required: ['path', 'heading', 'content'],
       },
     },
     {
@@ -702,6 +790,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'get_note_metadata': {
         const input = getNoteMetadataSchema.parse(args);
         const result = await getNoteMetadata(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'update_frontmatter': {
+        const input = updateFrontmatterSchema.parse(args);
+        const result = await updateFrontmatter(input);
+        return {
+          content: [{ type: 'text', text: result }],
+        };
+      }
+
+      case 'replace_section': {
+        const input = replaceSectionSchema.parse(args);
+        const result = await replaceSection(input);
         return {
           content: [{ type: 'text', text: result }],
         };

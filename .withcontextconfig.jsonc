@@ -8,58 +8,69 @@
   "version": "2.1",
 
   // Default behavior for files not matching any patterns
-  "defaultBehavior": "local",
+  // vault-first: documentation and notes go to vault by default
+  "defaultBehavior": "vault",
 
   // Patterns for files to delegate to Obsidian vault
-  // Based on Diátaxis framework: guides, tutorials, reference, architecture
+  // Development notes, summaries, research, design docs, and archived documentation
   "vault": [
-      "docs/PATH_USAGE_GUIDELINES.md",
-      "docs/guides/**/*.md",
-      "docs/tutorials/**/*.md",
-      "docs/architecture/**/*.md",
-      "docs/research/**/*.md",
-      "docs/api/**/*.md",
-      "CHANGELOG.md"
+    "design/**/*.md",
+    "docs/reference/**/*.md",
+    "docs/examples/README.md",
+    "docs/UPDATE_FRONTMATTER.md",
+    "TEST_SUMMARY_*.md",
+    "TOOL_DOCUMENTATION_*.md",
+    "DOCUMENTATION_RESTRUCTURE_SUMMARY.md",
+    "*_SUMMARY.md",
+    "*_summary.md",
+    "*_research.md",
+    "*_RESEARCH.md",
+    "test-*.md",
+    "README.old.md",
   ],
 
   // Patterns for files to keep in local repository
   // Essential files for repository operation and quick reference
   "local": [
-      "TEST_RESULTS_PLUGIN_AUTO_SESSION.md",
-      "TEST_RESULTS.md",
-      "INTEGRATION_TEST_SUMMARY.md",
-      "README.md",
-      "examples/analyze-vault-structure-tool.md",
-      "examples/preset-usage-examples.md",
-      "examples/reorganize-notes-example.md",
-      "examples/reorganize-notes-summary.md",
-      "plugin/README.md",
-      "src/session/README.md",
-      "src/templates/README.md",
-      "src/vault-organizer/README.md",
-      "/README.md",
-      "/CONTRIBUTING.md",
-      "/LICENSE",
-      "/AGENTS.md",
-      "src/**/*.md",
-      "tests/**/*.md",
-      "examples/**/*.md",
-      "dist/**",
-      "node_modules/**",
-      "build/**",
-      "coverage/**",
-      ".git/**",
-      ".github/**",
-      ".vscode/**",
-      ".idea/**",
-      "**/*.draft.md",
-      "**/*.wip.md",
-      ".env*",
-      "*.config.*",
-      "package.json",
-      "tsconfig.json"
+    "TEST_RESULTS_PLUGIN_AUTO_SESSION.md",
+    "TEST_RESULTS.md",
+    "INTEGRATION_TEST_SUMMARY.md",
+    "README.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    // Docs referenced in README
+    "docs/getting-started.md",
+    "docs/configuration.md",
+    "docs/guides/**/*.md",
+    "docs/tools/**/*.md",
+    "docs/examples/common-workflows.md",
+    // Component READMEs
+    "plugin/README.md",
+    "src/session/README.md",
+    "src/templates/README.md",
+    "src/vault-organizer/README.md",
+    // Code-adjacent docs
+    "src/**/*.md",
+    "tests/**/*.md",
+    "examples/**/*.md",
+    "dist/**",
+    "node_modules/**",
+    "build/**",
+    "coverage/**",
+    ".git/**",
+    ".github/**",
+    ".vscode/**",
+    ".idea/**",
+    "**/*.draft.md",
+    "**/*.wip.md",
+    ".env*",
+    "*.config.*",
+    "package.json",
+    "tsconfig.json",
   ],
 
   // Conflict resolution strategy
-  "conflictResolution": "local-wins"
+  "conflictResolution": "local-wins",
 }

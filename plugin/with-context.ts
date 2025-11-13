@@ -36,6 +36,9 @@ import {
   analyzeVaultStructureHandler as mcpAnalyzeVaultStructure,
   reorganizeNotesHandler as mcpReorganizeNotes,
   generateOrganizationPlanHandler as mcpGenerateOrganizationPlan,
+  // Content editing tools
+  updateFrontmatter as mcpUpdateFrontmatter,
+  replaceSection as mcpReplaceSection,
 } from 'with-context-mcp/tools';
 
 /**
@@ -79,7 +82,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
               status: 'active',
               config,
               version: '3.0.6',
-              tools: 30,
+              tools: 32,
               custom_commands: 3,
               features: {
                 filename_slugification: true,
@@ -99,7 +102,7 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
       // ==================== Write Note Tool ====================
       write_note: tool({
         description:
-          'Write or update a markdown note in the project folder. Supports create, overwrite, and append modes. Filenames are automatically slugified (lowercase, spaces/special chars become hyphens). Well-known files like README, CHANGELOG, LICENSE preserve their case.',
+          'Write or update a markdown note in the project folder. Supports create, overwrite, append, and prepend modes. Filenames are automatically slugified (lowercase, spaces/special chars become hyphens). Well-known files like README, CHANGELOG, LICENSE preserve their case.',
         args: {
           path: tool.schema
             .string()
@@ -108,10 +111,10 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
             ),
           content: tool.schema.string().describe('Content to write to the note'),
           mode: tool.schema
-            .enum(['create', 'overwrite', 'append'])
+            .enum(['create', 'overwrite', 'append', 'prepend'])
             .optional()
             .describe(
-              'Write mode: create (fail if exists), overwrite (replace), or append (add to end). Default: overwrite'
+              'Write mode: create (fail if exists), overwrite (replace), append (add to end), or prepend (add to beginning). Default: overwrite'
             ),
         },
         async execute(args, _ctx) {
@@ -154,17 +157,152 @@ export const WithContextPlugin: Plugin = async ({ project: _project, directory: 
 
       // ==================== List Notes Tool ====================
       list_notes: tool({
-        description: 'List all notes in a folder within the project.',
+        description:
+          'List all notes in a folder within the project. Supports fuzzy finding to search for notes by filename.',
         args: {
           path: tool.schema
             .string()
             .optional()
             .describe('Optional: Relative path to a subfolder (defaults to project root)'),
+          fuzzy_query: tool.schema
+            .string()
+            .optional()
+            .describe(
+              'Optional: Fuzzy search query to filter notes by filename (e.g., "test" matches "test-file.md", "testing.md")'
+            ),
+          limit: tool.schema
+            .number()
+            .optional()
+            .describe('Optional: Maximum number of results to return (default: 50)'),
+          min_score: tool.schema
+            .number()
+            .optional()
+            .describe(
+              'Optional: Minimum fuzzy match score threshold 0-1 (default: 0.3, higher = stricter)'
+            ),
+          include_highlights: tool.schema
+            .boolean()
+            .optional()
+            .describe('Optional: Include match highlights in results (default: true)'),
         },
         async execute(args, _ctx) {
           try {
             const result = await mcpListNotes({
               path: args.path,
+              fuzzy_query: args.fuzzy_query,
+              limit: args.limit ?? 50,
+              min_score: args.min_score,
+              include_highlights: args.include_highlights ?? true,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Update Frontmatter Tool ====================
+      update_frontmatter: tool({
+        description:
+          'Update frontmatter in a markdown note. Supports merge mode (add/update fields while preserving others) or replace mode (overwrite entire frontmatter). Enforces read-before-write.',
+        args: {
+          path: tool.schema
+            .string()
+            .describe('Relative path to the note within the project folder'),
+          frontmatter: tool.schema
+            .record(tool.schema.string(), tool.schema.unknown())
+            .describe('Frontmatter fields to add or update as key-value pairs'),
+          mode: tool.schema
+            .enum(['merge', 'replace'])
+            .describe(
+              'Update mode: merge (add/update fields, preserve others) or replace (overwrite entire frontmatter)'
+            ),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpUpdateFrontmatter({
+              path: args.path,
+              frontmatter: args.frontmatter,
+              mode: args.mode,
+              project_folder: args.project_folder,
+            });
+            return result;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({ success: false, error: message }, null, 2);
+          }
+        },
+      }),
+
+      // ==================== Replace Section Tool ====================
+      replace_section: tool({
+        description:
+          'Replace a section in a markdown note by heading. Supports content-only (default), full, or heading-only replacement modes. Can create section if missing. Enforces read-before-write.',
+        args: {
+          path: tool.schema
+            .string()
+            .describe('Relative path to the note within the project folder'),
+          heading: tool.schema
+            .string()
+            .describe(
+              'Heading text to find (without # symbols, e.g., "Installation" not "## Installation")'
+            ),
+          content: tool.schema.string().describe('New content for the section'),
+          mode: tool.schema
+            .enum(['content-only', 'full', 'heading-only'])
+            .optional()
+            .describe(
+              'Replace mode: content-only (default, replace only section content), full (replace both heading and content), heading-only (replace only heading text, preserve content)'
+            ),
+          level: tool.schema
+            .number()
+            .int()
+            .min(1)
+            .max(6)
+            .optional()
+            .describe('Optional: Filter by heading level (1-6) to disambiguate duplicate headings'),
+          index: tool.schema
+            .number()
+            .int()
+            .min(0)
+            .optional()
+            .describe(
+              'Optional: Which occurrence to replace if duplicates exist (0-based, use to disambiguate)'
+            ),
+          preview: tool.schema
+            .boolean()
+            .optional()
+            .describe(
+              'Optional: Preview changes without applying them. Returns before/after comparison (default: false)'
+            ),
+          createIfMissing: tool.schema
+            .boolean()
+            .optional()
+            .describe(
+              'Optional: Create section at end of file if not found. Only applies to content-only mode (default: false)'
+            ),
+          project_folder: tool.schema
+            .string()
+            .optional()
+            .describe('Optional: Project folder name in vault (auto-detects if omitted)'),
+        },
+        async execute(args, _ctx) {
+          try {
+            const result = await mcpReplaceSection({
+              path: args.path,
+              heading: args.heading,
+              content: args.content,
+              mode: args.mode as 'content-only' | 'full' | 'heading-only' | undefined,
+              level: args.level,
+              index: args.index,
+              preview: args.preview ?? false,
+              createIfMissing: args.createIfMissing ?? false,
+              project_folder: args.project_folder,
             });
             return result;
           } catch (error) {
