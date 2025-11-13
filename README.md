@@ -3,20 +3,21 @@
 [![npm version](https://badge.fury.io/js/with-context-mcp.svg)](https://www.npmjs.com/package/with-context-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Project-scoped note management for AI coding agents.** Write markdown documentation directly to your note-taking apps (Obsidian, Notion, Apple Notes) with automatic project folder scoping, intelligent organization, and session tracking.
+**Let your AI coding agents write directly to your note-taking apps.** WithContext provides project-scoped note management for AI agents working with Obsidian, enabling them to create documentation, track changes, and organize knowledge as they code.
 
-## Features
+## Why WithContext?
 
-- **🔒 Project-Scoped Access** - Each project gets its own isolated folder within your vault
-- **📝 Multiple Write Modes** - Create, overwrite, append, or prepend to notes
-- **🎯 Smart Editing** - Edit YAML frontmatter and replace specific sections by heading
-- **🔍 Fuzzy Search** - Find files quickly with intelligent matching and highlighting
-- **📋 Template System** - Professional templates with variable substitution
-- **📊 Session Management** - Track development workflow with changelog and todos
-- **🗂️ Vault Organization** - Intelligent analysis and automated reorganization with 4 built-in presets
-- **⚙️ Documentation Delegation** - Control which docs stay local vs. vault with `.withcontextconfig.jsonc`
+Your AI coding agent needs a place to store documentation, meeting notes, and project updates. WithContext gives them direct access to your Obsidian vault with:
 
-## Quick Start
+- **Automatic Project Scoping** - Each project gets its own folder, no cross-contamination
+- **Smart Editing** - Agents can update frontmatter, replace sections, prepend/append content
+- **Session Tracking** - Track what changes the agent makes with changelogs and todos
+- **Intelligent Organization** - Built-in presets for keeping vaults clean
+- **Template System** - Professional templates for consistent documentation
+
+**You set it up once. Your AI agent handles the rest.**
+
+## Quick Setup
 
 ### 1. Install Obsidian REST API Plugin
 
@@ -24,21 +25,17 @@
 2. Search for **"Local REST API"** and install
 3. Enable the plugin and copy your API key
 
-### 2. Install with-context-mcp
+### 2. Install WithContext
 
 ```bash
-# Using npx (no installation needed)
-npx -y with-context-mcp
-
-# Or install globally
 npm install -g with-context-mcp
 ```
 
 ### 3. Configure Your AI Client
 
-**OpenCode (Recommended):**
+Add this to your AI client's MCP configuration:
 
-Create `opencode.jsonc` in your project root:
+**OpenCode** (`opencode.jsonc`):
 
 ```jsonc
 {
@@ -59,7 +56,9 @@ Create `opencode.jsonc` in your project root:
 }
 ```
 
-Set environment variables:
+**Other Clients:** [Claude Desktop, Cline, Cursor, Windsurf, Continue.dev, GitHub Copilot →](docs/getting-started.md#client-configuration)
+
+### 4. Set Environment Variables
 
 ```bash
 export OBSIDIAN_API_KEY="your_api_key_here"
@@ -68,339 +67,112 @@ export OBSIDIAN_VAULT="MyVault"
 export PROJECT_BASE_PATH="Projects"
 ```
 
-**Other Clients:** See [Getting Started Guide](docs/getting-started.md#client-configuration) for Claude Desktop, Cline, Cursor, Windsurf, Continue.dev, and GitHub Copilot.
+**That's it!** Your AI agent now has access to 33+ tools for managing notes in `MyVault/Projects/`.
 
-### 4. Set Project Context
+## What Your Agent Can Do
 
-```javascript
-set_project_context({
-  project_folder: 'my-web-app',
-});
-```
+Once configured, your AI coding agent can:
 
-### 5. Start Writing Notes
+- **Create and update documentation** as it writes code
+- **Track changes** with automatic changelogs and todos
+- **Organize the vault** using intelligent presets
+- **Edit YAML frontmatter** to add tags and metadata
+- **Search and update existing notes** by content or filename
+- **Generate notes from templates** for consistent formatting
+- **Replace specific sections** in markdown files by heading
 
-```javascript
-write_note({
-  path: 'CHANGELOG.md',
-  content: '## 2024-01-15\n- Added user authentication\n- Fixed bug #123',
-  mode: 'append',
-});
-```
+**You don't need to learn the tools.** Your AI agent will use them automatically when it needs to document something, track a change, or organize notes.
 
-**That's it!** Your notes are now in `MyVault/Projects/my-web-app/`.
+## Example: What It Looks Like
 
-## Documentation
+When your AI agent works on a feature, it might:
 
-### Getting Started
+1. Start a session: `start_session({ project_folder: 'my-app' })`
+2. Create API docs: `write_note({ path: 'docs/api.md', content: '...' })`
+3. Track the change: `add_changelog_entry({ type: 'feature', message: 'Add user API' })`
+4. Add a todo: `add_todo({ content: 'Write integration tests' })`
+5. Update frontmatter: `update_frontmatter({ path: 'docs/api.md', frontmatter: { status: 'draft' } })`
 
-- **[Installation & Setup](docs/getting-started.md)** - Complete installation guide for all clients
-- **[Configuration](docs/configuration.md)** - Environment variables, config files, and delegation
-
-### Tool Reference
-
-- **[Core Tools](docs/tools/core-tools.md)** - write, read, list, search, delete, batch, metadata
-- **[Editing Tools](docs/tools/editing-tools.md)** - update_frontmatter, replace_section
-- **[Session Tools](docs/tools/session-tools.md)** - Session lifecycle, changelog, todos
-- **[Vault Tools](docs/tools/vault-tools.md)** - Vault organization, presets, analysis
-- **[Config Tools](docs/tools/config-tools.md)** - setup, validate, preview, sync
-
-### Guides
-
-- **[Session Management](docs/guides/sessions.md)** - Track your development workflow
-- **[Vault Organization](docs/guides/vault-organization.md)** - Intelligent vault organization
-- **[Vault Presets](docs/guides/vault-presets.md)** - 4 built-in organization strategies
-- **[Auto-Tracking](docs/guides/auto-tracking.md)** - Automatic session management (OpenCode plugin)
-- **[Templates](docs/guides/templates.md)** - Template system and customization
-
-### Examples & Reference
-
-- **[Common Workflows](docs/examples/common-workflows.md)** - Real-world usage patterns
-- **[API Reference](docs/api/tool-reference.md)** - Complete tool API documentation
-
-## What's New
-
-### v3.0.6 (Latest)
-
-- **Prepend Mode** - Add content to the beginning of notes
-- **update_frontmatter Tool** - Edit YAML frontmatter with merge/replace modes
-- **Fuzzy Finding** - Search files by name with match highlighting
-- **replace_section Tool** - Targeted section editing with three replacement modes
-
-### v3.0.5
-
-- **Vault Organization Presets** ⭐ NEW - 4 built-in presets (clean, minimal, docs-as-code, research)
-- **generate_organization_plan Tool** - Intelligent organization plans using presets
-- **Auto-Session Management** - Automatic project detection and session tracking (OpenCode plugin)
-
-### v3.0.2
-
-- **Config System Unification** - Removed `.withcontextignore` in favor of `.withcontextconfig.jsonc`
-- **Improved Delegation** - Better pattern matching and conflict resolution
-- **Bidirectional Sync** - `sync_notes`, `ingest_notes`, `teleport_notes` now use delegation config
-
-See [CHANGELOG.md](CHANGELOG.md) for complete release history.
-
-## Available Tools
-
-### Core Tools
-
-- `set_project_context` - Set project folder for this session
-- `write_note` - Write/update notes (create/overwrite/append/prepend)
-- `read_note` - Read note content
-- `list_notes` - List files with optional fuzzy search
-- `search_notes` - Search note content
-- `delete_note` - Delete notes (requires confirmation)
-- `batch_write_notes` - Write multiple notes at once
-- `get_note_metadata` - Get word count, tags, headings, frontmatter
-
-### Editing Tools
-
-- `update_frontmatter` - Edit YAML frontmatter (merge/replace modes)
-- `replace_section` - Replace markdown sections by heading
-
-### Session Tools
-
-- `start_session`, `pause_session`, `resume_session`, `end_session` - Session lifecycle
-- `get_session_status` - Get current session details
-- `add_changelog_entry` - Track changes with conventional commit types
-- `get_session_changelog` - View session changelog
-- `get_commit_suggestion` - Generate conventional commit messages
-- `add_todo`, `update_todo`, `list_todos` - Todo management
-
-### Vault Organization Tools
-
-- `analyze_vault_structure` - Analyze vault content and relationships
-- `generate_organization_plan` - Generate plans using presets (clean, minimal, docs-as-code, research)
-- `reorganize_notes` - Execute reorganization with link updates and rollback
-
-### Configuration Tools
-
-- `setup_notes` - Intelligent project setup with `.withcontextconfig.jsonc`
-- `validate_config` - Validate configuration file
-- `preview_delegation` - Preview delegation decisions
-- `ingest_notes` - Copy docs from project to vault
-- `teleport_notes` - Copy docs from vault to project
-- `sync_notes` - Bidirectional sync between project and vault
-
-### Template Tools
-
-- `list_templates` - List available templates
-- `create_from_template` - Create notes from templates
-
-## Example Usage
-
-### Basic Note Management
-
-```javascript
-// Set project context
-set_project_context({ project_folder: 'my-web-app' });
-
-// Create a new note
-write_note({
-  path: 'docs/api.md',
-  content: '# API Documentation\n\n## Endpoints...',
-  mode: 'create',
-});
-
-// Update frontmatter
-update_frontmatter({
-  path: 'docs/api.md',
-  frontmatter: {
-    tags: ['api', 'documentation'],
-    version: '1.0.0',
-  },
-  mode: 'merge',
-});
-
-// Replace a section
-replace_section({
-  path: 'docs/api.md',
-  heading: 'Authentication',
-  content: 'Updated authentication details...',
-  mode: 'content-only',
-});
-```
-
-### Session Management
-
-```javascript
-// Start a session
-start_session({
-  project_folder: 'my-web-app',
-  message: 'Implementing user authentication',
-});
-
-// Track changes
-add_changelog_entry({
-  type: 'feature',
-  message: 'Add JWT authentication',
-  files: ['src/auth.ts', 'src/middleware.ts'],
-});
-
-// Add todos
-add_todo({
-  content: 'Write integration tests for auth',
-  priority: 'high',
-});
-
-// Generate commit message
-get_commit_suggestion({});
-// Returns: "feat: add JWT authentication"
-
-// End session
-end_session({
-  message: 'Authentication complete',
-});
-```
-
-### Vault Organization
-
-```javascript
-// Generate organization plan using clean preset
-const plan = await generate_organization_plan({
-  project_folder: 'my-web-app',
-  preset_id: 'clean',
-  min_confidence: 0.7,
-});
-
-// Preview reorganization
-const preview = await reorganize_notes({
-  plan: plan.plan,
-  dry_run: true,
-});
-
-// Execute (after reviewing preview)
-const result = await reorganize_notes({
-  plan: plan.plan,
-  dry_run: false,
-  update_links: true,
-  create_backup: true,
-});
-```
-
-## Folder Structure
-
-Your Obsidian vault will be organized like this:
+Your vault automatically stays organized in:
 
 ```
 MyVault/
-├── Projects/
-│   ├── my-web-app/
-│   │   ├── CHANGELOG.md
-│   │   ├── docs/
-│   │   │   ├── api.md
-│   │   │   └── guides/
-│   │   ├── meetings/
-│   │   └── planning/
-│   ├── data-pipeline/
-│   └── mobile-app/
-└── (other vault content)
+└── Projects/
+    └── my-app/
+        ├── docs/
+        │   └── api.md
+        └── CHANGELOG.md
 ```
 
-## OpenCode Plugin
+## Documentation
 
-This project includes an **OpenCode plugin** that provides all MCP tools directly in your OpenCode sessions. The plugin is a single TypeScript file for easy installation.
+### For Setup
 
-**Installation:**
+- **[Installation & Setup](docs/getting-started.md)** - Complete setup for all AI clients
+- **[Configuration](docs/configuration.md)** - Environment variables and config files
 
-```bash
-# Copy plugin file
-mkdir -p ~/.config/opencode/plugin
-cp plugin/with-context.ts ~/.config/opencode/plugin/
+### For Reference
 
-# Install dependencies
-cd ~/.config/opencode/plugin
-npm install with-context-mcp
-```
+- **[All Tools](docs/tools/)** - Complete reference for all 33 tools
+- **[Common Workflows](docs/examples/common-workflows.md)** - Real-world usage examples
+- **[Session Management](docs/guides/sessions.md)** - How sessions work
+- **[Vault Organization](docs/guides/vault-organization.md)** - Keeping your vault organized
 
-**Features:**
+## What's New in v3.0.6
 
-- All 30+ tools available
-- Automatic project context detection
-- Template system with 5 built-in templates
-- Single file installation - no build step needed
+- **Prepend Mode** - Add content to the beginning of notes
+- **update_frontmatter** - Edit YAML frontmatter with merge/replace modes
+- **Fuzzy Finding** - Quick file search with match highlighting
+- **replace_section** - Edit specific markdown sections by heading
 
-See [plugin/README.md](./plugin/README.md) for detailed documentation.
+See [CHANGELOG.md](CHANGELOG.md) for complete release history.
 
-## Development
+## Available Tools (33)
 
-```bash
-# Build
-npm run build
+Your AI agent has access to these tools:
 
-# Watch mode
-npm run watch
+**Core:** write_note, read_note, list_notes, search_notes, delete_note, batch_write_notes, get_note_metadata
 
-# Development mode with auto-reload
-npm run dev
+**Editing:** update_frontmatter, replace_section
 
-# Run tests
-npm test
+**Sessions:** start_session, pause_session, resume_session, end_session, get_session_status, add_changelog_entry, get_session_changelog, get_commit_suggestion, add_todo, update_todo, list_todos
 
-# Run tests once (CI mode)
-npm run test:run
+**Organization:** analyze_vault_structure, generate_organization_plan, reorganize_notes
 
-# Generate coverage
-npm run test:coverage
-```
+**Configuration:** setup_notes, validate_config, preview_delegation, ingest_notes, teleport_notes, sync_notes
 
-## Publishing
+**Templates:** list_templates, create_from_template
 
-The package is automatically published to npm when a new tag is pushed:
+**Utilities:** set_project_context, health_check
 
-```bash
-# Update version in package.json
-npm version patch  # or minor, major
+[See detailed tool documentation →](docs/tools/)
 
-# Update CHANGELOG.md
+## Security
 
-# Commit and tag
-git commit -am "chore: release v3.0.7"
-git tag -a v3.0.7 -m "Release v3.0.7"
-git push origin v3.0.7
-```
-
-GitHub Actions will automatically:
-
-- Run tests and build
-- Publish to npm with provenance
-- Attach release artifacts to GitHub release
+- **Project Scoping** - All operations restricted to configured project folders
+- **Path Validation** - Prevents directory traversal attacks
+- **HTTPS** - Secure connection to Obsidian Local REST API
+- **API Key Authentication** - Required for all operations
 
 ## Troubleshooting
 
-### Common Issues
-
-**"Connection refused"**
+**Connection Issues?**
 
 - Ensure Obsidian is running
 - Verify Local REST API plugin is enabled
 - Check `OBSIDIAN_API_URL` matches plugin port (default: 27124)
 
-**"Authentication failed"**
+**Authentication Failed?**
 
-- Double-check `OBSIDIAN_API_KEY` from plugin settings
-- Ensure no extra spaces in the API key
+- Verify `OBSIDIAN_API_KEY` from plugin settings
+- Check for extra spaces in the API key
 
-**"Path traversal detected"**
+**Path Errors?**
 
-- Don't use `../` or absolute paths
-- All paths must be relative to project folder
+- Use relative paths only (no `../` or absolute paths)
+- All paths are relative to your project folder
 
-**"Invalid configuration format"**
-
-- Ensure `.withcontextconfig.jsonc` has `"version": "2.1"`
-- Validate with `validate_config()` tool
-- Check JSON syntax (JSONC allows comments)
-
-See [Getting Started Guide](docs/getting-started.md#troubleshooting) for more troubleshooting help.
-
-## Security
-
-- **Path Validation** - All paths validated to prevent directory traversal
-- **Project Scoping** - Operations restricted to configured project folder
-- **HTTPS** - Secure connection to Obsidian (self-signed cert in dev)
-- **API Key Authentication** - Required for all Obsidian API calls
+[More troubleshooting help →](docs/getting-started.md#troubleshooting)
 
 ## Contributing
 
@@ -408,10 +180,10 @@ Contributions welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes with tests
+3. Add tests for new features
 4. Submit a pull request
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
@@ -419,11 +191,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## Links
 
-- **npm Package:** [with-context-mcp](https://www.npmjs.com/package/with-context-mcp)
-- **GitHub Repository:** [boxpositron/with-context-mcp](https://github.com/boxpositron/with-context-mcp)
-- **Issues:** [GitHub Issues](https://github.com/boxpositron/with-context-mcp/issues)
-- **Obsidian Local REST API:** [Plugin Repository](https://github.com/coddingtonbear/obsidian-local-rest-api)
+- **npm:** [with-context-mcp](https://www.npmjs.com/package/with-context-mcp)
+- **GitHub:** [boxpositron/with-context-mcp](https://github.com/boxpositron/with-context-mcp)
+- **Issues:** [Report bugs or request features](https://github.com/boxpositron/with-context-mcp/issues)
 
 ---
 
-**Made with ❤️ for AI coding agents and knowledge workers**
+**Made for AI coding agents and the humans who work with them** ❤️
