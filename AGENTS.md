@@ -4,6 +4,53 @@
 
 TypeScript MCP server for project-scoped note management (Obsidian, etc). Uses ES modules, Vitest for testing, strict TypeScript.
 
+## Documentation & Research
+
+**Use the vault for implementation planning and research:**
+
+When working on features, bugs, or tests, create notes in the vault instead of the repo:
+
+```javascript
+// Research and plan implementations
+write_note({
+  path: 'dev/features/fuzzy-search-implementation.md',
+  content: '# Fuzzy Search Implementation\n\n## Research...',
+});
+
+// Document test strategies
+write_note({
+  path: 'dev/testing/prepend-mode-test-plan.md',
+  content: '# Prepend Mode Test Plan\n\n## Test Cases...',
+});
+
+// Track bugs and investigations
+write_note({
+  path: 'dev/bugs/path-traversal-investigation.md',
+  content: '# Path Traversal Bug\n\n## Analysis...',
+});
+```
+
+**Benefits:**
+
+- Persistent across sessions
+- Searchable and linkable
+- Organized with other project docs
+- Doesn't clutter the repo
+- Easy to reference in future work
+
+**Vault structure for development:**
+
+```
+Projects/with-context-mcp/
+├── docs/           (public documentation)
+├── dev/            (implementation notes)
+│   ├── features/   (feature research & planning)
+│   ├── bugs/       (bug investigations)
+│   ├── testing/    (test strategies)
+│   └── research/   (API research, decisions)
+└── meetings/       (if needed)
+```
+
 ## Build & Test Commands
 
 - `npm run build` - Compile TypeScript to dist/
