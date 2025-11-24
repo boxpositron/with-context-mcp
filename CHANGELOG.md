@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.7] - 2025-01-24
+
+### Added
+
+- Graceful degradation for missing configuration - plugin no longer crashes when env vars are missing
+- `loadConfigSafe()`, `isConfigValid()`, `getConfigErrorMessage()` config utilities for plugins
+- New `/config` export path for config utilities (`import from 'with-context-mcp/config'`)
+- `with_context_status` now shows detailed setup instructions when not configured
+- Tools return helpful error messages with setup guide instead of crashing
+
 ### Fixed
 
 - Append/prepend implementation with duplicate code blocks removed

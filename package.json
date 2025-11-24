@@ -1,6 +1,6 @@
 {
   "name": "with-context-mcp",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "MCP server for project-scoped note management across multiple note-taking apps (Obsidian, and more)",
   "main": "dist/index.js",
   "type": "module",
@@ -9,7 +9,8 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./tools": "./dist/tools/index.js"
+    "./tools": "./dist/tools/index.js",
+    "./config": "./dist/config/index.js"
   },
   "files": [
     "dist",
