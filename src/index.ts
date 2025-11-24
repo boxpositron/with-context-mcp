@@ -16,6 +16,8 @@ import {
   ErrorCode,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
+import { z } from 'zod';
+import { isToolFailure, toolError } from './tools/utils/tool-response.js';
 import { config } from './config/index.js';
 import { setProjectContext, setProjectContextSchema } from './tools/set-project-context.js';
 import { writeNote, writeNoteSchema } from './tools/write-note.js';
@@ -718,6 +720,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   ],
 }));
 
+/**
+ * Wrap a tool result string, detecting {success: false} pattern
+ * and setting isError accordingly so LLMs can see failures.
+ */
+function wrapToolResult(result: string) {
+  return {
+    content: [{ type: 'text' as const, text: result }],
+    ...(isToolFailure(result) && { isError: true }),
+  };
+}
+
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     const { name, arguments: args } = request.params;
@@ -726,277 +739,226 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'set_project_context': {
         const input = setProjectContextSchema.parse(args);
         const result = await setProjectContext(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'write_note': {
         const input = writeNoteSchema.parse(args);
         const result = await writeNote(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'read_note': {
         const input = readNoteSchema.parse(args);
         const result = await readNote(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'list_notes': {
         const input = listNotesSchema.parse(args);
         const result = await listNotes(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'delete_note': {
         const input = deleteNoteSchema.parse(args);
         const result = await deleteNote(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'search_notes': {
         const input = searchNotesSchema.parse(args);
         const result = await searchNotes(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'health_check': {
         const input = healthCheckSchema.parse(args);
         const result = await healthCheck(input);
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-        };
+        return wrapToolResult(JSON.stringify(result, null, 2));
       }
 
       case 'batch_write_notes': {
         const input = batchWriteNotesSchema.parse(args);
         const result = await batchWriteNotes(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'get_note_metadata': {
         const input = getNoteMetadataSchema.parse(args);
         const result = await getNoteMetadata(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'update_frontmatter': {
         const input = updateFrontmatterSchema.parse(args);
         const result = await updateFrontmatter(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'replace_section': {
         const input = replaceSectionSchema.parse(args);
         const result = await replaceSection(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'list_templates': {
         const input = listTemplatesSchema.parse(args);
         const result = await listTemplatesHandler(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'create_from_template': {
         const input = createFromTemplateSchema.parse(args);
         const result = await createFromTemplateHandler(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'ingest_notes': {
         const input = ingestNotesSchema.parse(args);
         const result = await ingestNotes(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'teleport_notes': {
         const input = teleportNotesSchema.parse(args);
         const result = await teleportNotes(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'sync_notes': {
         const input = syncNotesSchema.parse(args);
         const result = await syncNotes(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'setup_notes': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await setupNotes(args as any);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'validate_config': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await validateConfigTool(args as any);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'preview_delegation': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await previewDelegationTool(args as any);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'start_session': {
         const input = startSessionSchema.parse(args);
         const result = await startSession(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'pause_session': {
         const input = pauseSessionSchema.parse(args);
         const result = await pauseSession(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'resume_session': {
         const input = resumeSessionSchema.parse(args);
         const result = await resumeSession(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'end_session': {
         const input = endSessionSchema.parse(args);
         const result = await endSession(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'get_session_status': {
         const input = getSessionStatusSchema.parse(args);
         const result = await getSessionStatus(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'add_changelog_entry': {
         const input = addChangelogEntrySchema.parse(args);
         const result = await addChangelogEntry(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'get_session_changelog': {
         const input = getSessionChangelogSchema.parse(args);
         const result = await getSessionChangelog(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'get_commit_suggestion': {
         const input = getCommitSuggestionSchema.parse(args);
         const result = await getCommitSuggestion(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'add_todo': {
         const input = addTodoSchema.parse(args);
         const result = await addTodo(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'update_todo': {
         const input = updateTodoSchema.parse(args);
         const result = await updateTodo(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'list_todos': {
         const input = listTodosSchema.parse(args);
         const result = await listTodos(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'analyze_vault_structure': {
         const input = analyzeVaultStructureSchema.parse(args);
         const result = await analyzeVaultStructureHandler(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'reorganize_notes': {
         const input = reorganizeNotesSchema.parse(args);
         const result = await reorganizeNotesHandler(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       case 'generate_organization_plan': {
         const input = generateOrganizationPlanSchema.parse(args);
         const result = await generateOrganizationPlanHandler(input);
-        return {
-          content: [{ type: 'text', text: result }],
-        };
+        return wrapToolResult(result);
       }
 
       default:
         throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
     }
   } catch (error) {
+    // Protocol errors - re-throw as-is (tool not found, capability issues)
     if (error instanceof McpError) {
-      throw error;
+      // Only MethodNotFound should be a protocol error
+      if (error.code === ErrorCode.MethodNotFound) {
+        throw error;
+      }
+      // Other McpErrors (InvalidRequest, etc.) become tool errors so LLM can see them
+      return toolError(error.message);
     }
 
+    // Zod validation errors -> InvalidParams (protocol level, schema violation)
+    if (error instanceof z.ZodError) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Invalid parameters: ${error.errors.map((e) => e.message).join(', ')}`
+      );
+    }
+
+    // All other errors -> tool error (LLM can see and self-correct)
     const message = error instanceof Error ? error.message : String(error);
-    throw new McpError(ErrorCode.InternalError, `Tool execution failed: ${message}`);
+    return toolError(message);
   }
 });
 
