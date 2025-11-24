@@ -187,8 +187,7 @@ describe('Path Validator', () => {
         }
         expect(thrownError).not.toBeNull();
         expect(thrownError?.message).toContain('Path appears to be an absolute filesystem path');
-        expect(thrownError?.message).toContain('✓');
-        expect(thrownError?.message).toContain('✗');
+        expect(thrownError?.message).toContain('project-relative paths');
         expect(thrownError?.message).toMatch(/Suggested fix:/);
       });
 

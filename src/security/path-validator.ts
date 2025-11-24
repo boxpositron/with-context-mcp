@@ -1,4 +1,5 @@
 import path from 'path';
+import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 
 /**
  * Slugify a filename by converting to lowercase and replacing spaces/special chars
@@ -34,27 +35,27 @@ function slugifyFilename(filename: string): string {
  */
 export function sanitizePath(inputPath: string, projectFolder: string, basePath: string): string {
   if (!inputPath || typeof inputPath !== 'string') {
-    throw new Error('Path must be a non-empty string');
+    throw new McpError(ErrorCode.InvalidParams, 'Path must be a non-empty string');
   }
 
   if (!projectFolder || typeof projectFolder !== 'string') {
-    throw new Error('Project folder must be a non-empty string');
+    throw new McpError(ErrorCode.InvalidParams, 'Project folder must be a non-empty string');
   }
 
   if (!basePath || typeof basePath !== 'string') {
-    throw new Error('Base path must be a non-empty string');
+    throw new McpError(ErrorCode.InvalidParams, 'Base path must be a non-empty string');
   }
 
   // Trim whitespace
   let cleanPath = inputPath.trim();
 
   if (cleanPath.length === 0) {
-    throw new Error('Path cannot be empty or whitespace only');
+    throw new McpError(ErrorCode.InvalidParams, 'Path cannot be empty or whitespace only');
   }
 
   // Reject null bytes (security)
   if (cleanPath.includes('\0')) {
-    throw new Error('Path contains invalid null byte character');
+    throw new McpError(ErrorCode.InvalidParams, 'Path contains invalid null byte character');
   }
 
   // Reject absolute paths (they should be relative to project)
@@ -66,13 +67,10 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
       // Suggest using the last 1-2 parts
       suggestion = parts.slice(-2).join('/');
     }
-    throw new Error(
-      `Absolute paths are not allowed. Path must be relative to project folder.\n\n` +
-        `Examples of correct usage:\n` +
-        `  ✓ "docs/api.md"\n` +
-        `  ✓ "README.md"\n` +
-        `  ✓ "guides/tutorial.md"\n\n` +
-        `Your path: "${cleanPath}"\n` +
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Absolute paths are not allowed. Path must be relative to project folder. ` +
+        `Examples: "docs/api.md", "README.md". Your path: "${cleanPath}". ` +
         `Suggested fix: Try "${suggestion}" instead.`
     );
   }
@@ -121,12 +119,10 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
         }
       }
 
-      throw new Error(
+      throw new McpError(
+        ErrorCode.InvalidParams,
         `Path appears to be an absolute filesystem path starting with "${cleanPath.split('/')[0]}/". ` +
-          `\n\nUse project-relative paths only, such as:\n` +
-          `  ✓ "${example}" (correct)\n` +
-          `  ✓ "README.md" (correct)\n` +
-          `  ✗ "${cleanPath}" (incorrect - appears absolute)\n\n` +
+          `Use project-relative paths only, such as "${example}" or "README.md". ` +
           `Suggested fix: Try "${suggestedPath || example}" instead.`
       );
     }
@@ -138,14 +134,20 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
   // After normalization, check for directory traversal attempts
   // If the path starts with .. after normalization, it's trying to escape
   if (cleanPath.startsWith('..')) {
-    throw new Error('Path traversal detected. Path cannot navigate outside the project folder.');
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path traversal detected. Path cannot navigate outside the project folder.'
+    );
   }
 
   // Also check for ../ or ..\ anywhere in the normalized path
   // (normalization should have handled this, but double-check)
   const pathParts = cleanPath.split(path.sep);
   if (pathParts.includes('..')) {
-    throw new Error('Path traversal detected. Path cannot contain ".." segments.');
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path traversal detected. Path cannot contain ".." segments.'
+    );
   }
 
   // Convert to forward slashes for consistency
@@ -182,7 +184,10 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
 
   for (const pattern of dangerousPatterns) {
     if (pattern.test(cleanPath)) {
-      throw new Error(`Path contains potentially dangerous pattern: ${pattern}`);
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Path contains potentially dangerous pattern: ${pattern}`
+      );
     }
   }
 
@@ -194,7 +199,10 @@ export function sanitizePath(inputPath: string, projectFolder: string, basePath:
   // We use path.normalize to check for any remaining traversal attempts
   const normalizedCheck = path.normalize(vaultRelativePath);
   if (normalizedCheck.startsWith('..')) {
-    throw new Error('Path escapes project boundaries after construction');
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path escapes project boundaries after construction'
+    );
   }
 
   return vaultRelativePath;
@@ -243,7 +251,7 @@ export function getRelativePath(fullPath: string, projectRoot: string): string {
   const relativePath = path.relative(projectRoot, fullPath);
 
   if (relativePath.startsWith('..')) {
-    throw new Error('Path is outside project root');
+    throw new McpError(ErrorCode.InvalidParams, 'Path is outside project root');
   }
 
   return relativePath.split(path.sep).join('/');
